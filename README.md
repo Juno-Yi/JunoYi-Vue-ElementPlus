@@ -10,6 +10,8 @@
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.x-409EFF.svg?logo=element)](https://element-plus.org/)
 [![Pinia](https://img.shields.io/badge/Pinia-2.x-yellow.svg?logo=vue.js)](https://pinia.vuejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF.svg?logo=vite)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0-success.svg)](https://github.com/Juno-Yi/JunoYi)
 
 ## JunoYi 企业级开发框架
 **一个现代化、模块化、高性能的企业级 Java 开发框架**
