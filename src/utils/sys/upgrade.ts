@@ -121,7 +121,7 @@ class VersionManager {
     return upgradeLogList.value.some((item) => {
       const itemVersion = this.normalizeVersion(item.version)
       return (
-        item.requireReLogin && itemVersion > normalizedStored && itemVersion <= normalizedCurrent
+        item.breakingChange && itemVersion > normalizedStored && itemVersion <= normalizedCurrent
       )
     })
   }
