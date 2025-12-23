@@ -14,30 +14,7 @@ export const helpRoutes: AppRouteRecord[] = [
       keepAlive: false
     }
   },
-  {
-    name: 'LiteVersion',
-    path: '',
-    component: '',
-    meta: {
-      title: 'menus.help.liteVersion',
-      icon: 'ri:bus-2-line',
-      link: WEB_LINKS.LiteVersion,
-      isIframe: false,
-      keepAlive: false
-    }
-  },
-  {
-    name: 'OldVersion',
-    path: '',
-    component: '',
-    meta: {
-      title: 'menus.help.oldVersion',
-      icon: 'ri:subway-line',
-      link: WEB_LINKS.OldVersion,
-      isIframe: false,
-      keepAlive: false
-    }
-  },
+
   {
     name: 'ChangeLog',
     path: '/change/log',
