@@ -16,149 +16,232 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
   {
-    version: 'v3.0.1',
-    title: 'bug修复、新增功能',
-    date: '2025-11-15',
+    version: 'v0.0.8-alpha',
+    title: '前端重构',
+    date: '2025-12-23',
     detail: {
       added: [
-        'ArtForm 和 ArtSearchBar 组件的 label 支持自定义渲染函数，可实现带 tooltip 等复杂标签',
-        '菜单管理表单关键字段新增 Tooltip 提示，降低用户配置门槛',
-        'iconify 新增离线图标加载模式',
-        '退出登录新增 redirect 属性，用于重新登录后跳转到对应页面',
-        '退出登录重新进入系统保留用户标签页，根据 userId 进行身份识别',
-        '双列菜单新增折叠按钮',
-        '菜单图标完善',
-        '多标签页增加图标',
-        'WebSocket 连接'
-      ],
-      changed: [
-        '完善路由配置验证机制，自动检测并提示非一级菜单的路径配置错误',
-        '顶部进度条残影优化',
-        'vite 预构建优化',
-        '圆角、边框统一',
-        '锁屏页面重新设计',
-        '退出登录菜单提前消失造成的视觉体验不好问题优化'
-      ],
-      fixed: [
-        '路由注册时不存在接口的重复请求问题',
-        '一键精简脚本打包失败的问题'
+          '前端JunoYi-Vue-ElementPlus项目重构'
       ]
     }
   },
   {
-    version: 'v3.0.0',
-    title: 'Sass 重构为 Tailwind CSS，Iconfont 替换为 Iconify，性能，目录结构，文件注释全方位优化',
-    date: '2025-11-9',
-    breakingChange: true,
+    version: 'v0.0.7-alpha',
+    title: '后端Web模块',
+    date: '2025-12-23',
     detail: {
       added: [
-        '配置管理优化：新增 setting.ts 配置文件，支持一键复制与重置系统默认设置'
+          '添加全局异常处理机制',
+          '新增全局异常处理器 ',
+          '新增认证异常体系及全局异常处理 ',
+          '新增 BaseException 抽象基类，支持领域标识和状态码',
+          '新增 AuthException 认证异常领域类，继承 BaseException',
+          '新增 LoginException 登录异常领域类，扩展认证异常',
+          '添加登录账户相关异常处理类 ',
+          '添加XSS防护过滤器和请求包装器',
       ],
       changed: [
-        '样式系统重构：Sass 全面迁移至 Tailwind CSS，提升开发效率与样式一致性',
-        '图标方案升级：Iconfont 替换为 Iconify，支持更丰富的图标库与按需加载',
-        '构建优化：完整包体积减少 1.3 MB，显著提升加载性能',
-        '路由注册重构：全面重构路由注册系统，引入面向对象设计，提高代码的可维护性、可测试性和扩展能力',
-        '架构优化：优化目录结构，职责划分更清晰，降低用户学习成本与上手难度',
-        '注释优化：统一模块注释规范，完善每一个组件介绍、功能说明与使用示例，降低用户理解成本与上手难度',
-        '性能提升：优化核心代码逻辑，提升系统运行效率',
-        '设计系统：重构颜色体系，统一 UI 视觉规范，提升界面一致性',
-        '菜单优化：细化菜单样式，优化交互体验与视觉呈现',
-        '组件重构：重构 ArtTextScroll 组件，提升性能与可维护性',
-        '响应式优化：优化 ArtForm、ArtSearchBar 栅格布局，适配多种屏幕尺寸',
-        '节日功能增强：礼花配置支持跨日期范围设置与自定义播放次数',
-        '依赖更新：升级核心依赖至最新稳定版本'
+          '重构基础异常类',
+          '移除旧的 GlobalException 类',
+          '完善用户验证逻辑中的异常类型处理  ',
+          '优化全局异常处理器功能',
       ],
       fixed: [
-        'ArtForm、ArtSearchBar 自定义组件渲染异常'
+
+      ]
+
+    }
+  },
+  {
+    version: 'v0.0.6-alpha',
+    title: '后端Security核心模块',
+    date: '2025-12-19',
+    detail: {
+      added: [
+        '添加junoyi-framework-security模块',
+        '新增各种基类：BaseController、BaseEntity、BaseException',
+        '添加 junoyi-framework-permission 权限机制封装模块',
+        '添加系统用户相关实体类和枚举',
+        '添加Sa-Token权限认证框架',
+        '新增平台类型枚举和用户平台信息实体类',
+        '添加 junoyi-framework-boot-starter 模块聚合模式',
+        '新增登录用户信息类和令牌刷新功能',
+        '添加JWT认证过滤器',
+        '添加API加密过滤器',
+        '添加令牌处理过程',
+        '添加实现JWT Token服务并重构认证流程',
+        '实现基于 Redis 的会话管理机制',
+        '新增系统认证模块基础结构',
+        '更新 SysAuthServiceImpl.java 接口，增加带 platformType 参数的 login 方法',
+        '添加支持多平台登录以及Token不同有效期配置',
+        '添加IP工具类和Servlet工具类',
+        '引入PBKDF2密码加密工具类并优化认证逻辑',
+        '添加AES和RSA加密服务及密钥管理',
+        '添加实例公钥和私钥',
+        '实现API请求响应加解密功能',
+        '添加登录失败限制和IP限制功能',
+        '添加单点登录功能支持（单点登录、多点登录配置文件切换）'
+      ],
+      changed: [
+        '优化升级JWT库版本并调整配置',
+        '优化项目结构',
+        '重构Security模块',
+        '重构 junoyi-framework-security 模块上下文管理机制',
+        '增强日志功能并优化配置',
+        '优化移出Sa-Token框架',
+        '重构JWT Token服务实现',
+        '完善会话管理与认证功能',
+        '将MyBatis-Plus版本从3.5.5升级至3.5.7',
+        '更新MyBatis-Plus starter依赖为spring-boot3-starter',
+        '更新dynamic-datasource starter依赖为spring-boot3-starter',
+        '屏蔽MyBatis Mapper扫描日志',
+        '优化 RefreshToken 为不透明格式',
+        '更新配置文件，区分 admin-web 和 front-web',
+        '更新 JwtTokenService 的平台映射',
+        '重构优化junoyi-framework-security 模块包结构和命名',
+        '引入缓存键常量并优化会话管理',
+        '优化登录失败处理逻辑（如果登录失败被锁，还继续尝试登录错误，将刷新锁定冷却时间）'
+      ],
+      fixed: [
+        '修复Spring事件兼容问题，移除SpringApplicationStartingEvent及相关适配器',
+        '修复 junoyi-framework-security 模块未加载 TokenHelper Bean 报错',
+        '修复日志系统debug无法打印输出日志bug',
+        '修复Mybatis-Plus不兼容问题bug',
+        '修复因版本不兼容导致的配置问题'
+      ]
+    }
+  },
+  {
+    version: 'v0.0.5-alpha',
+    title: 'Spring事件桥接机制',
+    date: '2025-12-16',
+    detail: {
+      added: [
+        '新增Spring事件桥接机制',
+        '新增Spring应用事件相关领域事件类',
+        '新增 SpringApplicationEvent 类，封装Spring应用事件源和命令行参数',
+        '新增 SpringApplicationReadyEvent 类，包含应用上下文和启动耗时信息',
+        '新增 SpringApplicationStartingEvent 类，封装引导上下文信息',
+        '添加 SpringApplicationReadyEventAdapter 适配器，转换Spring原生ApplicationReadyEvent',
+        '添加 SpringApplicationStartingEventAdapter 适配器，转换Spring原生ApplicationStartingEvent',
+        '新增SpringApplicationStartedEvent类，封装应用启动完成信息',
+        '添加SpringApplicationStartedEventAdapter适配器，转换Spring原生ApplicationStartedEvent',
+        '新增SpringContextClosedEvent类，用于表示Spring应用上下文关闭事件',
+        '添加SpringContextClosedEventAdapter适配器，将Spring原生ContextClosedEvent转换为系统内部事件',
+        '添加SpringApplicationContextEvent类用于封装应用上下文事件',
+        '新增SpringContextRefreshedEvent适配器类',
+        '新增SpringContextStartedEvent适配器类',
+        '新增SpringContextStoppedEvent适配器'
+      ],
+      changed: [
+        '优化Spring事件适配器以支持应用启动参数',
+        '优化SpringContextClosedEvent继承SpringApplicationContextEvent'
+      ],
+      fixed: [
+        '修复SpringContextStoppedEventAdapter中判断是否支持指定Spring事件方法'
       ],
       demo: [
-        'ArtForm、ArtSearchBar 新增 render 属性，支持自定义组件渲染',
-        'useTable hooks 新增 visible 属性，用于控制列默认是否显示'
+        '在TestEventListener中增加监听处理（测试）',
+        '测试Spring Context相关事件'
       ]
     },
-    remark:
-      '重要提示：本次升级涉及样式系统（Sass → Tailwind CSS）与图标库（Iconfont → Iconify）的底层重构，属于破坏性更新。建议新项目直接使用 v3.0，旧版本项目不建议升级。'
+    remark: 'SpringContextStartedEvent事件（Spring默认正常情况下不会触发该事件）'
   },
   {
-    version: 'v2.6.1',
-    title: 'bug修复、授权页增加主题色切换功能',
-    date: '2025-10-19',
+    version: 'v0.0.4-alpha',
+    title: 'Excel模块与事件机制',
+    date: '2025-12-13',
     detail: {
       added: [
-        '授权页增加主题色切换功能'
+        '添加junoyi-framework-excel模块',
+        '添加 @CellMerge 单元格合并注解、@ExcelDictFormat字典格式化注解、@ExcelEnumFormat枚举格式化注解',
+        '添加ExcelUtils Excel表格静态工具类',
+        '添加junoyi-framework-event模块',
+        '添加基本事件机制',
+        '添加多种事件注册机制（@EventListner注解自动扫描注册、Listener接口手动实现并手动注册）',
+        '添加异步事件（异步事件线程池）',
+        '添加事件总线触发方法（支持Spring Bean注入或静态方法直接调用，并且同时支持同步事件或异步事件）',
+        '添加module-demo模块、module-demo-api模块用测试'
       ],
       changed: [
-        '升级部分依赖兼容 tailwindcss'
+        '完成 excel 核心基础设置逻辑',
+        '优化事件机制',
+        '优化服务器端口监听器',
+        '增强事件注册于监听功能'
       ],
       fixed: [
-        '获取用户信息、获取菜单接口访问无效地址重复调用问题',
-        'ElButton circle 模式样式',
-        'ElSlect 无法通过键盘选择问题',
-        '带参数静态路由跳转登录页面问题',
-        '外部链接菜单点击选中状态'
+        '修复事件监听器事件优先级执行并非按照优先级的bug',
+        '修复包名简化逻辑导致日志名称截取问题'
       ]
     }
   },
   {
-    version: 'v2.6.0',
-    title: '代码优化、bug修复',
-    date: '2025-10-16',
-    breakingChange: true,
+    version: 'v0.0.3-alpha',
+    title: 'JSON模块与Redis模块',
+    date: '2025-12-12',
     detail: {
       added: [
-        'VsCode 推荐插件相关配置',
-        '扩展注册、密码重置页面顶部组件支持'
+        '添加junoyi-framework-json模块',
+        '添加jackson配置',
+        '添加json静态工具类',
+        '添加junoyi-framework-redis模块',
+        '添加redisson配置',
+        '添加redis key键前缀处理',
+        '添加 CacheUtils 缓存静态工具类',
+        '添加 QueueUtils 队列静态工具类',
+        '添加 RedisUtls 静态工具类，提供基于 Redisson 的 Redis 操作',
+        '添加module-system模块、module-system-api模块',
+        '添加获取系统信息接口'
       ],
       changed: [
-        '精简版本菜单数据结构，提升数据一致性',
-        '本地开发环境网络请求代理配置',
-        'ElTree 组件默认样式',
-        'ElDropdown 组件点击触发模式下的交互样式',
-        '菜单过滤逻辑',
-        '页面切换动画，提升加载速度',
-        '暗黑模式文字颜色'
-      ],
-      fixed: [
-        '静态路由自定义首页路径首次访问跳转登录页问题',
-        '退出登录时短暂跳转至 500 页的问题',
-        'v2.5.9 版本首页路由跳转配置失效问题',
-        'v2.5.9 自动导包机制导致的构建异常'
+        '优化junoyi-framework-redis模块'
       ]
     }
   },
   {
-    version: 'v2.5.9',
-    title: '代码优化',
-    date: '2025-10-12',
+    version: 'v0.0.2-alpha',
+    title: '核心模块与数据源模块',
+    date: '2025-12-11',
     detail: {
+      added: [
+        '添加junoyi-framework-core核心模块',
+        '添加常用核心工具类',
+        '添加application.yml中junoyi相关配置读取',
+        '添加HTTP协议状态常量',
+        '添加junoyi-framework-starter 框架启动核心模块',
+        '添加junoyi-framework-datasource模块',
+        '添加datasource模块中阿里数据池配置',
+        '添加多数据源处理',
+        '添加SQL美化输出',
+        '添加慢SQL'
+      ],
       changed: [
-        'views 文件目录、文件名、代码优化',
-        'useTable 分页请求字段增加全局配置 tableConfig.ts',
-        '路由配置为模块化结构',
-        '获取菜单接口使用 apifox mock 数据（需在 .env 中 将 VITE_ACCESS_MODE 设为 backend 模式）'
+        '优化框架启动（隐藏不必要的日志，添加junoyi banner，优化日志输出）',
+        '优化datasource模块',
+        '优化application.yml配置文件'
       ]
     }
   },
   {
-    version: 'v2.5.8',
-    title: '依赖升级、bug修复',
-    date: '2025-09-29',
+    version: 'v0.0.1-alpha',
+    title: '初始化项目框架',
+    date: '2025-12-08',
     detail: {
+      added: [
+        '初始化项目框架',
+        '添加日志系统junoyi-framework-log模块',
+        '添加日志格式',
+        '添加日志文件存储',
+        '添加日志静态工具类、日志工厂类',
+        '添加日志异步等多种功能更全方法',
+        '添加日志配置'
+      ],
       changed: [
-        'vue、vite、element-plus 等核心库升级',
-        'el-tag 样式优化',
-        '顶部进度条颜色优化',
-        '自定义主题配置优化',
-        'ElementPlus 自定义主题问题优化'
+        '优化日志格式'
       ],
       fixed: [
-        '富文本编辑器全屏顶栏层级问题',
-        '表格列排序组件文字益处问题',
-        '统计卡片条件判断',
-        '根路径 / 与 HOME_PAGE_PATH 同为 / 时出现的无限重定向'
+        '修复日志系统配置未读取应用bug'
       ]
-    },
-    remark: '由于项目依赖升级，node 版本需要升级到 v20.19.0 或以上'
+    }
   }
 ])
