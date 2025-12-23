@@ -16,8 +16,8 @@ export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, root)
   const { VITE_VERSION, VITE_PORT, VITE_BASE_URL, VITE_API_URL, VITE_API_PROXY_URL } = env
 
-  console.log(`🚀 API_URL = ${VITE_API_URL}`)
-  console.log(`🚀 VERSION = ${VITE_VERSION}`)
+  console.log(`API_URL = ${VITE_API_URL}`)
+  console.log(`VERSION = ${VITE_VERSION}`)
 
   return defineConfig({
     define: {
