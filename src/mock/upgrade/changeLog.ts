@@ -18,7 +18,7 @@ export const upgradeLogList = ref<UpgradeLog[]>([
   {
     version: 'v0.0.8-alpha',
     title: '前端重构',
-    date: '2025-12-23',
+    date: '2025-12-',
     detail: {
       added: [
           '前端JunoYi-Vue-ElementPlus项目重构'
