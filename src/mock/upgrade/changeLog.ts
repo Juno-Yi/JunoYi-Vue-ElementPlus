@@ -17,13 +17,38 @@ interface UpgradeLog {
 export const upgradeLogList = ref<UpgradeLog[]>([
   {
     version: 'v0.0.8-alpha',
-    title: '前端重构',
-    date: '2025-12-',
+    title: '前端重构，后端验证码机制',
+    date: '2025-12-25',
     detail: {
       added: [
-          '前端JunoYi-Vue-ElementPlus项目重构'
+          '前端JunoYi-Vue-ElementPlus项目重构',
+          '修复前端`upgrade.ts`中的字段引用',
+          '添加junoyi-framework-captcha验证码验证核心模块',
+          '添加图形化验证码',
+          '添加不支持验证码类型异常类',
+          '添加 AJ-Captcha 依赖',
+          '添加滑块验证码背景图尺寸',
+          '添加打包maven插件',
+
+      ],
+      changed: [
+          '升级SpringBoot版本为3.5.0',
+          '优化图形验证码生成',
+          '优化图形验证码字符生成逻辑',
+          '优化图形验证码数学运算模式情况生成逻辑',
+          '修改验证码图片数据格式',
+          '移出Aj-Captcha依赖',
+          '移出其他人机验证机制',
+      ],
+      fixed: [
+        '修复打包后日志模块出现自动配置异常bug',
+
+      ],
+      demo: [
+          '测试是否正常打包',
       ]
-    }
+    },
+    remark: '移出的人机验证机制为：滑动验证、点选验证、行为验证，在后续版本中推出，当前仅支持基础的图形验证（字符/数字运算）'
   },
   {
     version: 'v0.0.7-alpha',
