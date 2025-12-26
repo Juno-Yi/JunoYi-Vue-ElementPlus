@@ -179,7 +179,7 @@
       // 登录请求
       const { username, password, code, captchaId } = formData
 
-      const { token, refreshToken } = await fetchLogin({
+      const { accessToken, refreshToken } = await fetchLogin({
         captchaId,
         username,
         password,
@@ -187,12 +187,12 @@
       })
 
       // 验证token
-      if (!token) {
+      if (!accessToken) {
         throw new Error('Login failed - no token received')
       }
 
       // 存储 token 和登录状态
-      userStore.setToken(token, refreshToken)
+      userStore.setToken(accessToken, refreshToken)
       userStore.setLoginStatus(true)
 
       // 登录成功处理
