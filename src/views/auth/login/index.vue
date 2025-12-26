@@ -112,7 +112,7 @@
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchLogin } from '@/api/auth'
+  import { fetchLogin, getCaptcha } from '@/api/auth'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
   import { useSettingStore } from '@/store/modules/setting'
 
@@ -174,6 +174,7 @@
   const formRef = ref<FormInstance>()
 
   const formData = reactive({
+    captchaId: '',
     account: '',
     username: '',
     password: '',
@@ -188,8 +189,21 @@
   const loading = ref(false)
 
   onMounted(() => {
-    setupAccount('super')
+    setupAccount('super');
+    getCaptchaImage();
   })
+
+  // 获取验证码
+  const getCaptchaImage = async () => {
+    const res = await getCaptcha();
+
+    console.log("测试请求：",res);
+
+    // 图像验证码
+    // if (type === "IMAGE"){
+    //
+    // }
+  }
 
   // 设置账号
   const setupAccount = (key: AccountKey) => {

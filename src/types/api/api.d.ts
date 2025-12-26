@@ -74,6 +74,22 @@ declare namespace Api {
       refreshToken: string
     }
 
+    /**
+     * 验证码响应
+     */
+    interface CaptchaResponse {
+      captchaId: string,
+      type: string,
+      image: string,
+      backgroundImage: string,
+      sliderImage: string,
+      backgroundWidth: number,
+      backgroundHeight: number,
+      originalImage: string,
+      wordList: string,
+      expireSeconds: number
+    }
+
     /** 用户信息 */
     interface UserInfo {
       buttons: string[]
