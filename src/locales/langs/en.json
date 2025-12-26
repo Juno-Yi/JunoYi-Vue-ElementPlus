@@ -134,18 +134,12 @@
     },
     "title": "Welcome back",
     "subTitle": "Please enter your account and password to login",
-    "roles": {
-      "super": "Super Admin",
-      "admin": "Admin",
-      "user": "User"
-    },
     "placeholder": {
       "username": "Please enter your account",
       "password": "Please enter your password",
-      "slider": "Please slide to verify"
+      "captcha": "Please enter captcha"
     },
-    "sliderText": "Please slide to verify",
-    "sliderSuccessText": "Verification successful",
+    "refreshCaptcha": "Click to refresh captcha",
     "rememberPwd": "Remember password",
     "forgetPwd": "Forgot password",
     "btnText": "Login",

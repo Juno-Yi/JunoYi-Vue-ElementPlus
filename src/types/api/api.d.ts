@@ -62,10 +62,25 @@ declare namespace Api {
 
   /** 认证类型 */
   namespace Auth {
+    /** 登录平台类型 */
+    type PlatformType = 'ADMIN_WEB' | 'FRONT_DESK_WEB' | 'MINI_PROGRAM' | 'APP' | 'DESKTOP_APP'
+
     /** 登录参数 */
     interface LoginParams {
-      userName: string
+      /** 验证码ID */
+      captchaId: string
+      /** 用户名 */
+      username?: string
+      /** 邮箱 */
+      email?: string
+      /** 手机号 */
+      phonenumber?: string
+      /** 密码 */
       password: string
+      /** 验证码 */
+      code: string
+      /** 登录平台类型 */
+      platformType?: PlatformType
     }
 
     /** 登录响应 */
@@ -74,19 +89,17 @@ declare namespace Api {
       refreshToken: string
     }
 
-    /**
-     * 验证码响应
-     */
+    /** 验证码响应 */
     interface CaptchaResponse {
-      captchaId: string,
-      type: string,
-      image: string,
-      backgroundImage: string,
-      sliderImage: string,
-      backgroundWidth: number,
-      backgroundHeight: number,
-      originalImage: string,
-      wordList: string,
+      captchaId: string
+      type: string
+      image: string
+      backgroundImage: string | null
+      sliderImage: string | null
+      backgroundWidth: number | null
+      backgroundHeight: number | null
+      originalImage: string | null
+      wordList: string[] | null
       expireSeconds: number
     }
 
