@@ -16,6 +16,75 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
   {
+    version: 'v0.0.9-alpha',
+    title: '权限机制设计',
+    date: '2025-12-26',
+    detail: {
+      added: [
+          '添加访问日志功能',
+          '添加权限效果、权限类型、权限逻辑符枚举类',
+          '在application.yml中添加permission配置项，支持启用权限控制、缓存设置、超级管理员配置和默认权限组',
+          '添加@DataScope注解用于数据范围控制',
+          '添加FieldPermission注解用于字段权限控制',
+          '添加 sys_permission 系统权限节点数据表',
+          '添加 sys_perm_group 系统权限组数据表',
+          '添加 sys_group_permission 权限组-权限关联数据表',
+          '新增 DataScope 注解用于控制数据行级别访问权限',
+          '新增 FieldPermission 注解用于控制字段级别读写权限',
+          '新增 Permission 注解用于方法权限校验',
+          '新增 DataScopeType 枚举定义数据范围类型',
+          '在 LoginUser 类中添加权限节点、权限组、部门ID和超级管理员字段',
+          '为超级管理员添加权限验证的快捷路径',
+          '添加权限测试接口并更新白名单配置',
+          '添加了PermissionException基类',
+          '新增NoPermissionException和NotLoginException具体异常类',
+          '在全局异常处理器中添加对权限相关异常的专门处理',
+          '添加 sys_user_group 表用于用户权限组关联  ',
+          '添加 sys_user_perm 表用于用户独立权限管理',
+          '添加字段权限序列化',
+          '添加数据脱敏工具类',
+          '添加字段权限功能支持',
+          '新增MaskPattern枚举类定义脱敏模式',
+      ],
+
+      changed: [
+          '优化访问日志拦截器中的IP获取逻辑',
+          '移除旧的 PermissionScope 注解',
+          '重构权限系统数据库结构',
+          '重构权限上下文管理',
+          '移除 PermissionContext 和 PermissionContextHolder 类',
+          '修改 PermissionHelper 使用 Supplier 模式获取权限信息',
+          '更新 TokenAuthenticationTokenFilter 中的用户会话构建逻辑',
+          '扩展会话信息包含权限组和部门信息',
+          '优化权限匹配器',
+          '实现权限模块异常体系',
+          '实现@Permission注解功能',
+          '删除了 AccessDeniedException 的全局异常处理方法',
+          '优化@Permission，去除PermissionType',
+          '重构字段权限脱敏功能实现',
+          'Permission模块移除DataScope注解和DataScopeType枚举相关代码',
+          '重构FieldPermissionBeanSerializerModifier添加日志记录',
+          '重构FieldPermissionModule构造函数并添加模块注册日志',
+          '重构FieldPermissionSerializer调整权限检查顺序并添加调试日志',
+          '修改JacksonConfig使用modulesToInstall方法注册模块',
+          '重构MaskUtils工具类mask方法参数类型为MaskPattern',
+          '使用Jackson2ObjectMapperBuilderCustomizer注册模块',
+          '优化权限配置属性结构',
+          '优化权限模块日志输出',
+      ],
+
+      fixed: [
+          '修复FieldPermissionSerializer 中mask依旧使用String而不是MaskPattern问题',
+
+      ],
+
+      demo: [
+          '测试接口权限功能',
+          '测试字段权限功能'
+      ]
+    }
+  },
+  {
     version: 'v0.0.8-alpha',
     title: '前端重构，后端验证码机制',
     date: '2025-12-25',
@@ -48,7 +117,7 @@ export const upgradeLogList = ref<UpgradeLog[]>([
           '测试是否正常打包',
       ]
     },
-    remark: '移出的人机验证机制为：滑动验证、点选验证、行为验证，在后续版本中推出，当前仅支持基础的图形验证（字符/数字运算）'
+    remark: '移出的人机验证机制：滑动验证、点选验证、行为验证，在后续版本中推出，当前仅支持基础的图形验证（字符/数字运算）'
   },
   {
     version: 'v0.0.7-alpha',
