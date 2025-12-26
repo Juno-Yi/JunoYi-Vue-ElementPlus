@@ -128,10 +128,13 @@
   const captchaImage = ref('')
   const captchaLoading = ref(false)
 
+  // 是否自动填充登录信息
+  const autoFillLogin = import.meta.env.VITE_AUTO_FILL_LOGIN === 'true'
+
   const formData = reactive({
     captchaId: '',
-    username: '',
-    password: '',
+    username: autoFillLogin ? 'super_admin' : '',
+    password: autoFillLogin ? 'admin123' : '',
     code: '',
     rememberPassword: true
   })
