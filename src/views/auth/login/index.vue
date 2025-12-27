@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+  import { nextTick } from 'vue'
   import AppConfig from '@/config'
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
@@ -192,8 +193,14 @@
       }
 
       // 存储 token 和登录状态
+      console.log('[Login] 存储 token 前:', userStore.accessToken ? '有值' : '空')
       userStore.setToken(accessToken, refreshToken)
+      console.log('[Login] 存储 token 后:', userStore.accessToken ? '有值' : '空')
       userStore.setLoginStatus(true)
+
+      // 等待 Vue 响应式系统更新完成
+      await nextTick()
+      console.log('[Login] nextTick 后:', userStore.accessToken ? '有值' : '空')
 
       // 登录成功处理
       showLoginSuccessNotice()

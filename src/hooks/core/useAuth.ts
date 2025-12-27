@@ -8,7 +8,7 @@
  *
  * 1. 权限检查 - 检查用户是否拥有指定的权限标识
  * 2. 双模式支持 - 自动适配前端模式和后端模式的权限验证
- * 3. 前端模式 - 从用户信息中获取按钮权限列表（如 ['add', 'edit', 'delete']）
+ * 3. 前端模式 - 从用户信息中获取权限列表（如 ['*', 'user:add', 'user:edit']）
  * 4. 后端模式 - 从路由 meta 配置中获取权限列表（如 [{ authMark: 'add' }]）
  *
  * ## 使用示例
@@ -45,8 +45,8 @@ export const useAuth = () => {
   const { isFrontendMode } = useAppMode()
   const { info } = storeToRefs(userStore)
 
-  // 前端按钮权限（例如：['add', 'edit']）
-  const frontendAuthList = info.value?.buttons ?? []
+  // 前端权限列表（例如：['*', 'user.add', 'user.edit']）
+  const frontendAuthList = info.value?.permissions ?? []
 
   // 后端路由 meta 配置的权限列表（例如：[{ authMark: 'add' }]）
   const backendAuthList: AuthItem[] = Array.isArray(route.meta.authList)
@@ -61,6 +61,10 @@ export const useAuth = () => {
   const hasAuth = (auth: string): boolean => {
     // 前端模式
     if (isFrontendMode.value) {
+      // 如果有 * 权限，表示拥有所有权限
+      if (frontendAuthList.includes('*')) {
+        return true
+      }
       return frontendAuthList.includes(auth)
     }
 

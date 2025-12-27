@@ -433,12 +433,12 @@
 
   // 当前用户权限码
   const currentUserPermissions = computed(() => {
-    return userStore.info?.buttons || []
+    return userStore.info?.permissions || []
   })
 
-  // 前端模式权限列表（用户的 buttons 字段）
+  // 前端模式权限列表（用户的 permissions 字段）
   const frontendAuthList = computed(() => {
-    return userStore.info?.buttons || []
+    return userStore.info?.permissions || []
   })
 
   // 后端模式权限列表（路由 meta.authList 配置）

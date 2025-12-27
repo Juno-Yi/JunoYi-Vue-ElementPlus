@@ -3,6 +3,7 @@
  *
  * 基于用户角色控制 DOM 元素的显示和隐藏。
  * 只要用户拥有指定角色中的任意一个，元素就会显示，否则从 DOM 中移除。
+ * 超级管理员（角色ID=1）拥有所有权限。
  *
  * ## 主要功能
  *
@@ -15,30 +16,20 @@
  *
  * ```vue
  * <template>
- *   <!-- 单个角色 - 只有超级管理员可见 -->
- *   <el-button v-roles="'R_SUPER'">超级管理员功能</el-button>
+ *   <!-- 单个角色 - 只有角色ID为1的用户可见 -->
+ *   <el-button v-roles="1">超级管理员功能</el-button>
  *
- *   <!-- 多个角色 - 超级管理员或普通管理员可见 -->
- *   <el-button v-roles="['R_SUPER', 'R_ADMIN']">管理员功能</el-button>
- *
- *   <!-- 应用到任意元素 -->
- *   <div v-roles="['R_SUPER', 'R_ADMIN', 'R_USER']">
- *     所有登录用户可见的内容
- *   </div>
+ *   <!-- 多个角色 - 角色ID为1或2的用户可见 -->
+ *   <el-button v-roles="[1, 2]">管理员功能</el-button>
  * </template>
  * ```
  *
  * ## 权限逻辑
  *
  * - 用户角色从 userStore.getUserInfo.roles 获取
+ * - 超级管理员（角色ID=1）拥有所有权限
  * - 只要用户拥有指定角色中的任意一个，元素就会显示
  * - 如果用户没有任何角色或不满足条件，元素将被移除
- *
- * ## 注意事项
- *
- * - 该指令会直接移除 DOM 元素，而不是使用 v-if 隐藏
- * - 适用于基于角色的粗粒度权限控制
- * - 如需基于具体操作的细粒度权限控制，请使用 v-auth 指令
  *
  * @module directives/roles
  * @author Art Design Pro Team
@@ -48,7 +39,7 @@ import { useUserStore } from '@/store/modules/user'
 import { App, Directive, DirectiveBinding } from 'vue'
 
 interface RolesBinding extends DirectiveBinding {
-  value: string | string[]
+  value: number | number[]
 }
 
 function checkRolePermission(el: HTMLElement, binding: RolesBinding): void {
@@ -61,11 +52,16 @@ function checkRolePermission(el: HTMLElement, binding: RolesBinding): void {
     return
   }
 
+  // 超级管理员（角色ID=1）拥有所有权限
+  if (userRoles.includes(1)) {
+    return
+  }
+
   // 确保指令值为数组格式
   const requiredRoles = Array.isArray(binding.value) ? binding.value : [binding.value]
 
   // 检查用户是否具有所需角色之一
-  const hasPermission = requiredRoles.some((role: string) => userRoles.includes(role))
+  const hasPermission = requiredRoles.some((role: number) => userRoles.includes(role))
 
   // 如果没有权限，安全地移除元素
   if (!hasPermission) {

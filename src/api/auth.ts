@@ -28,6 +28,6 @@ export function getCaptcha() {
  */
 export function fetchGetUserInfo() {
   return request.get<Api.Auth.UserInfo>({
-    url: '/user/info'
+    url: '/auth/info'
   })
 }

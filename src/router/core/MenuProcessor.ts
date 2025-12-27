@@ -64,10 +64,14 @@ export class MenuProcessor {
   /**
    * 根据角色过滤菜单
    */
-  private filterMenuByRoles(menu: AppRouteRecord[], roles: string[]): AppRouteRecord[] {
+  private filterMenuByRoles(menu: AppRouteRecord[], roles: number[]): AppRouteRecord[] {
+    // 超级管理员（角色ID=1）拥有所有权限，不过滤
+    const isSuperAdmin = roles.includes(1)
+
     return menu.reduce((acc: AppRouteRecord[], item) => {
       const itemRoles = item.meta?.roles
-      const hasPermission = !itemRoles || itemRoles.some((role) => roles?.includes(role))
+      // 超级管理员或没有配置roles或用户角色匹配
+      const hasPermission = isSuperAdmin || !itemRoles || itemRoles.some((role) => roles?.includes(role))
 
       if (hasPermission) {
         const filteredItem = { ...item }

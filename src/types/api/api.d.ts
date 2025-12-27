@@ -105,12 +105,22 @@ declare namespace Api {
 
     /** 用户信息 */
     interface UserInfo {
-      buttons: string[]
-      roles: string[]
+      /** 用户ID */
       userId: number
+      /** 用户名 */
       userName: string
+      /** 用户昵称 */
+      nickName: string
+      /** 邮箱 */
       email: string
-      avatar?: string
+      /** 头像 */
+      avatar: string
+      /** 权限列表 */
+      permissions: string[]
+      /** 角色ID列表 */
+      roles: number[]
+      /** 部门ID列表 */
+      depts: number[]
     }
   }
 

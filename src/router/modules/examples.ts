@@ -56,7 +56,7 @@ export const examplesRoutes: AppRouteRecord = {
             title: 'menus.examples.permission.pageVisibility',
             icon: 'ri:user-3-line',
             keepAlive: true,
-            roles: ['R_SUPER']
+            roles: [1]
           }
         }
       ]

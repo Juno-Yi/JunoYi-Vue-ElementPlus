@@ -64,8 +64,16 @@ const axiosInstance = axios.create({
 /** 请求拦截器 */
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
-    const { accessToken } = useUserStore()
-    if (accessToken) request.headers.set('Authorization', accessToken)
+    const userStore = useUserStore()
+    // 直接访问 store 属性获取最新值（避免解构导致的响应式丢失）
+    const accessToken = userStore.accessToken
+    console.log('[HTTP] 请求拦截器 - accessToken:', accessToken ? '有值' : '空', 'URL:', request.url)
+    if (accessToken) {
+      // 添加 Bearer 前缀（如果 token 本身不包含）
+      const token = accessToken.startsWith('Bearer ') ? accessToken : `Bearer ${accessToken}`
+      request.headers.set('Authorization', token)
+      console.log('[HTTP] 已设置 Authorization 头')
+    }
 
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
       request.headers.set('Content-Type', 'application/json')
