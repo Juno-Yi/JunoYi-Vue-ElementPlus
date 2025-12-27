@@ -32,10 +32,10 @@
             <div class="flex items-start mb-3 last:mb-0">
               <span class="min-w-30 font-semibold">权限码：</span>
               <div class="flex flex-wrap gap-2">
-                <ElTag v-for="button in currentUser.buttons" :key="button" size="small" type="info">
-                  {{ button }}
+                <ElTag v-for="permission in currentUser.permissions" :key="permission" size="small" type="info">
+                  {{ permission }}
                 </ElTag>
-                <span v-if="!currentUser.buttons?.length" class="italic text-g-500">无权限码</span>
+                <span v-if="!currentUser.permissions?.length" class="italic text-g-500">无权限码</span>
               </div>
             </div>
           </div>
@@ -136,26 +136,23 @@
     }
   ])
 
-  // 获取角色标签类型
-  const getRoleTagType = (role?: string): 'info' | 'warning' | 'primary' | 'success' | 'danger' => {
-    if (!role) return 'info'
-    const roleMap: Record<string, 'info' | 'warning' | 'primary' | 'success' | 'danger'> = {
-      R_SUPER: 'warning',
-      R_ADMIN: 'primary',
-      R_USER: 'success'
-    }
-    return roleMap[role] || 'info'
+  // 获取角色标签类型（基于角色ID）
+  const getRoleTagType = (roleId?: number): 'info' | 'warning' | 'primary' | 'success' | 'danger' => {
+    if (!roleId) return 'info'
+    // 角色ID 1 = 超级管理员
+    if (roleId === 1) return 'warning'
+    if (roleId === 2) return 'primary'
+    return 'success'
   }
 
-  // 获取角色显示名称
-  const getRoleDisplayName = (role?: string): string => {
-    if (!role) return '未知角色'
-    const roleMap: Record<string, string> = {
-      R_SUPER: '超级管理员',
-      R_ADMIN: '管理员',
-      R_USER: '普通用户'
-    }
-    return roleMap[role] || '未知角色'
+  // 获取角色显示名称（基于角色ID）
+  const getRoleDisplayName = (roleId?: number): string => {
+    if (!roleId) return '未知角色'
+    // 角色ID 1 = 超级管理员
+    if (roleId === 1) return '超级管理员'
+    if (roleId === 2) return '管理员'
+    if (roleId > 0) return '普通用户'
+    return '未知角色'
   }
 
   /**
@@ -178,18 +175,20 @@
       switching.value = true
 
       // 模拟登录请求
-      const { token, refreshToken } = await fetchLogin({
-        userName: account.userName,
-        password: account.password
+      const { accessToken, refreshToken } = await fetchLogin({
+        captchaId: '',
+        username: account.userName,
+        password: account.password,
+        code: ''
       })
 
       // 验证token
-      if (!token) {
+      if (!accessToken) {
         throw new Error('Login failed - no token received')
       }
 
       // 存储token和用户信息
-      userStore.setToken(token, refreshToken)
+      userStore.setToken(accessToken, refreshToken)
       const userInfo = await fetchGetUserInfo()
       userStore.setUserInfo(userInfo)
 

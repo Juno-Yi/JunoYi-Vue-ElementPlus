@@ -28,7 +28,7 @@
               </p>
               <p class="my-1 text-sm text-g-700">
                 用户角色：
-                <ElTag type="warning">{{ getRoleDisplayName(currentUser.roles?.[0] || '') }}</ElTag>
+                <ElTag type="warning">{{ getRoleDisplayName(currentUser.roles?.[0] ?? 0) }}</ElTag>
               </p>
             </div>
           </div>
@@ -243,13 +243,12 @@
   // 当前用户信息
   const currentUser = computed(() => userStore.info)
 
-  // 获取角色显示名称
-  const getRoleDisplayName = (role: string) => {
-    const roleMap: Record<string, string> = {
-      R_SUPER: '超级管理员',
-      R_ADMIN: '管理员',
-      R_USER: '普通用户'
-    }
-    return roleMap[role] || '未知角色'
+  // 获取角色显示名称（基于角色ID）
+  const getRoleDisplayName = (roleId: number) => {
+    // 角色ID 1 = 超级管理员
+    if (roleId === 1) return '超级管理员'
+    if (roleId === 2) return '管理员'
+    if (roleId > 0) return '普通用户'
+    return '未知角色'
   }
 </script>

@@ -426,9 +426,9 @@
   // 动态功能状态
   const dynamicFeatureEnabled = ref(false)
 
-  // 当前用户角色
+  // 当前用户角色ID
   const currentUserRole = computed(() => {
-    return userStore.info?.roles?.[0] || ''
+    return userStore.info?.roles?.[0] ?? 0
   })
 
   // 当前用户权限码
@@ -481,24 +481,21 @@
     }
   ])
 
-  // 获取角色标签类型
-  const getRoleTagType = (role: string): 'primary' | 'success' | 'info' | 'warning' | 'danger' => {
-    const roleMap: Record<string, 'primary' | 'success' | 'info' | 'warning' | 'danger'> = {
-      R_SUPER: 'warning',
-      R_ADMIN: 'primary',
-      R_USER: 'success'
-    }
-    return roleMap[role] || 'info'
+  // 获取角色标签类型（基于角色ID）
+  const getRoleTagType = (roleId: number): 'primary' | 'success' | 'info' | 'warning' | 'danger' => {
+    // 角色ID 1 = 超级管理员
+    if (roleId === 1) return 'warning'
+    if (roleId === 2) return 'primary'
+    return 'success'
   }
 
-  // 获取角色显示名称
-  const getRoleDisplayName = (role: string) => {
-    const roleMap: Record<string, string> = {
-      R_SUPER: '超级管理员',
-      R_ADMIN: '管理员',
-      R_USER: '普通用户'
-    }
-    return roleMap[role] || '未知角色'
+  // 获取角色显示名称（基于角色ID）
+  const getRoleDisplayName = (roleId: number) => {
+    // 角色ID 1 = 超级管理员
+    if (roleId === 1) return '超级管理员'
+    if (roleId === 2) return '管理员'
+    if (roleId > 0) return '普通用户'
+    return '未知角色'
   }
 
   // 处理发布操作
