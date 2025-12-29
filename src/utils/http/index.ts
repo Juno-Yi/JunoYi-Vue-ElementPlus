@@ -70,14 +70,10 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
     const userStore = useUserStore()
-    // 直接访问 store 属性获取最新值（避免解构导致的响应式丢失）
     const accessToken = userStore.accessToken
-    console.log('[HTTP] 请求拦截器 - accessToken:', accessToken ? '有值' : '空', 'URL:', request.url)
     if (accessToken) {
-      // 添加 Bearer 前缀（如果 token 本身不包含）
       const token = accessToken.startsWith('Bearer ') ? accessToken : `Bearer ${accessToken}`
       request.headers.set('Authorization', token)
-      console.log('[HTTP] 已设置 Authorization 头')
     }
 
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
@@ -93,73 +89,92 @@ axiosInstance.interceptors.request.use(
   }
 )
 
+/**
+ * 尝试刷新 Token
+ * @param originalRequest 原始请求配置
+ * @returns 刷新成功后重试的请求 Promise
+ */
+async function tryRefreshToken(originalRequest: ExtendedAxiosRequestConfig): Promise<AxiosResponse | null> {
+  const userStore = useUserStore()
+  const currentRefreshToken = userStore.refreshToken
+
+  if (!currentRefreshToken) return null
+
+  // 如果正在刷新，将请求加入队列等待
+  if (isRefreshing) {
+    return new Promise((resolve) => {
+      refreshSubscribers.push((newToken: string) => {
+        originalRequest.headers = originalRequest.headers || {}
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+        resolve(axiosInstance.request(originalRequest))
+      })
+    })
+  }
+
+  originalRequest._retry = true
+  isRefreshing = true
+
+  try {
+    const response = await axios.post<BaseResponse<{ accessToken: string; refreshToken: string }>>(
+      `${VITE_API_URL}/auth/refresh`,
+      null,
+      { params: { refreshToken: currentRefreshToken } }
+    )
+
+    if (response.data.code !== ApiStatus.success) {
+      throw new Error(response.data.msg || response.data.message || 'Token 刷新失败')
+    }
+
+    const { accessToken, refreshToken } = response.data.data
+    userStore.setToken(accessToken, refreshToken)
+
+    // 通知所有等待的请求
+    refreshSubscribers.forEach((callback) => callback(accessToken))
+    refreshSubscribers = []
+
+    // 重试原请求
+    originalRequest.headers = originalRequest.headers || {}
+    originalRequest.headers['Authorization'] = `Bearer ${accessToken}`
+    return axiosInstance.request(originalRequest)
+  } catch {
+    refreshSubscribers = []
+    return null
+  } finally {
+    isRefreshing = false
+  }
+}
+
 /** 响应拦截器 */
 axiosInstance.interceptors.response.use(
-  (response: AxiosResponse<BaseResponse>) => {
+  async (response: AxiosResponse<BaseResponse>) => {
     const { code, msg, message } = response.data
     const responseMsg = msg || message
+
     if (code === ApiStatus.success) return response
+
+    // 处理业务层面的 401
     if (code === ApiStatus.unauthorized) {
-      // 401 错误交给下面的 error 处理器统一处理
-      return Promise.reject(createHttpError(responseMsg || $t('httpMsg.unauthorized'), code))
+      const originalRequest = response.config as ExtendedAxiosRequestConfig
+      if (!originalRequest._retry) {
+        const retryResponse = await tryRefreshToken(originalRequest)
+        if (retryResponse) return retryResponse
+        handleUnauthorizedError(responseMsg)
+      }
+      throw createHttpError(responseMsg || $t('httpMsg.unauthorized'), code)
     }
+
     throw createHttpError(responseMsg || $t('httpMsg.requestFailed'), code)
   },
   async (error) => {
     const originalRequest = error.config as ExtendedAxiosRequestConfig
+    const httpStatus = error.response?.status
+    const errorMsg = error.response?.data?.msg || error.response?.data?.message
 
-    // 处理 401 错误 - 尝试刷新 Token
-    if (error.response?.status === ApiStatus.unauthorized && !originalRequest._retry) {
-      const userStore = useUserStore()
-      const currentRefreshToken = userStore.refreshToken
-
-      // 如果有 refreshToken，尝试刷新
-      if (currentRefreshToken) {
-        // 如果正在刷新，将请求加入队列等待
-        if (isRefreshing) {
-          return new Promise((resolve) => {
-            refreshSubscribers.push((newToken: string) => {
-              originalRequest.headers = originalRequest.headers || {}
-              originalRequest.headers['Authorization'] = `Bearer ${newToken}`
-              resolve(axiosInstance.request(originalRequest))
-            })
-          })
-        }
-
-        originalRequest._retry = true
-        isRefreshing = true
-
-        try {
-          // 调用刷新 Token 接口
-          const response = await axios.post<BaseResponse<{ accessToken: string; refreshToken: string }>>(
-            `${VITE_API_URL}/auth/refresh`,
-            null,
-            { params: { refreshToken: currentRefreshToken } }
-          )
-
-          const { accessToken, refreshToken } = response.data.data
-          userStore.setToken(accessToken, refreshToken)
-
-          // 通知所有等待的请求
-          refreshSubscribers.forEach((callback) => callback(accessToken))
-          refreshSubscribers = []
-
-          // 重试原请求
-          originalRequest.headers = originalRequest.headers || {}
-          originalRequest.headers['Authorization'] = `Bearer ${accessToken}`
-          return axiosInstance.request(originalRequest)
-        } catch (refreshError) {
-          // 刷新失败，清空队列并退出登录
-          refreshSubscribers = []
-          handleUnauthorizedError()
-          return Promise.reject(refreshError)
-        } finally {
-          isRefreshing = false
-        }
-      } else {
-        // 没有 refreshToken，直接退出登录
-        handleUnauthorizedError()
-      }
+    // 处理 HTTP 401
+    if (httpStatus === ApiStatus.unauthorized && !originalRequest._retry) {
+      const retryResponse = await tryRefreshToken(originalRequest)
+      if (retryResponse) return retryResponse
+      handleUnauthorizedError(errorMsg)
     }
 
     return Promise.reject(handleError(error))
@@ -172,20 +187,14 @@ function createHttpError(message: string, code: number) {
 }
 
 /** 处理401错误（带防抖） */
-function handleUnauthorizedError(message?: string): never {
-  const error = createHttpError(message || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
-
+function handleUnauthorizedError(message?: string): void {
   if (!isUnauthorizedErrorShown) {
     isUnauthorizedErrorShown = true
-    logOut()
-
-    unauthorizedTimer = setTimeout(resetUnauthorizedError, UNAUTHORIZED_DEBOUNCE_TIME)
-
+    const error = createHttpError(message || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
     showError(error, true)
-    throw error
+    logOut()
+    unauthorizedTimer = setTimeout(resetUnauthorizedError, UNAUTHORIZED_DEBOUNCE_TIME)
   }
-
-  throw error
 }
 
 /** 重置401防抖状态 */
