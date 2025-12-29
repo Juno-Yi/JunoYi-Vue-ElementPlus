@@ -234,142 +234,20 @@ async function remove(targetPath: string, index: number) {
   }
 }
 
-// 清理路由模块
+// 清理路由模块目录（后端路由模式下，前端路由模块已不再使用）
 async function cleanRouteModules() {
   const modulesPath = path.resolve(process.cwd(), 'src/router/modules')
 
   try {
-    // 删除演示相关的路由模块
-    const modulesToRemove = [
-      'template.ts',
-      'widgets.ts',
-      'examples.ts',
-      'article.ts',
-      'safeguard.ts',
-      'help.ts'
-    ]
-
-    for (const module of modulesToRemove) {
-      const modulePath = path.join(modulesPath, module)
-      try {
-        await fs.rm(modulePath, { force: true })
-      } catch {
-        // 文件不存在时忽略错误
-      }
+    // 检查目录是否存在
+    try {
+      await fs.access(modulesPath)
+      // 删除整个 modules 目录
+      await fs.rm(modulesPath, { recursive: true, force: true })
+      console.log(`     ${icons.success} ${fmt.success('清理路由模块目录完成（已使用后端路由模式）')}`)
+    } catch {
+      console.log(`     ${icons.info} ${fmt.info('路由模块目录已不存在，跳过清理')}`)
     }
-
-    // 重写 dashboard.ts - 只保留 console
-    const dashboardContent = `import { AppRouteRecord } from '@/types/router'
-
-export const dashboardRoutes: AppRouteRecord = {
-  name: 'Dashboard',
-  path: '/dashboard',
-  component: '/index/index',
-  meta: {
-    title: 'menus.dashboard.title',
-    icon: 'ri:pie-chart-line',
-    roles: ['R_SUPER', 'R_ADMIN']
-  },
-  children: [
-    {
-      path: 'console',
-      name: 'Console',
-      component: '/dashboard/console',
-      meta: {
-        title: 'menus.dashboard.console',
-        keepAlive: false,
-        fixedTab: true
-      }
-    }
-  ]
-}
-`
-    await fs.writeFile(path.join(modulesPath, 'dashboard.ts'), dashboardContent, 'utf-8')
-
-    // 重写 system.ts - 移除 nested 嵌套菜单
-    const systemContent = `import { AppRouteRecord } from '@/types/router'
-
-export const systemRoutes: AppRouteRecord = {
-  path: '/system',
-  name: 'System',
-  component: '/index/index',
-  meta: {
-    title: 'menus.system.title',
-    icon: 'ri:user-3-line',
-    roles: ['R_SUPER', 'R_ADMIN']
-  },
-  children: [
-    {
-      path: 'user',
-      name: 'User',
-      component: '/system/user',
-      meta: {
-        title: 'menus.system.user',
-        keepAlive: true,
-        roles: ['R_SUPER', 'R_ADMIN']
-      }
-    },
-    {
-      path: 'role',
-      name: 'Role',
-      component: '/system/role',
-      meta: {
-        title: 'menus.system.role',
-        keepAlive: true,
-        roles: ['R_SUPER']
-      }
-    },
-    {
-      path: 'user-center',
-      name: 'UserCenter',
-      component: '/system/user-center',
-      meta: {
-        title: 'menus.system.userCenter',
-        isHide: true,
-        keepAlive: true,
-        isHideTab: true
-      }
-    },
-    {
-      path: 'menu',
-      name: 'Menus',
-      component: '/system/menu',
-      meta: {
-        title: 'menus.system.menu',
-        keepAlive: true,
-        roles: ['R_SUPER'],
-        authList: [
-          { title: '新增', authMark: 'add' },
-          { title: '编辑', authMark: 'edit' },
-          { title: '删除', authMark: 'delete' }
-        ]
-      }
-    }
-  ]
-}
-`
-    await fs.writeFile(path.join(modulesPath, 'system.ts'), systemContent, 'utf-8')
-
-    // 重写 index.ts - 只导入保留的模块
-    const indexContent = `import { AppRouteRecord } from '@/types/router'
-import { dashboardRoutes } from './dashboard'
-import { systemRoutes } from './system'
-import { resultRoutes } from './result'
-import { exceptionRoutes } from './exception'
-
-/**
- * 导出所有模块化路由
- */
-export const routeModules: AppRouteRecord[] = [
-  dashboardRoutes,
-  systemRoutes,
-  resultRoutes,
-  exceptionRoutes
-]
-`
-    await fs.writeFile(path.join(modulesPath, 'index.ts'), indexContent, 'utf-8')
-
-    console.log(`     ${icons.success} ${fmt.success('清理路由模块完成')}`)
   } catch (err) {
     console.log(`     ${icons.error} ${fmt.error('清理路由模块失败')}`)
     console.log(`     ${fmt.dim('错误详情: ' + err)}`)
@@ -651,8 +529,8 @@ async function showCleanupWarning() {
     },
     {
       icon: icons.code,
-      name: '路由模块文件',
-      desc: '删除演示路由模块，只保留核心模块（dashboard、system、result、exception）',
+      name: '路由模块目录',
+      desc: '删除前端路由模块目录（已使用后端路由模式）',
       color: theme.primary
     },
     {
