@@ -13,6 +13,16 @@ export function fetchLogin(params: Api.Auth.LoginParams) {
 }
 
 /**
+ * 退出登录
+ * @returns 退出响应
+ */
+export function fetchLogout() {
+  return request.post<void>({
+    url: '/auth/logout'
+  })
+}
+
+/**
  * 获取验证码
  * @returns 验证码响应
  */
