@@ -5,7 +5,7 @@
  * ## 主要功能
  *
  * - 请求/响应拦截器（自动添加 Token、统一错误处理）
- * - 401 未授权自动登出（带防抖机制）
+ * - 401 未授权自动刷新 Token（带防抖机制）
  * - 请求失败自动重试（可配置）
  * - 统一的成功/错误消息提示
  * - 支持 GET/POST/PUT/DELETE 等常用方法
@@ -32,10 +32,15 @@ const UNAUTHORIZED_DEBOUNCE_TIME = 3000
 let isUnauthorizedErrorShown = false
 let unauthorizedTimer: NodeJS.Timeout | null = null
 
+/** Token 刷新状态 */
+let isRefreshing = false
+let refreshSubscribers: Array<(token: string) => void> = []
+
 /** 扩展 AxiosRequestConfig */
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   showErrorMessage?: boolean
   showSuccessMessage?: boolean
+  _retry?: boolean // 标记是否为重试请求
 }
 
 const { VITE_API_URL, VITE_WITH_CREDENTIALS } = import.meta.env
@@ -94,11 +99,69 @@ axiosInstance.interceptors.response.use(
     const { code, msg, message } = response.data
     const responseMsg = msg || message
     if (code === ApiStatus.success) return response
-    if (code === ApiStatus.unauthorized) handleUnauthorizedError(responseMsg)
+    if (code === ApiStatus.unauthorized) {
+      // 401 错误交给下面的 error 处理器统一处理
+      return Promise.reject(createHttpError(responseMsg || $t('httpMsg.unauthorized'), code))
+    }
     throw createHttpError(responseMsg || $t('httpMsg.requestFailed'), code)
   },
-  (error) => {
-    if (error.response?.status === ApiStatus.unauthorized) handleUnauthorizedError()
+  async (error) => {
+    const originalRequest = error.config as ExtendedAxiosRequestConfig
+
+    // 处理 401 错误 - 尝试刷新 Token
+    if (error.response?.status === ApiStatus.unauthorized && !originalRequest._retry) {
+      const userStore = useUserStore()
+      const currentRefreshToken = userStore.refreshToken
+
+      // 如果有 refreshToken，尝试刷新
+      if (currentRefreshToken) {
+        // 如果正在刷新，将请求加入队列等待
+        if (isRefreshing) {
+          return new Promise((resolve) => {
+            refreshSubscribers.push((newToken: string) => {
+              originalRequest.headers = originalRequest.headers || {}
+              originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+              resolve(axiosInstance.request(originalRequest))
+            })
+          })
+        }
+
+        originalRequest._retry = true
+        isRefreshing = true
+
+        try {
+          // 调用刷新 Token 接口
+          const response = await axios.post<BaseResponse<{ accessToken: string; refreshToken: string }>>(
+            `${VITE_API_URL}/auth/refresh`,
+            null,
+            { params: { refreshToken: currentRefreshToken } }
+          )
+
+          const { accessToken, refreshToken } = response.data.data
+          userStore.setToken(accessToken, refreshToken)
+
+          // 通知所有等待的请求
+          refreshSubscribers.forEach((callback) => callback(accessToken))
+          refreshSubscribers = []
+
+          // 重试原请求
+          originalRequest.headers = originalRequest.headers || {}
+          originalRequest.headers['Authorization'] = `Bearer ${accessToken}`
+          return axiosInstance.request(originalRequest)
+        } catch (refreshError) {
+          // 刷新失败，清空队列并退出登录
+          refreshSubscribers = []
+          handleUnauthorizedError()
+          return Promise.reject(refreshError)
+        } finally {
+          isRefreshing = false
+        }
+      } else {
+        // 没有 refreshToken，直接退出登录
+        handleUnauthorizedError()
+      }
+    }
+
     return Promise.reject(handleError(error))
   }
 )

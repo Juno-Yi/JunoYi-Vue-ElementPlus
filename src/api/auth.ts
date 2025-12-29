@@ -23,6 +23,18 @@ export function fetchLogout() {
 }
 
 /**
+ * 刷新 Token
+ * @param refreshToken 刷新令牌
+ * @returns 新的 accessToken 和 refreshToken
+ */
+export function fetchRefreshToken(refreshToken: string) {
+  return request.post<Api.Auth.LoginResponse>({
+    url: '/auth/refresh',
+    params: { refreshToken }
+  })
+}
+
+/**
  * 获取验证码
  * @returns 验证码响应
  */
