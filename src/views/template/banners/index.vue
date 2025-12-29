@@ -10,8 +10,8 @@
       </ElCol>
       <ElCol :xs="24" :sm="12" :md="12" class="mb-5">
         <ArtBasicBanner
-          title="欢迎使用 Art Design Pro"
-          subtitle="基于 Vue 3 + TypeScript + Element Plus 构建的现代化管理系统。"
+          title="欢迎使用 JunoYi 框架"
+          subtitle="基于 Java21 + SpringBoot3 + MyBaitsPlus 构建的现代化后台管理系统。"
           titleColor="#333"
           subtitleColor="#666"
           boxStyle="!bg-[#D4F1F7]"
