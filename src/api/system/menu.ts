@@ -62,14 +62,3 @@ export function deleteMenu(id: number | string) {
   })
 }
 
-/**
- * 批量删除菜单
- */
-export function deleteMenuBatch(ids: (number | string)[]) {
-  return request.del<void>({
-    url: '/system/menu/batch',
-    data: ids,
-    showSuccessMessage: true
-  })
-}
-

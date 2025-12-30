@@ -55,7 +55,7 @@
   import { usePermission } from '@/hooks/core/usePermission'
   import MenuDialog from './modules/menu-dialog.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { fetchMenuTree } from '@/api/system/menu'
+  import { fetchMenuTree, deleteMenu } from '@/api/system/menu'
 
   defineOptions({ name: 'Menus' })
 
@@ -396,19 +396,24 @@
    */
   const handleDeleteMenu = async (row: Api.System.MenuVO): Promise<void> => {
     const title = formatMenuTitle(row.title)
+    const hasChildren = row.children && row.children.length > 0
+    
+    // 如果有子菜单，提示用户
+    const message = hasChildren 
+      ? `菜单「${title}」下有子菜单，确定要删除吗？删除后子菜单也会被删除，且无法恢复`
+      : `确定要删除菜单「${title}」吗？删除后无法恢复`
+    
     try {
-      await ElMessageBox.confirm(`确定要删除菜单「${title}」吗？删除后无法恢复`, '提示', {
+      await ElMessageBox.confirm(message, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
-      // TODO: 调用删除API
-      ElMessage.success('删除成功')
+      
+      await deleteMenu(row.id)
       getMenuList()
     } catch (error) {
-      if (error !== 'cancel') {
-        ElMessage.error('删除失败')
-      }
+      // 用户取消操作，不做处理
     }
   }
 
