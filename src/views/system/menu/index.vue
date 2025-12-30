@@ -54,11 +54,15 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
+  import { usePermission } from '@/hooks/core/usePermission'
   import MenuDialog from './modules/menu-dialog.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
   import { fetchMenuTree } from '@/api/system/menu'
 
   defineOptions({ name: 'Menus' })
+
+  // 权限
+  const { hasPermission } = usePermission()
 
   // 状态管理
   const loading = ref(false)
@@ -243,16 +247,24 @@
       headerAlign: 'center',
       fixed: 'right',
       formatter: (row: Api.System.MenuVO) => {
-        return h('div', { style: 'text-align: center' }, [
-          h(ArtButtonTable, {
-            type: 'edit',
-            onClick: () => handleEditMenu(row)
-          }),
-          h(ArtButtonTable, {
-            type: 'delete',
-            onClick: () => handleDeleteMenu(row)
-          })
-        ])
+        const buttons = []
+        if (hasPermission('system.menu.edit')) {
+          buttons.push(
+            h(ArtButtonTable, {
+              type: 'edit',
+              onClick: () => handleEditMenu(row)
+            })
+          )
+        }
+        if (hasPermission('system.menu.delete')) {
+          buttons.push(
+            h(ArtButtonTable, {
+              type: 'delete',
+              onClick: () => handleDeleteMenu(row)
+            })
+          )
+        }
+        return buttons.length ? h('div', { style: 'text-align: center' }, buttons) : '-'
       }
     }
   ])
