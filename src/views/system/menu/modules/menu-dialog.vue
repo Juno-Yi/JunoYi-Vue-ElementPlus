@@ -25,6 +25,23 @@
           <ElRadioButton :value="0">目录</ElRadioButton>
         </ElRadioGroup>
       </template>
+      <template #parentId>
+        <ElTreeSelect
+          v-model="form.parentId"
+          :data="parentMenuOptions"
+          node-key="id"
+          :props="{ label: 'title', children: 'children' }"
+          :render-after-expand="false"
+          check-strictly
+          clearable
+          default-expand-all
+          placeholder="选择父级目录（不选则为一级）"
+          style="width: 100%"
+        />
+      </template>
+      <template #isExternalLink>
+        <ElSwitch v-model="isExternalLink" />
+      </template>
     </ArtForm>
 
     <template #footer>
@@ -38,12 +55,13 @@
 
 <script setup lang="ts">
   import type { FormRules } from 'element-plus'
-  import { ElIcon, ElTooltip } from 'element-plus'
+  import { ElIcon, ElTooltip, ElSwitch, ElTreeSelect } from 'element-plus'
   import { QuestionFilled } from '@element-plus/icons-vue'
   import type { FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtForm from '@/components/core/forms/art-form/index.vue'
   import { useWindowSize } from '@vueuse/core'
-  import { addMenu, updateMenu } from '@/api/system/menu'
+  import { addMenu, updateMenu, fetchMenuTree } from '@/api/system/menu'
+  import { formatMenuTitle } from '@/utils/router'
 
   const { width } = useWindowSize()
 
@@ -82,7 +100,8 @@
   const formRef = ref()
   const isEdit = ref(false)
   const submitting = ref(false)
-  const isExternalLink = ref(false) // 外链模式
+  const isExternalLink = ref(false)
+  const menuTreeData = ref<Api.System.MenuVO[]>([])
 
   // 表单数据
   const form = reactive<Api.System.MenuDTO>({
@@ -109,6 +128,15 @@
     remark: ''
   })
 
+  // 是否是一级菜单（没有父级）
+  const isTopLevel = computed(() => !form.parentId || form.parentId === 0)
+
+  // 是否是目录类型
+  const isDirectory = computed(() => form.menuType === 0)
+
+  // 类型文本
+  const typeLabel = computed(() => isDirectory.value ? '目录' : '菜单')
+
   // 动态校验规则
   const rules = computed<FormRules>(() => ({
     title: [
@@ -117,17 +145,59 @@
     ],
     path: isExternalLink.value ? [] : [{ required: true, message: '请输入路由地址', trigger: 'blur' }],
     link: isExternalLink.value ? [{ required: true, message: '请输入外链地址', trigger: 'blur' }] : [],
-    name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }]
+    name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
+    // 菜单类型（非目录）组件路径必填
+    component: isDirectory.value ? [] : [{ required: true, message: '请输入组件路径', trigger: 'blur' }]
   }))
 
   // Switch 组件的 span
   const switchSpan = computed(() => (width.value < 640 ? 12 : 6))
 
-  // 是否是目录类型
-  const isDirectory = computed(() => form.menuType === 0)
+  /**
+   * 处理菜单树数据，格式化标题并过滤只保留目录
+   */
+  const buildParentOptions = (list: Api.System.MenuVO[], excludeId?: number): any[] => {
+    const result: any[] = []
+    
+    for (const item of list) {
+      // 排除当前编辑的菜单
+      if (item.id === excludeId) continue
+      
+      // 只保留目录类型 (menuType === 0)
+      if (item.menuType === 0) {
+        const node: any = {
+          id: item.id,
+          title: formatMenuTitle(item.title),
+          children: item.children?.length ? buildParentOptions(item.children, excludeId) : undefined
+        }
+        // 如果没有子节点，删除 children 属性
+        if (!node.children?.length) {
+          delete node.children
+        }
+        result.push(node)
+      }
+    }
+    
+    return result
+  }
 
-  // 类型文本
-  const typeLabel = computed(() => isDirectory.value ? '目录' : '菜单')
+  // 父级菜单选项（只显示目录，树状结构）
+  const parentMenuOptions = computed(() => {
+    const editId = isEdit.value ? props.editData?.id : undefined
+    return buildParentOptions(menuTreeData.value, editId)
+  })
+
+  /**
+   * 加载菜单树数据
+   */
+  const loadMenuTree = async () => {
+    try {
+      const list = await fetchMenuTree()
+      menuTreeData.value = list || []
+    } catch (error) {
+      console.error('获取菜单树失败:', error)
+    }
+  }
 
   /**
    * 表单项配置
@@ -137,6 +207,7 @@
     if (isDirectory.value) {
       return [
         { label: '类型', key: 'menuType', span: 24 },
+        { label: '父级目录', key: 'parentId', span: 24 },
         { label: '目录名称', key: 'title', type: 'input', props: { placeholder: '请输入目录名称' } },
         {
           label: createLabelTooltip(
@@ -147,7 +218,19 @@
           type: 'input',
           props: { placeholder: '如：/system 或 user' }
         },
+        {
+          label: createLabelTooltip('路由名称', '路由的唯一标识'),
+          key: 'name',
+          type: 'input',
+          props: { placeholder: '如：Demo' }
+        },
         { label: '图标', key: 'icon', type: 'input', props: { placeholder: '如：ri:user-line' } },
+        {
+          label: '权限标识',
+          key: 'permission',
+          type: 'input',
+          props: { placeholder: '如：system.demo' }
+        },
         {
           label: '排序',
           key: 'sort',
@@ -162,11 +245,11 @@
     // 菜单类型：完整表单
     const items: FormItem[] = [
       { label: '类型', key: 'menuType', span: 24 },
-      { label: '菜单名称', key: 'title', type: 'input', props: { placeholder: '请输入菜单名称' } },
-      { label: '外链模式', key: 'isExternalLink', type: 'switch', span: switchSpan.value, props: { activeValue: true, inactiveValue: false } }
+      { label: '父级目录', key: 'parentId', span: 24 },
+      { label: '菜单名称', key: 'title', type: 'input', props: { placeholder: '请输入菜单名称' } }
     ]
 
-    // 外链模式：显示外链地址，路由地址非必填
+    // 外链模式
     if (isExternalLink.value) {
       items.push(
         {
@@ -206,11 +289,15 @@
       {
         label: createLabelTooltip(
           '组件路径',
-          '具体页面：填写组件路径（如 /system/user）\n父级菜单：填写 /index/index'
+          isTopLevel.value
+            ? '一级菜单必须填写 /index/index'
+            : '具体页面：填写组件路径（如 /system/user）'
         ),
         key: 'component',
         type: 'input',
-        props: { placeholder: '如：/system/user' }
+        props: {
+          placeholder: isTopLevel.value ? '一级菜单填写：/index/index' : '如：/system/user'
+        }
       },
       { label: '图标', key: 'icon', type: 'input', props: { placeholder: '如：ri:user-line' } },
       {
@@ -242,8 +329,9 @@
       },
       { label: '状态', key: 'status', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
       { label: '页面缓存', key: 'keepAlive', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
-      { label: '隐藏菜单', key: 'isHide', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
+      { label: '外链模式', key: 'isExternalLink', span: switchSpan.value },
       { label: '是否内嵌', key: 'isIframe', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
+      { label: '隐藏菜单', key: 'isHide', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
       { label: '显示徽章', key: 'showBadge', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
       { label: '固定标签', key: 'fixedTab', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
       { label: '标签隐藏', key: 'isHideTab', type: 'switch', span: switchSpan.value, props: { activeValue: 1, inactiveValue: 0 } },
@@ -263,6 +351,7 @@
    */
   const resetForm = (): void => {
     formRef.value?.reset()
+    isExternalLink.value = false
     Object.assign(form, {
       id: undefined,
       menuType: 1,
@@ -298,6 +387,9 @@
     isEdit.value = true
     const row = props.editData
 
+    // 判断是否是外链模式
+    isExternalLink.value = !!row.link
+
     Object.assign(form, {
       id: row.id,
       menuType: row.menuType ?? 1,
@@ -325,6 +417,40 @@
   }
 
   /**
+   * 提交前验证
+   */
+  const validateBeforeSubmit = (): string | null => {
+    const path = form.path?.trim() || ''
+    const component = form.component?.trim() || ''
+    
+    if (isTopLevel.value) {
+      // 一级菜单/目录验证
+      if (path && !path.startsWith('/')) {
+        return '一级菜单的路由地址必须以 / 开头'
+      }
+      // 一级菜单必须有 component（目录会自动填充）
+      if (!isDirectory.value && !isExternalLink.value) {
+        if (!component) {
+          return '一级菜单必须填写组件路径'
+        }
+        if (component !== '/index/index') {
+          return '一级菜单的组件路径必须为 /index/index'
+        }
+      }
+    } else {
+      // 二级及以下验证
+      if (path && path.startsWith('/')) {
+        return '二级及以下菜单的路由地址不能以 / 开头，请使用相对路径'
+      }
+      if (component === '/index/index') {
+        return '二级及以下菜单的组件路径不能是 /index/index'
+      }
+    }
+    
+    return null
+  }
+
+  /**
    * 提交表单
    */
   const handleSubmit = async (): Promise<void> => {
@@ -332,12 +458,34 @@
 
     try {
       await formRef.value.validate()
+
+      // 额外验证
+      const error = validateBeforeSubmit()
+      if (error) {
+        ElMessage.warning(error)
+        return
+      }
+
       submitting.value = true
 
+      // 处理提交数据
+      const submitData = { ...form }
+      
+      // parentId 为空时设为 0
+      if (!submitData.parentId) {
+        submitData.parentId = 0
+      }
+      
+      // 一级目录自动设置 component 为 /index/index
+      // 二级及以下目录 component 留空
+      if (isDirectory.value) {
+        submitData.component = isTopLevel.value ? '/index/index' : ''
+      }
+
       if (isEdit.value) {
-        await updateMenu(form)
+        await updateMenu(submitData)
       } else {
-        await addMenu(form)
+        await addMenu(submitData)
       }
 
       emit('success')
@@ -370,8 +518,11 @@
   watch(
     () => props.visible,
     (newVal) => {
-      if (newVal && props.editData) {
-        nextTick(() => loadFormData())
+      if (newVal) {
+        loadMenuTree()
+        if (props.editData) {
+          nextTick(() => loadFormData())
+        }
       }
     }
   )

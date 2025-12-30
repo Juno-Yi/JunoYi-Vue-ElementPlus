@@ -217,6 +217,14 @@
       }
     },
     {
+      prop: 'component',
+      label: '组件',
+      minWidth: 100,
+      formatter: (row: Api.System.MenuVO) => {
+        return row.component || '-'
+      }
+    },
+    {
       prop: 'permission',
       label: '权限标识符',
       minWidth: 140,
