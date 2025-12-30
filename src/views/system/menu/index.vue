@@ -50,13 +50,13 @@
 </template>
 
 <script setup lang="ts">
-  import { formatMenuTitle } from '@/utils/router'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
-  import { useTableColumns } from '@/hooks/core/useTableColumns'
-  import type { AppRouteRecord } from '@/types/router'
-  import MenuDialog from './modules/menu-dialog.vue'
-  import { fetchGetMenuList } from '@/api/system-manage'
-  import { ElTag, ElMessageBox } from 'element-plus'
+  import { formatMenuTitle } from '@/utils/router';
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue';
+  import { useTableColumns } from '@/hooks/core/useTableColumns';
+  import type { AppRouteRecord } from '@/types/router';
+  import MenuDialog from './modules/menu-dialog.vue';
+  import { ElTag, ElMessageBox } from 'element-plus';
+  import { fetchGetMenuList} from "@/api/system/menu";
 
   defineOptions({ name: 'Menus' })
 
