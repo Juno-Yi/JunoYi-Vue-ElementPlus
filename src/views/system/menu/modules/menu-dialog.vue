@@ -226,12 +226,6 @@
         },
         { label: '图标', key: 'icon', type: 'input', props: { placeholder: '如：ri:user-line' } },
         {
-          label: '权限标识',
-          key: 'permission',
-          type: 'input',
-          props: { placeholder: '如：system.demo' }
-        },
-        {
           label: '排序',
           key: 'sort',
           type: 'number',
