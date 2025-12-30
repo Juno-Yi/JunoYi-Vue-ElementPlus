@@ -78,11 +78,18 @@
   // 搜索相关
   const initialSearchState = {
     name: '',
-    route: ''
+    route: '',
+    status: null as number | null
   }
 
   const formFilters = reactive({ ...initialSearchState })
   const appliedFilters = reactive({ ...initialSearchState })
+
+  // 状态选项
+  const statusOptions = [
+    { label: '启用', value: 1 },
+    { label: '禁用', value: 0 }
+  ]
 
   const formItems = computed(() => [
     {
@@ -96,6 +103,15 @@
       key: 'route',
       type: 'input',
       props: { clearable: true }
+    },
+    {
+      label: '状态',
+      key: 'status',
+      type: 'select',
+      props: {
+        clearable: true,
+        options: statusOptions
+      }
     }
   ])
 
@@ -125,8 +141,7 @@
    * 获取菜单类型标签颜色
    */
   const getMenuTypeTag = (row: Api.System.MenuVO): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
-    // 0目录 1菜单 2按钮
-    if (row.menuType === 2) return 'danger'
+    // 0目录 1菜单
     if (row.menuType === 0) return 'info'
     if (row.isIframe === 1) return 'success'
     if (row.link) return 'warning'
@@ -248,7 +263,7 @@
       fixed: 'right',
       formatter: (row: Api.System.MenuVO) => {
         const buttons = []
-        if (hasPermission('system.menu.edit')) {
+        if (hasPermission('system.ui.menu.button.edit')) {
           buttons.push(
             h(ArtButtonTable, {
               type: 'edit',
@@ -256,7 +271,7 @@
             })
           )
         }
-        if (hasPermission('system.menu.delete')) {
+        if (hasPermission('system.ui.menu.button.delete')) {
           buttons.push(
             h(ArtButtonTable, {
               type: 'delete',
@@ -293,10 +308,12 @@
     for (const item of items) {
       const searchName = appliedFilters.name?.toLowerCase().trim() || ''
       const searchRoute = appliedFilters.route?.toLowerCase().trim() || ''
+      const searchStatus = appliedFilters.status
       const menuTitle = formatMenuTitle(item.title || '').toLowerCase()
       const menuPath = (item.path || '').toLowerCase()
       const nameMatch = !searchName || menuTitle.includes(searchName)
       const routeMatch = !searchRoute || menuPath.includes(searchRoute)
+      const statusMatch = searchStatus === null || item.status === searchStatus
 
       if (item.children?.length) {
         const matchedChildren = searchMenu(item.children)
@@ -308,7 +325,7 @@
         }
       }
 
-      if (nameMatch && routeMatch) {
+      if (nameMatch && routeMatch && statusMatch) {
         results.push(deepClone(item))
       }
     }
