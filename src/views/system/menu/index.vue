@@ -133,8 +133,7 @@
    * 获取菜单类型文本
    */
   const getMenuTypeText = (row: Api.System.MenuVO): string => {
-    // 0目录 1菜单 2按钮
-    if (row.menuType === 2) return '按钮'
+    // 0目录 1菜单
     if (row.menuType === 0) return '目录'
     if (row.isIframe === 1) return '内嵌'
     if (row.link && row.menuType === 1) return '外链'
