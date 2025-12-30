@@ -146,8 +146,8 @@
     path: isExternalLink.value ? [] : [{ required: true, message: '请输入路由地址', trigger: 'blur' }],
     link: isExternalLink.value ? [{ required: true, message: '请输入外链地址', trigger: 'blur' }] : [],
     name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
-    // 菜单类型（非目录）组件路径必填
-    component: isDirectory.value ? [] : [{ required: true, message: '请输入组件路径', trigger: 'blur' }]
+    // 目录类型或外链模式下，组件路径不是必填
+    component: (isDirectory.value || isExternalLink.value) ? [] : [{ required: true, message: '请输入组件路径', trigger: 'blur' }]
   }))
 
   // Switch 组件的 span
@@ -284,13 +284,13 @@
         label: createLabelTooltip(
           '组件路径',
           isTopLevel.value
-            ? '一级菜单必须填写 /index/index'
+            ? '一级菜单必须填写'
             : '具体页面：填写组件路径（如 /system/user）'
         ),
         key: 'component',
         type: 'input',
         props: {
-          placeholder: isTopLevel.value ? '一级菜单填写：/index/index' : '如：/system/user'
+          placeholder: isTopLevel.value ? '一级菜单必须填写' : '如：/system/user'
         }
       },
       { label: '图标', key: 'icon', type: 'input', props: { placeholder: '如：ri:user-line' } },
@@ -426,9 +426,6 @@
       if (!isDirectory.value && !isExternalLink.value) {
         if (!component) {
           return '一级菜单必须填写组件路径'
-        }
-        if (component !== '/index/index') {
-          return '一级菜单的组件路径必须为 /index/index'
         }
       }
     } else {
