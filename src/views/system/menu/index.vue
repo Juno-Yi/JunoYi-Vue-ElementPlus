@@ -150,14 +150,14 @@
     {
       prop: 'meta.title',
       label: '菜单名称',
-      minWidth: 160,
+      minWidth: 100,
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => formatMenuTitle(row.meta?.title)
     },
     {
       prop: 'meta.icon',
       label: '菜单图标',
-      width: 100,
+      width: 90,
       align: 'center',
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
@@ -178,7 +178,7 @@
     {
       prop: 'meta.sort',
       label: '排序',
-      width: 70,
+      width: 60,
       align: 'center',
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => row.meta?.sort ?? 0
@@ -186,7 +186,7 @@
     {
       prop: 'path',
       label: '路由',
-      minWidth: 150,
+      minWidth: 180,
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) return ''
@@ -196,7 +196,7 @@
     {
       prop: 'meta.permission',
       label: '权限标识符',
-      minWidth: 120,
+      minWidth: 140,
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) {
@@ -208,7 +208,7 @@
     {
       prop: 'status',
       label: '状态',
-      width: 80,
+      width: 70,
       align: 'center',
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
@@ -219,7 +219,7 @@
     {
       prop: 'createTime',
       label: '创建时间',
-      width: 160,
+      width: 170,
       align: 'center',
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => row.meta?.createTime || '-'
@@ -227,7 +227,7 @@
     {
       prop: 'updateTime',
       label: '更新时间',
-      width: 160,
+      width: 170,
       align: 'center',
       headerAlign: 'center',
       formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
@@ -235,7 +235,7 @@
     {
       prop: 'operation',
       label: '操作',
-      width: 140,
+      width: 180,
       align: 'center',
       headerAlign: 'center',
       fixed: 'right',
