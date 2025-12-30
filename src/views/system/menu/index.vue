@@ -50,11 +50,13 @@
 </template>
 
 <script setup lang="ts">
+  import { formatMenuTitle } from '@/utils/router'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import MenuDialog from './modules/menu-dialog.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { fetchMenuTree, type SysMenuVO } from '@/api/system/menu'
+  import { fetchMenuTree } from '@/api/system/menu'
 
   defineOptions({ name: 'Menus' })
 
@@ -66,7 +68,7 @@
   // 弹窗相关
   const dialogVisible = ref(false)
   const dialogType = ref<'menu' | 'button'>('menu')
-  const editData = ref<SysMenuVO | null>(null)
+  const editData = ref<Api.System.MenuVO | null>(null)
   const lockMenuType = ref(false)
 
   // 搜索相关
@@ -94,7 +96,7 @@
   ])
 
   // 数据相关
-  const tableData = ref<SysMenuVO[]>([])
+  const tableData = ref<Api.System.MenuVO[]>([])
 
   onMounted(() => {
     getMenuList()
@@ -118,7 +120,7 @@
   /**
    * 获取菜单类型标签颜色
    */
-  const getMenuTypeTag = (row: SysMenuVO): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
+  const getMenuTypeTag = (row: Api.System.MenuVO): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
     // 0目录 1菜单 2按钮
     if (row.menuType === 2) return 'danger'
     if (row.menuType === 0) return 'info'
@@ -130,7 +132,7 @@
   /**
    * 获取菜单类型文本
    */
-  const getMenuTypeText = (row: SysMenuVO): string => {
+  const getMenuTypeText = (row: Api.System.MenuVO): string => {
     // 0目录 1菜单 2按钮
     if (row.menuType === 2) return '按钮'
     if (row.menuType === 0) return '目录'
@@ -154,7 +156,7 @@
       label: '菜单名称',
       minWidth: 180,
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => row.title || '-'
+      formatter: (row: Api.System.MenuVO) => formatMenuTitle(row.title) || '-'
     },
     {
       prop: 'icon',
@@ -162,9 +164,9 @@
       width: 90,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => {
+      formatter: (row: Api.System.MenuVO) => {
         if (!row.icon) return '-'
-        return h('i', { class: row.icon, style: 'font-size: 18px' })
+        return h(ArtSvgIcon, { icon: row.icon, style: 'font-size: 18px' })
       }
     },
     {
@@ -173,7 +175,7 @@
       width: 90,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => {
+      formatter: (row: Api.System.MenuVO) => {
         return h(ElTag, { type: getMenuTypeTag(row), size: 'small' }, () => getMenuTypeText(row))
       }
     },
@@ -183,14 +185,14 @@
       width: 60,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => row.sort ?? 0
+      formatter: (row: Api.System.MenuVO) => row.sort ?? 0
     },
     {
       prop: 'path',
       label: '路由',
       minWidth: 160,
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => {
+      formatter: (row: Api.System.MenuVO) => {
         if (row.menuType === 2) return '-'
         return row.link || row.path || '-'
       }
@@ -200,7 +202,7 @@
       label: '权限标识符',
       minWidth: 140,
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => row.permission || '-'
+      formatter: (row: Api.System.MenuVO) => row.permission || '-'
     },
     {
       prop: 'status',
@@ -208,7 +210,7 @@
       width: 70,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => {
+      formatter: (row: Api.System.MenuVO) => {
         const status = row.status ?? 1
         return h(ElTag, { type: status === 1 ? 'success' : 'danger', size: 'small' }, () => status === 1 ? '启用' : '禁用')
       }
@@ -219,7 +221,7 @@
       width: 170,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => formatTime(row.createTime)
+      formatter: (row: Api.System.MenuVO) => formatTime(row.createTime)
     },
     {
       prop: 'updateTime',
@@ -227,7 +229,7 @@
       width: 170,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: SysMenuVO) => formatTime(row.updateTime)
+      formatter: (row: Api.System.MenuVO) => formatTime(row.updateTime)
     },
     {
       prop: 'operation',
@@ -236,7 +238,7 @@
       align: 'center',
       headerAlign: 'center',
       fixed: 'right',
-      formatter: (row: SysMenuVO) => {
+      formatter: (row: Api.System.MenuVO) => {
         return h('div', { style: 'text-align: center' }, [
           h(ArtButtonTable, {
             type: 'edit',
@@ -270,12 +272,12 @@
   /**
    * 搜索菜单
    */
-  const searchMenu = (items: SysMenuVO[]): SysMenuVO[] => {
-    const results: SysMenuVO[] = []
+  const searchMenu = (items: Api.System.MenuVO[]): Api.System.MenuVO[] => {
+    const results: Api.System.MenuVO[] = []
     for (const item of items) {
       const searchName = appliedFilters.name?.toLowerCase().trim() || ''
       const searchRoute = appliedFilters.route?.toLowerCase().trim() || ''
-      const menuTitle = (item.title || '').toLowerCase()
+      const menuTitle = formatMenuTitle(item.title || '').toLowerCase()
       const menuPath = (item.path || '').toLowerCase()
       const nameMatch = !searchName || menuTitle.includes(searchName)
       const routeMatch = !searchRoute || menuPath.includes(searchRoute)
@@ -338,7 +340,7 @@
   /**
    * 编辑菜单
    */
-  const handleEditMenu = (row: SysMenuVO): void => {
+  const handleEditMenu = (row: Api.System.MenuVO): void => {
     dialogType.value = 'menu'
     editData.value = row
     lockMenuType.value = false
@@ -357,9 +359,10 @@
   /**
    * 删除菜单
    */
-  const handleDeleteMenu = async (row: SysMenuVO): Promise<void> => {
+  const handleDeleteMenu = async (row: Api.System.MenuVO): Promise<void> => {
+    const title = formatMenuTitle(row.title)
     try {
-      await ElMessageBox.confirm(`确定要删除菜单「${row.title}」吗？删除后无法恢复`, '提示', {
+      await ElMessageBox.confirm(`确定要删除菜单「${title}」吗？删除后无法恢复`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -381,7 +384,7 @@
     isExpanded.value = !isExpanded.value
     nextTick(() => {
       if (tableRef.value?.elTableRef && filteredTableData.value) {
-        const processRows = (rows: SysMenuVO[]) => {
+        const processRows = (rows: Api.System.MenuVO[]) => {
           rows.forEach((row) => {
             if (row.children?.length) {
               tableRef.value.elTableRef.toggleRowExpansion(row, isExpanded.value)
