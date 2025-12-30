@@ -35,7 +35,7 @@
  * - `-system.menu.delete` - 黑名单，禁止该权限（优先级最高）
  *
  * @module hooks/usePermission
- * @author JunoYi Team
+ * @author Fan
  */
 
 import { computed } from 'vue'
@@ -52,7 +52,7 @@ function checkPermission(requiredPermission: string, userPermissions: string[]):
     return false
   }
 
-  // 1. 检查黑名单（优先级最高）
+  // 检查黑名单（优先级最高）
   const blacklistPermission = `-${requiredPermission}`
   if (userPermissions.includes(blacklistPermission)) {
     return false
@@ -68,17 +68,17 @@ function checkPermission(requiredPermission: string, userPermissions: string[]):
     }
   }
 
-  // 2. 检查超级管理员通配符
+  // 检查超级管理员通配符
   if (userPermissions.includes('*')) {
     return true
   }
 
-  // 3. 检查精确匹配
+  // 检查精确匹配
   if (userPermissions.includes(requiredPermission)) {
     return true
   }
 
-  // 4. 检查前缀通配符匹配
+  // 检查前缀通配符匹配
   const permissionParts = requiredPermission.split('.')
   for (let i = permissionParts.length - 1; i >= 0; i--) {
     const wildcardPermission = permissionParts.slice(0, i).join('.') + '.*'
@@ -87,7 +87,7 @@ function checkPermission(requiredPermission: string, userPermissions: string[]):
     }
   }
 
-  // 5. 检查更高层级的通配符
+  // 检查更高层级的通配符
   for (const perm of userPermissions) {
     if (perm.endsWith('*')) {
       const prefix = perm.slice(0, -1)
