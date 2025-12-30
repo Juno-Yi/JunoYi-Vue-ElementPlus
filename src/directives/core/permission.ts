@@ -35,7 +35,7 @@
  * - `['-system.menu.delete']` - 黑名单，禁止 delete 权限（优先级最高）
  *
  * @module directives/permission
- * @author JunoYi Team
+ * @author Fan
  */
 
 import { useUserStore } from '@/store/modules/user'
