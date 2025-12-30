@@ -206,6 +206,17 @@
       }
     },
     {
+      prop: 'isHide',
+      label: '显示',
+      width: 70,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: AppRouteRecord) => {
+        const status = row.meta?.isHide ?? 1
+        return h(ElTag, { type: status === 1 ? 'success' : 'danger', size: 'small' }, () => status === 1 ? '显示' : '隐藏')
+      }
+    },
+    {
       prop: 'status',
       label: '状态',
       width: 70,
