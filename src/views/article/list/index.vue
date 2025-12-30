@@ -17,7 +17,7 @@
         </div>
       </ElCol>
       <ElCol :lg="6" :md="6" :sm="10" :xs="6" style="display: flex; justify-content: end">
-        <ElButton @click="toAddArticle" v-auth="'add'">新增文章</ElButton>
+        <ElButton @click="toAddArticle" v-permission="'article.add'">新增文章</ElButton>
       </ElCol>
     </ElRow>
 
@@ -57,7 +57,7 @@
               </div>
               <ElButton
                 class="opacity-0 group-hover:opacity-100"
-                v-auth="'edit'"
+                v-permission="'article.edit'"
                 size="small"
                 @click.stop="toEdit(item)"
                 >编辑</ElButton
