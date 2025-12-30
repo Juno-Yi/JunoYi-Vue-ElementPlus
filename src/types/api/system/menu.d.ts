@@ -10,6 +10,10 @@ declare namespace Api.System {
     name?: string
     /** 状态 */
     status?: number
+    /** 页码 */
+    pageNum?: number
+    /** 每页数量 */
+    pageSize?: number
   }
 
   /**
@@ -69,10 +73,52 @@ declare namespace Api.System {
   }
 
   /**
-   * 添加菜单请求参数类型
+   * 菜单DTO类型（请求参数）
    */
   interface MenuDTO {
-
+    /** 主键 */
+    id?: number
+    /** 父菜单ID */
+    parentId?: number
+    /** 路由名称 */
+    name?: string
+    /** 路由路径 */
+    path?: string
+    /** 组件路径 */
+    component?: string
+    /** 菜单标题 */
+    title?: string
+    /** 菜单图标 */
+    icon?: string
+    /** 菜单类型（0目录 1菜单 2按钮） */
+    menuType?: number
+    /** 排序号 */
+    sort?: number
+    /** 是否隐藏菜单（0否 1是） */
+    isHide?: number
+    /** 是否隐藏标签页（0否 1是） */
+    isHideTab?: number
+    /** 是否缓存（0否 1是） */
+    keepAlive?: number
+    /** 是否iframe（0否 1是） */
+    isIframe?: number
+    /** 外部链接地址 */
+    link?: string
+    /** 是否全屏页面（0否 1是） */
+    isFullPage?: number
+    /** 是否固定标签页（0否 1是） */
+    fixedTab?: number
+    /** 激活菜单路径 */
+    activePath?: string
+    /** 是否显示徽章 */
+    showBadge?: number
+    /** 文本徽章内容 */
+    showTextBadge?: string
+    /** 权限标识 */
+    permission?: string
+    /** 状态（0禁用 1启用） */
+    status?: number
+    /** 备注 */
+    remark?: string
   }
-
 }

@@ -29,3 +29,15 @@ export interface BaseResponse<T = unknown> {
   /** 数据 */
   data: T
 }
+
+/** 分页结果结构 */
+export interface PageResult<T = unknown> {
+  /** 数据列表 */
+  list: T[]
+  /** 总数 */
+  total: number
+  /** 当前页码 */
+  pageNum?: number
+  /** 每页数量 */
+  pageSize?: number
+}
