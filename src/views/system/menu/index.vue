@@ -150,52 +150,97 @@
     {
       prop: 'meta.title',
       label: '菜单名称',
-      minWidth: 120,
+      minWidth: 160,
+      headerAlign: 'center',
       formatter: (row: AppRouteRecord) => formatMenuTitle(row.meta?.title)
+    },
+    {
+      prop: 'meta.icon',
+      label: '菜单图标',
+      width: 100,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: AppRouteRecord) => {
+        if (!row.meta?.icon) return ''
+        return h('i', { class: row.meta.icon, style: 'font-size: 18px' })
+      }
     },
     {
       prop: 'type',
       label: '菜单类型',
+      width: 90,
+      align: 'center',
+      headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
-        return h(ElTag, { type: getMenuTypeTag(row) }, () => getMenuTypeText(row))
+        return h(ElTag, { type: getMenuTypeTag(row), size: 'small' }, () => getMenuTypeText(row))
       }
+    },
+    {
+      prop: 'meta.sort',
+      label: '排序',
+      width: 70,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: AppRouteRecord) => row.meta?.sort ?? 0
     },
     {
       prop: 'path',
       label: '路由',
+      minWidth: 150,
+      headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) return ''
         return row.meta?.link || row.path || ''
       }
     },
     {
-      prop: 'meta.authList',
-      label: '权限标识',
+      prop: 'meta.permission',
+      label: '权限标识符',
+      minWidth: 120,
+      headerAlign: 'center',
       formatter: (row: AppRouteRecord) => {
         if (row.meta?.isAuthButton) {
           return row.meta?.authMark || ''
         }
-        if (!row.meta?.authList?.length) return ''
-        return `${row.meta.authList.length} 个权限标识`
+        return row.meta?.permission || ''
       }
-    },
-    {
-      prop: 'date',
-      label: '编辑时间',
-      formatter: () => '2022-3-12 12:00:00'
     },
     {
       prop: 'status',
       label: '状态',
-      formatter: () => h(ElTag, { type: 'success' }, () => '启用')
+      width: 80,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: AppRouteRecord) => {
+        const status = row.meta?.status ?? 1
+        return h(ElTag, { type: status === 1 ? 'success' : 'danger', size: 'small' }, () => status === 1 ? '启用' : '禁用')
+      }
+    },
+    {
+      prop: 'createTime',
+      label: '创建时间',
+      width: 160,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: AppRouteRecord) => row.meta?.createTime || '-'
+    },
+    {
+      prop: 'updateTime',
+      label: '更新时间',
+      width: 160,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: AppRouteRecord) => row.meta?.updateTime || '-'
     },
     {
       prop: 'operation',
       label: '操作',
-      width: 180,
-      align: 'right',
+      width: 140,
+      align: 'center',
+      headerAlign: 'center',
+      fixed: 'right',
       formatter: (row: AppRouteRecord) => {
-        const buttonStyle = { style: 'text-align: right' }
+        const buttonStyle = { style: 'text-align: center' }
 
         if (row.meta?.isAuthButton) {
           return h('div', buttonStyle, [
