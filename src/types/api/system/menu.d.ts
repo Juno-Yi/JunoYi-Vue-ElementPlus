@@ -67,4 +67,12 @@ declare namespace Api.System {
     /** 子菜单列表 */
     children?: MenuVO[]
   }
+
+  /**
+   * 添加菜单请求参数类型
+   */
+  interface MenuDTO {
+
+  }
+
 }
