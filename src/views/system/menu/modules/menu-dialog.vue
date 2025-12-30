@@ -22,7 +22,7 @@
       <template #menuType>
         <ElRadioGroup v-model="form.menuType" :disabled="disableMenuType">
           <ElRadioButton value="menu" label="menu">菜单</ElRadioButton>
-          <ElRadioButton value="button" label="button">按钮</ElRadioButton>
+          <ElRadioButton value="button" label="button">目录</ElRadioButton>
         </ElRadioGroup>
       </template>
     </ArtForm>
