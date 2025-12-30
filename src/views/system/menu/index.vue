@@ -40,10 +40,8 @@
       <!-- 菜单弹窗 -->
       <MenuDialog
         v-model:visible="dialogVisible"
-        :type="dialogType"
         :editData="editData"
-        :lockType="lockMenuType"
-        @submit="handleSubmit"
+        @success="getMenuList"
       />
     </ElCard>
   </div>
@@ -71,9 +69,7 @@
 
   // 弹窗相关
   const dialogVisible = ref(false)
-  const dialogType = ref<'menu' | 'button'>('menu')
   const editData = ref<Api.System.MenuVO | null>(null)
-  const lockMenuType = ref(false)
 
   // 搜索相关
   const initialSearchState = {
@@ -375,9 +371,7 @@
    * 添加菜单
    */
   const handleAddMenu = (): void => {
-    dialogType.value = 'menu'
     editData.value = null
-    lockMenuType.value = false
     dialogVisible.value = true
   }
 
@@ -385,19 +379,8 @@
    * 编辑菜单
    */
   const handleEditMenu = (row: Api.System.MenuVO): void => {
-    dialogType.value = 'menu'
     editData.value = row
-    lockMenuType.value = false
     dialogVisible.value = true
-  }
-
-  /**
-   * 提交表单数据
-   */
-  const handleSubmit = (formData: any): void => {
-    console.log('提交数据:', formData)
-    // TODO: 调用API保存数据
-    getMenuList()
   }
 
   /**
