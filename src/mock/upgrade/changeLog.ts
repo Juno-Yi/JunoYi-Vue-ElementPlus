@@ -16,6 +16,25 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.1.2-alpha',
+        title: '菜单管理',
+        date: '2025-12-31',
+        detail: {
+            added: [
+
+            ],
+            changed: [
+
+            ],
+            fixed: [
+
+            ],
+            demo: [
+
+            ]
+        }
+    },
+    {
         version: 'v0.1.1-alpha',
         title: '后端菜单数据，前端动态路由',
         date: '2025-12-29',
