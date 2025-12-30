@@ -142,11 +142,16 @@
   }
 
   /**
-   * 格式化时间
+   * 格式化时间（年-月-日）
    */
   const formatTime = (time: string | undefined): string => {
     if (!time) return '-'
-    return time
+    const date = new Date(time)
+    if (isNaN(date.getTime())) return '-'
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   // 表格列配置
