@@ -228,6 +228,17 @@
       formatter: (row: Api.System.MenuVO) => row.permission || '-'
     },
     {
+      prop: 'isHide',
+      label: '显示',
+      width: 70,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: Api.System.MenuVO) => {
+        const isHide = row.isHide ?? 1
+        return h(ElTag, { type: isHide === 1 ? 'danger' : 'success', size: 'small' }, () => isHide === 1 ? '隐藏' : '显示')
+      }
+    },
+    {
       prop: 'status',
       label: '状态',
       width: 70,
