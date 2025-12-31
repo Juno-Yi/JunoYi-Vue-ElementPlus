@@ -110,7 +110,7 @@
   const inputValue = ref(props.modelValue)
   const showPopover = ref(false)
   const searchKeyword = ref('')
-  const activeTab = ref<IconCategoryKey>('common')
+  const activeTab = ref<IconCategoryKey>('RemixIcon')
   const tempSelected = ref('')
 
   // 当前分类的图标

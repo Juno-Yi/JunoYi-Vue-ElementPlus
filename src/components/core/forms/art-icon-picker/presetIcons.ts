@@ -4,13 +4,11 @@
  *
  * @author Fan
  */
-
-
-
 import remixIconData from "@/components/core/forms/art-icon-picker/icon/remixIcon";
 import materialIconThemeData from "@/components/core/forms/art-icon-picker/icon/materialIconTheme";
 import fluentColorData from "@/components/core/forms/art-icon-picker/icon/FluentColor";
 import rivetIconsData from "@/components/core/forms/art-icon-picker/icon/RivetIcons";
+import streamlinePlumpColorData from "@/components/core/forms/art-icon-picker/icon/StreamlinePlumpColor";
 
 /** 图标分类 */
 export const iconCategories = [
@@ -18,6 +16,7 @@ export const iconCategories = [
   { key: 'RivetIcons', label: 'RivetIcons'},
   { key: 'MaterialIconTheme', label: 'MaterialIconTheme'},
   { key: 'FluentColor', label: 'FluentColor'},
+  { key: 'StreamlinePlumpColor', label: 'StreamlinePlumpColor'}
 
 ] as const
 
@@ -28,5 +27,6 @@ export const presetIcons: Record<IconCategoryKey, string[]> = {
   RemixIcon: remixIconData,
   RivetIcons: rivetIconsData,
   MaterialIconTheme: materialIconThemeData,
-  FluentColor: fluentColorData
+  FluentColor: fluentColorData,
+  StreamlinePlumpColor: streamlinePlumpColorData
 }
