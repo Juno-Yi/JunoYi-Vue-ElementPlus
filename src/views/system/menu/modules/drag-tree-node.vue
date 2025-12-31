@@ -1,21 +1,22 @@
 <!-- 拖拽树节点组件 -->
 <template>
   <div
+    ref="nodeRef"
     class="drag-tree-node"
     :class="{
       'is-directory': node.menuType === 0,
-      'drag-over-before': dropPosition === 'before',
-      'drag-over-after': dropPosition === 'after',
-      'drag-over-inside': dropPosition === 'inside',
+      'drag-over-before': isCurrentDropTarget && dropPosition === 'before',
+      'drag-over-after': isCurrentDropTarget && dropPosition === 'after',
+      'drag-over-inside': isCurrentDropTarget && dropPosition === 'inside',
       'is-dragging': isDragging
     }"
     :style="{ paddingLeft: `${level * 24 + 16}px` }"
+    :data-node-id="node.id"
     draggable="true"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-    @drop="handleDrop"
+    @dragover.prevent="handleDragOver"
+    @drop.prevent="handleDrop"
   >
     <div class="node-content">
       <span class="drag-handle">
@@ -25,7 +26,7 @@
       <span 
         v-if="node.children?.length" 
         class="expand-icon"
-        @click="toggleExpand"
+        @click.stop="toggleExpand"
       >
         <ArtSvgIcon :icon="isExpanded ? 'ri:arrow-down-s-line' : 'ri:arrow-right-s-line'" />
       </span>
@@ -54,7 +55,9 @@
       :key="child.id"
       :node="child"
       :level="level + 1"
+      :currentDropNodeId="currentDropNodeId"
       @drop="(dragId, targetId, position) => emit('drop', dragId, targetId, position)"
+      @update:currentDropNodeId="(id) => emit('update:currentDropNodeId', id)"
     />
   </template>
 </template>
@@ -67,57 +70,61 @@
   interface Props {
     node: Api.System.MenuVO
     level: number
+    currentDropNodeId?: number | null
   }
 
   interface Emits {
     (e: 'drop', dragId: number, targetId: number, position: 'before' | 'after' | 'inside'): void
+    (e: 'update:currentDropNodeId', id: number | null): void
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    currentDropNodeId: null
+  })
   const emit = defineEmits<Emits>()
 
+  const nodeRef = ref<HTMLElement>()
   const isExpanded = ref(true)
   const isDragging = ref(false)
   const dropPosition = ref<'before' | 'after' | 'inside' | null>(null)
 
-  // 当前拖拽的节点ID（全局共享）
-  let currentDragId: number | null = null
+  // 是否是当前拖放目标
+  const isCurrentDropTarget = computed(() => props.currentDropNodeId === props.node.id)
 
   const toggleExpand = (): void => {
     isExpanded.value = !isExpanded.value
   }
 
   const handleDragStart = (e: DragEvent): void => {
+    e.stopPropagation()
     isDragging.value = true
-    currentDragId = props.node.id
     e.dataTransfer!.effectAllowed = 'move'
     e.dataTransfer!.setData('text/plain', String(props.node.id))
-    
-    // 添加拖拽样式
-    const target = e.target as HTMLElement
-    setTimeout(() => {
-      target.classList.add('dragging')
-    }, 0)
   }
 
-  const handleDragEnd = (e: DragEvent): void => {
+  const handleDragEnd = (): void => {
     isDragging.value = false
-    currentDragId = null
-    const target = e.target as HTMLElement
-    target.classList.remove('dragging')
+    dropPosition.value = null
+    emit('update:currentDropNodeId', null)
   }
 
   const handleDragOver = (e: DragEvent): void => {
-    e.preventDefault()
     e.stopPropagation()
     
+    const dragId = e.dataTransfer?.types.includes('text/plain') 
+      ? e.dataTransfer.getData('text/plain') 
+      : null
+    
     // 不能拖到自己身上
-    if (currentDragId === props.node.id) {
+    if (dragId === String(props.node.id)) {
       dropPosition.value = null
       return
     }
 
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    // 更新当前拖放目标
+    emit('update:currentDropNodeId', props.node.id)
+
+    const rect = nodeRef.value!.getBoundingClientRect()
     const y = e.clientY - rect.top
     const height = rect.height
 
@@ -127,7 +134,6 @@
     } else if (y > height * 0.75) {
       dropPosition.value = 'after'
     } else if (props.node.menuType === 0) {
-      // 只有目录才能放入内部
       dropPosition.value = 'inside'
     } else {
       dropPosition.value = 'after'
@@ -136,28 +142,17 @@
     e.dataTransfer!.dropEffect = 'move'
   }
 
-  const handleDragLeave = (e: DragEvent): void => {
-    // 检查是否真的离开了元素
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const x = e.clientX
-    const y = e.clientY
-    
-    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-      dropPosition.value = null
-    }
-  }
-
   const handleDrop = (e: DragEvent): void => {
-    e.preventDefault()
     e.stopPropagation()
     
-    const dragId = parseInt(e.dataTransfer!.getData('text/plain'))
+    const dragId = e.dataTransfer?.getData('text/plain')
     
-    if (dragId && dropPosition.value && dragId !== props.node.id) {
-      emit('drop', dragId, props.node.id, dropPosition.value)
+    if (dragId && dropPosition.value && dragId !== String(props.node.id)) {
+      emit('drop', Number(dragId), props.node.id, dropPosition.value)
     }
     
     dropPosition.value = null
+    emit('update:currentDropNodeId', null)
   }
 </script>
 
@@ -170,6 +165,7 @@
     cursor: move;
     transition: background-color 0.2s;
     position: relative;
+    user-select: none;
   }
 
   .drag-tree-node:hover {
@@ -190,8 +186,10 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
+    height: 3px;
     background-color: var(--el-color-primary);
+    pointer-events: none;
+    z-index: 10;
   }
 
   .drag-tree-node.drag-over-after::after {
@@ -200,8 +198,10 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 2px;
+    height: 3px;
     background-color: var(--el-color-primary);
+    pointer-events: none;
+    z-index: 10;
   }
 
   .drag-tree-node.drag-over-inside {
@@ -273,9 +273,5 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  :global(.dragging) {
-    opacity: 0.4;
   }
 </style>

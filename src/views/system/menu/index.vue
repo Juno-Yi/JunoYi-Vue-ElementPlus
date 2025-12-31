@@ -73,7 +73,9 @@
             :key="item.id"
             :node="item"
             :level="0"
+            :currentDropNodeId="currentDropNodeId"
             @drop="handleDrop"
+            @update:currentDropNodeId="(id) => currentDropNodeId = id"
           />
         </div>
       </div>
@@ -114,6 +116,7 @@
   // 拖拽模式
   const isDragMode = ref(false)
   const dragTableData = ref<Api.System.MenuVO[]>([])
+  const currentDropNodeId = ref<number | null>(null)
 
   // 弹窗相关
   const dialogVisible = ref(false)
