@@ -140,21 +140,30 @@
   // 是否是目录类型
   const isDirectory = computed(() => form.menuType === 0)
 
+  // 是否开启内嵌模式
+  const isIframeMode = computed(() => form.isIframe === 1)
+
   // 类型文本
   const typeLabel = computed(() => isDirectory.value ? '目录' : '菜单')
 
   // 动态校验规则
-  const rules = computed<FormRules>(() => ({
-    title: [
-      { required: true, message: `请输入${typeLabel.value}名称`, trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-    ],
-    path: isExternalLink.value ? [] : [{ required: true, message: '请输入路由地址', trigger: 'blur' }],
-    link: isExternalLink.value ? [{ required: true, message: '请输入外链地址', trigger: 'blur' }] : [],
-    name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
-    // 目录类型或外链模式下，组件路径不是必填
-    component: (isDirectory.value || isExternalLink.value) ? [] : [{ required: true, message: '请输入组件路径', trigger: 'blur' }]
-  }))
+  const rules = computed<FormRules>(() => {
+    // 内嵌模式：路由地址和外链地址都必填
+    const pathRequired = isIframeMode.value || !isExternalLink.value
+    const linkRequired = isExternalLink.value || isIframeMode.value
+    
+    return {
+      title: [
+        { required: true, message: `请输入${typeLabel.value}名称`, trigger: 'blur' },
+        { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+      ],
+      path: pathRequired ? [{ required: true, message: '请输入路由地址', trigger: 'blur' }] : [],
+      link: linkRequired ? [{ required: true, message: '请输入外链地址', trigger: 'blur' }] : [],
+      name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
+      // 目录类型、外链模式或内嵌模式下，组件路径不是必填
+      component: (isDirectory.value || isExternalLink.value || isIframeMode.value) ? [] : [{ required: true, message: '请输入组件路径', trigger: 'blur' }]
+    }
+  })
 
   // Switch 组件的 span
   const switchSpan = computed(() => (width.value < 640 ? 12 : 6))
