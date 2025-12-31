@@ -398,13 +398,17 @@
     const title = formatMenuTitle(row.title)
     const hasChildren = row.children && row.children.length > 0
     
-    // 如果有子菜单，提示用户
-    const message = hasChildren 
-      ? `菜单「${title}」下有子菜单，确定要删除吗？删除后子菜单也会被删除，且无法恢复`
-      : `确定要删除菜单「${title}」吗？删除后无法恢复`
+    // 如果有子菜单，提示无法删除
+    if (hasChildren) {
+      ElMessageBox.alert(`菜单「${title}」下有子菜单，请先删除子菜单后再删除`, '提示', {
+        confirmButtonText: '知道了',
+        type: 'warning'
+      })
+      return
+    }
     
     try {
-      await ElMessageBox.confirm(message, '提示', {
+      await ElMessageBox.confirm(`确定要删除菜单「${title}」吗？删除后无法恢复`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
