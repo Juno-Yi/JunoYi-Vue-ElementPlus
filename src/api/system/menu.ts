@@ -62,3 +62,14 @@ export function deleteMenu(id: number | string) {
   })
 }
 
+
+/**
+ * 批量更新菜单排序
+ */
+export function updateMenuSort(data: Api.System.MenuSortDTO) {
+  return request.put<void>({
+    url: '/system/menu/sort',
+    data,
+    showSuccessMessage: true
+  })
+}

@@ -19,14 +19,36 @@
         @refresh="handleRefresh"
       >
         <template #left>
-          <ElButton v-permission="'system.ui.menu.button.add'" @click="handleAddMenu" v-ripple> 添加菜单 </ElButton>
+          <ElButton v-permission="'system.ui.menu.button.add'" @click="handleAddMenu" v-ripple>
+            添加菜单
+          </ElButton>
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
+          </ElButton>
+          <ElButton 
+            v-if="hasPermission('system.ui.menu.button.edit')"
+            :type="isDragMode ? 'primary' : 'default'"
+            @click="toggleDragMode" 
+            v-ripple
+          >
+            <ArtSvgIcon :icon="isDragMode ? 'ri:check-line' : 'ri:drag-move-2-fill'" class="mr-1" />
+            {{ isDragMode ? '保存排序' : '拖拽排序' }}
+          </ElButton>
+          <ElButton v-if="isDragMode" @click="cancelDragMode" v-ripple>
+            取消
           </ElButton>
         </template>
       </ArtTableHeader>
 
+      <!-- 拖拽模式提示 -->
+      <div v-if="isDragMode" class="drag-tip mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-600 dark:text-blue-400">
+        <ArtSvgIcon icon="ri:information-line" class="mr-1" />
+        拖拽模式：拖动菜单可调整排序，拖到目录上可移动到该目录下。完成后点击「保存排序」。
+      </div>
+
+      <!-- 普通模式表格 -->
       <ArtTable
+        v-if="!isDragMode"
         ref="tableRef"
         rowKey="id"
         :loading="loading"
@@ -36,6 +58,25 @@
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         :default-expand-all="false"
       />
+
+      <!-- 拖拽模式 - 树形列表 -->
+      <div v-else class="drag-tree-wrapper">
+        <div class="drag-tree-header">
+          <span class="col-name">菜单名称</span>
+          <span class="col-type">类型</span>
+          <span class="col-sort">排序</span>
+          <span class="col-path">路由</span>
+        </div>
+        <div class="drag-tree-body" ref="dragTreeRef">
+          <DragTreeNode
+            v-for="item in dragTableData"
+            :key="item.id"
+            :node="item"
+            :level="0"
+            @drop="handleDrop"
+          />
+        </div>
+      </div>
 
       <!-- 菜单弹窗 -->
       <MenuDialog
@@ -55,8 +96,9 @@
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import { usePermission } from '@/hooks/core/usePermission'
   import MenuDialog from './modules/menu-dialog.vue'
+  import DragTreeNode from './modules/drag-tree-node.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { fetchMenuTree, deleteMenu } from '@/api/system/menu'
+  import { fetchMenuTree, deleteMenu, updateMenuSort } from '@/api/system/menu'
 
   defineOptions({ name: 'Menus' })
 
@@ -67,6 +109,11 @@
   const loading = ref(false)
   const isExpanded = ref(false)
   const tableRef = ref()
+  const dragTreeRef = ref()
+
+  // 拖拽模式
+  const isDragMode = ref(false)
+  const dragTableData = ref<Api.System.MenuVO[]>([])
 
   // 弹窗相关
   const dialogVisible = ref(false)
@@ -139,7 +186,6 @@
    * 获取菜单类型标签颜色
    */
   const getMenuTypeTag = (row: Api.System.MenuVO): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
-    // 0目录 1菜单
     if (row.menuType === 0) return 'info'
     if (row.isIframe === 1) return 'success'
     if (row.link) return 'warning'
@@ -150,7 +196,6 @@
    * 获取菜单类型文本
    */
   const getMenuTypeText = (row: Api.System.MenuVO): string => {
-    // 0目录 1菜单
     if (row.menuType === 0) return '目录'
     if (row.isIframe === 1) return '内嵌'
     if (row.link && row.menuType === 1) return '外链'
@@ -221,7 +266,7 @@
     {
       prop: 'component',
       label: '组件',
-      minWidth: 100,
+      minWidth: 140,
       formatter: (row: Api.System.MenuVO) => {
         return row.component || '-'
       }
@@ -280,7 +325,6 @@
       fixed: 'right',
       formatter: (row: Api.System.MenuVO) => {
         const buttons = []
-        // 目录类型显示添加按钮
         if (row.menuType === 0 && hasPermission('system.ui.menu.button.add')) {
           buttons.push(
             h(ArtButtonTable, {
@@ -420,7 +464,6 @@
     const title = formatMenuTitle(row.title)
     const hasChildren = row.children && row.children.length > 0
     
-    // 如果有子菜单，提示无法删除
     if (hasChildren) {
       ElMessageBox.alert(`菜单「${title}」下有子菜单，请先删除子菜单后再删除`, '提示', {
         confirmButtonText: '知道了',
@@ -439,7 +482,7 @@
       await deleteMenu(row.id)
       getMenuList()
     } catch (error) {
-      // 用户取消操作，不做处理
+      // 用户取消操作
     }
   }
 
@@ -462,4 +505,236 @@
       }
     })
   }
+
+  // ==================== 拖拽排序相关 ====================
+
+  /**
+   * 进入拖拽模式
+   */
+  const toggleDragMode = async (): Promise<void> => {
+    if (isDragMode.value) {
+      // 保存排序
+      await saveSortChanges()
+    } else {
+      // 进入拖拽模式
+      dragTableData.value = deepClone(tableData.value)
+      isDragMode.value = true
+    }
+  }
+
+  /**
+   * 取消拖拽模式
+   */
+  const cancelDragMode = (): void => {
+    isDragMode.value = false
+    dragTableData.value = []
+  }
+
+  /**
+   * 处理拖拽放置
+   */
+  const handleDrop = (dragId: number, targetId: number, position: 'before' | 'after' | 'inside'): void => {
+    const dragNode = findNodeById(dragTableData.value, dragId)
+    if (!dragNode) return
+
+    // 不能拖到自己的子节点里
+    if (isDescendant(dragNode, targetId)) {
+      ElMessage.warning('不能将节点拖到自己的子节点中')
+      return
+    }
+
+    // 从原位置移除
+    removeNode(dragTableData.value, dragId)
+
+    // 插入到新位置
+    if (position === 'inside') {
+      // 放入目录内部
+      const targetNode = findNodeById(dragTableData.value, targetId)
+      if (targetNode) {
+        if (targetNode.menuType !== 0) {
+          ElMessage.warning('只能拖入目录中')
+          // 恢复原位置
+          dragTableData.value = deepClone(tableData.value)
+          return
+        }
+        dragNode.parentId = targetId
+        if (!targetNode.children) {
+          targetNode.children = []
+        }
+        targetNode.children.push(dragNode)
+        recalculateSort(targetNode.children)
+      }
+    } else {
+      // 放在目标前面或后面
+      insertNode(dragTableData.value, dragNode, targetId, position)
+    }
+  }
+
+  /**
+   * 查找节点
+   */
+  const findNodeById = (tree: Api.System.MenuVO[], id: number): Api.System.MenuVO | null => {
+    for (const node of tree) {
+      if (node.id === id) return node
+      if (node.children?.length) {
+        const found = findNodeById(node.children, id)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  /**
+   * 检查是否是后代节点
+   */
+  const isDescendant = (node: Api.System.MenuVO, targetId: number): boolean => {
+    if (!node.children?.length) return false
+    for (const child of node.children) {
+      if (child.id === targetId) return true
+      if (isDescendant(child, targetId)) return true
+    }
+    return false
+  }
+
+  /**
+   * 从树中移除节点
+   */
+  const removeNode = (tree: Api.System.MenuVO[], id: number): boolean => {
+    for (let i = 0; i < tree.length; i++) {
+      if (tree[i].id === id) {
+        tree.splice(i, 1)
+        return true
+      }
+      if (tree[i].children?.length) {
+        if (removeNode(tree[i].children!, id)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  /**
+   * 插入节点到指定位置
+   */
+  const insertNode = (
+    tree: Api.System.MenuVO[],
+    node: Api.System.MenuVO,
+    targetId: number,
+    position: 'before' | 'after'
+  ): boolean => {
+    for (let i = 0; i < tree.length; i++) {
+      if (tree[i].id === targetId) {
+        const insertIndex = position === 'before' ? i : i + 1
+        node.parentId = tree[i].parentId
+        tree.splice(insertIndex, 0, node)
+        recalculateSort(tree)
+        return true
+      }
+      if (tree[i].children?.length) {
+        if (insertNode(tree[i].children!, node, targetId, position)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  /**
+   * 重新计算排序号
+   */
+  const recalculateSort = (items: Api.System.MenuVO[]): void => {
+    items.forEach((item, index) => {
+      item.sort = index + 1
+    })
+  }
+
+  /**
+   * 收集所有排序数据
+   */
+  const collectSortData = (tree: Api.System.MenuVO[]): Api.System.MenuSortItem[] => {
+    const result: Api.System.MenuSortItem[] = []
+    
+    const traverse = (items: Api.System.MenuVO[]) => {
+      items.forEach((item, index) => {
+        result.push({
+          id: item.id,
+          parentId: item.parentId,
+          sort: index + 1
+        })
+        if (item.children?.length) {
+          traverse(item.children)
+        }
+      })
+    }
+    
+    traverse(tree)
+    return result
+  }
+
+  /**
+   * 保存排序更改
+   */
+  const saveSortChanges = async (): Promise<void> => {
+    try {
+      loading.value = true
+      const items = collectSortData(dragTableData.value)
+      await updateMenuSort({ items })
+      await getMenuList()
+      isDragMode.value = false
+      dragTableData.value = []
+    } catch (error) {
+      console.error('保存排序失败:', error)
+    } finally {
+      loading.value = false
+    }
+  }
 </script>
+
+<style scoped>
+  .drag-tip {
+    display: flex;
+    align-items: center;
+  }
+
+  .drag-tree-wrapper {
+    border: 1px solid var(--el-border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .drag-tree-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--el-fill-color-light);
+    border-bottom: 1px solid var(--el-border-color);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+  }
+
+  .drag-tree-header .col-name {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .drag-tree-header .col-type {
+    width: 80px;
+    text-align: center;
+  }
+
+  .drag-tree-header .col-sort {
+    width: 60px;
+    text-align: center;
+  }
+
+  .drag-tree-header .col-path {
+    width: 200px;
+  }
+
+  .drag-tree-body {
+    max-height: 800px;
+    overflow-y: auto;
+  }
+</style>

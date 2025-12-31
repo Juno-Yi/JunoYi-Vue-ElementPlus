@@ -121,4 +121,24 @@ declare namespace Api.System {
     /** 备注 */
     remark?: string
   }
+
+  /**
+   * 菜单排序项
+   */
+  interface MenuSortItem {
+    /** 菜单ID */
+    id: number
+    /** 父级菜单ID */
+    parentId: number
+    /** 排序号 */
+    sort: number
+  }
+
+  /**
+   * 菜单排序请求参数
+   */
+  interface MenuSortDTO {
+    /** 排序项列表 */
+    items: MenuSortItem[]
+  }
 }
