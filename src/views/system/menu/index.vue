@@ -41,7 +41,7 @@
       </ArtTableHeader>
 
       <!-- 拖拽模式提示 -->
-      <div v-if="isDragMode" class="drag-tip mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-600 dark:text-blue-400">
+      <div v-if="isDragMode" class="drag-tip mt-4 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-600 dark:text-blue-400">
         <ArtSvgIcon icon="ri:information-line" class="mr-1" />
         拖拽模式：拖动菜单可调整排序，拖到目录上可移动到该目录下。完成后点击「保存排序」。
       </div>
