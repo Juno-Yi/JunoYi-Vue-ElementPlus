@@ -42,6 +42,9 @@
       <template #isExternalLink>
         <ElSwitch v-model="isExternalLink" />
       </template>
+      <template #icon>
+        <ArtIconPicker v-model="form.icon" placeholder="请输入或选择图标" />
+      </template>
     </ArtForm>
 
     <template #footer>
@@ -59,6 +62,7 @@
   import { QuestionFilled } from '@element-plus/icons-vue'
   import type { FormItem } from '@/components/core/forms/art-form/index.vue'
   import ArtForm from '@/components/core/forms/art-form/index.vue'
+  import ArtIconPicker from '@/components/core/forms/art-icon-picker/index.vue'
   import { useWindowSize } from '@vueuse/core'
   import { addMenu, updateMenu, fetchMenuTree } from '@/api/system/menu'
   import { formatMenuTitle } from '@/utils/router'
@@ -226,7 +230,7 @@
           type: 'input',
           props: { placeholder: '如：Demo' }
         },
-        { label: '图标', key: 'icon', type: 'input', props: { placeholder: '如：ri:user-line' } },
+        { label: '图标', key: 'icon' },
         {
           label: '排序',
           key: 'sort',
@@ -295,7 +299,7 @@
           placeholder: isTopLevel.value ? '一级菜单必须填写' : '如：/system/user'
         }
       },
-      { label: '图标', key: 'icon', type: 'input', props: { placeholder: '如：ri:user-line' } },
+      { label: '图标', key: 'icon' },
       {
         label: '权限标识',
         key: 'permission',
