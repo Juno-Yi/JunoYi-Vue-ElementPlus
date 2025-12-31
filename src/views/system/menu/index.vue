@@ -653,25 +653,88 @@
   }
 
   /**
-   * 收集所有排序数据
+   * 收集所有排序数据（包含层级变化时的路径修正）
    */
   const collectSortData = (tree: Api.System.MenuVO[]): Api.System.MenuSortItem[] => {
     const result: Api.System.MenuSortItem[] = []
     
-    const traverse = (items: Api.System.MenuVO[]) => {
+    // 构建原始数据的 parentId 映射，用于检测层级变化
+    const buildOriginalParentMap = (items: Api.System.MenuVO[], map: Map<number, number>) => {
+      items.forEach(item => {
+        map.set(item.id, item.parentId)
+        if (item.children?.length) {
+          buildOriginalParentMap(item.children, map)
+        }
+      })
+    }
+    const originalParentMap = new Map<number, number>()
+    buildOriginalParentMap(tableData.value, originalParentMap)
+    
+    /**
+     * 修正路径格式
+     * - 一级菜单/目录：path 以 / 开头
+     * - 二级及以下：path 不能以 / 开头
+     */
+    const fixPath = (path: string, isTopLevel: boolean): string => {
+      if (!path) return path
+      if (isTopLevel) {
+        // 一级：确保以 / 开头
+        return path.startsWith('/') ? path : `/${path}`
+      } else {
+        // 二级及以下：移除开头的 /
+        return path.startsWith('/') ? path.slice(1) : path
+      }
+    }
+    
+    /**
+     * 修正组件路径
+     * - 一级目录：component 为 /index/index
+     * - 二级及以下目录：component 为空
+     * - 菜单：保持原有 component（如果是 /index/index 则需要清空）
+     */
+    const fixComponent = (item: Api.System.MenuVO, isTopLevel: boolean): string => {
+      const isDirectory = item.menuType === 0
+      
+      if (isDirectory) {
+        return isTopLevel ? '/index/index' : ''
+      }
+      
+      // 菜单类型
+      if (isTopLevel) {
+        // 一级菜单必须有 component，如果没有则保持原样
+        return item.component || ''
+      } else {
+        // 二级及以下菜单，如果是 /index/index 则清空
+        return item.component === '/index/index' ? '' : (item.component || '')
+      }
+    }
+    
+    const traverse = (items: Api.System.MenuVO[], isTopLevel: boolean) => {
       items.forEach((item, index) => {
-        result.push({
+        const originalParentId = originalParentMap.get(item.id)
+        const parentChanged = originalParentId !== item.parentId
+        
+        const sortItem: Api.System.MenuSortItem = {
           id: item.id,
           parentId: item.parentId,
           sort: index + 1
-        })
+        }
+        
+        // 如果层级发生变化，需要修正 path 和 component
+        if (parentChanged) {
+          sortItem.path = fixPath(item.path, isTopLevel)
+          sortItem.component = fixComponent(item, isTopLevel)
+        }
+        
+        result.push(sortItem)
+        
         if (item.children?.length) {
-          traverse(item.children)
+          traverse(item.children, false)
         }
       })
     }
     
-    traverse(tree)
+    traverse(tree, true)
     return result
   }
 

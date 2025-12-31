@@ -132,6 +132,10 @@ declare namespace Api.System {
     parentId: number
     /** 排序号 */
     sort: number
+    /** 路由路径（层级变化时需要修正） */
+    path?: string
+    /** 组件路径（层级变化时需要修正） */
+    component?: string
   }
 
   /**
