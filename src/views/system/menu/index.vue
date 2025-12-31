@@ -41,7 +41,7 @@
       </ArtTableHeader>
 
       <!-- 拖拽模式提示 -->
-      <div v-if="isDragMode" class="drag-tip mt-4 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-600 dark:text-blue-400">
+      <div v-if="isDragMode" class="drag-tip mt-4 mb-4">
         <ArtSvgIcon icon="ri:information-line" class="mr-1" />
         拖拽模式：拖动菜单可调整排序，拖到目录上可移动到该目录下。完成后点击「保存排序」。
       </div>
@@ -698,6 +698,12 @@
   .drag-tip {
     display: flex;
     align-items: center;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border: 1px solid var(--el-color-primary-light-7);
   }
 
   .drag-tree-wrapper {
