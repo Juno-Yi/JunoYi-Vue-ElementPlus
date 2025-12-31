@@ -39,19 +39,19 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   {
     path: '/403',
     name: 'Exception403',
-    component: () => import('@views/exception/403/index.vue'),
+    component: () => import('@/components/core/exception/Exception403.vue'),
     meta: { title: '403', isHideTab: true }
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'Exception404',
-    component: () => import('@views/exception/404/index.vue'),
+    component: () => import('@/components/core/exception/Exception404.vue'),
     meta: { title: '404', isHideTab: true }
   },
   {
     path: '/500',
     name: 'Exception500',
-    component: () => import('@views/exception/500/index.vue'),
+    component: () => import('@/components/core/exception/Exception500.vue'),
     meta: { title: '500', isHideTab: true }
   },
   {
