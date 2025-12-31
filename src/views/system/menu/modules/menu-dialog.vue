@@ -83,6 +83,7 @@
   interface Props {
     visible: boolean
     editData?: Api.System.MenuVO | null
+    defaultParentId?: number
   }
 
   interface Emits {
@@ -92,7 +93,8 @@
 
   const props = withDefaults(defineProps<Props>(), {
     visible: false,
-    editData: null
+    editData: null,
+    defaultParentId: 0
   })
 
   const emit = defineEmits<Emits>()
@@ -513,6 +515,9 @@
         loadMenuTree()
         if (props.editData) {
           nextTick(() => loadFormData())
+        } else if (props.defaultParentId) {
+          // 新增时设置默认父级目录
+          form.parentId = props.defaultParentId
         }
       }
     }

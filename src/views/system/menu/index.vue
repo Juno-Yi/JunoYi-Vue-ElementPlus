@@ -41,6 +41,7 @@
       <MenuDialog
         v-model:visible="dialogVisible"
         :editData="editData"
+        :defaultParentId="parentId"
         @success="getMenuList"
       />
     </ElCard>
@@ -70,6 +71,7 @@
   // 弹窗相关
   const dialogVisible = ref(false)
   const editData = ref<Api.System.MenuVO | null>(null)
+  const parentId = ref<number>(0)
 
   // 搜索相关
   const initialSearchState = {
@@ -272,12 +274,21 @@
     {
       prop: 'operation',
       label: '操作',
-      width: 120,
+      width: 160,
       align: 'center',
       headerAlign: 'center',
       fixed: 'right',
       formatter: (row: Api.System.MenuVO) => {
         const buttons = []
+        // 目录类型显示添加按钮
+        if (row.menuType === 0 && hasPermission('system.ui.menu.button.add')) {
+          buttons.push(
+            h(ArtButtonTable, {
+              type: 'add',
+              onClick: () => handleAddChildMenu(row)
+            })
+          )
+        }
         if (hasPermission('system.ui.menu.button.edit')) {
           buttons.push(
             h(ArtButtonTable, {
@@ -380,6 +391,16 @@
    */
   const handleAddMenu = (): void => {
     editData.value = null
+    parentId.value = 0
+    dialogVisible.value = true
+  }
+
+  /**
+   * 添加子菜单（在目录下添加）
+   */
+  const handleAddChildMenu = (row: Api.System.MenuVO): void => {
+    editData.value = null
+    parentId.value = row.id
     dialogVisible.value = true
   }
 
@@ -388,6 +409,7 @@
    */
   const handleEditMenu = (row: Api.System.MenuVO): void => {
     editData.value = row
+    parentId.value = 0
     dialogVisible.value = true
   }
 
