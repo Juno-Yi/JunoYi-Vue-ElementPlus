@@ -22,7 +22,7 @@
           v-model="form.parentId"
           :data="parentDeptOptions"
           node-key="id"
-          :props="{ label: 'deptName', children: 'children' }"
+          :props="{ label: 'name', children: 'children' }"
           :render-after-expand="false"
           check-strictly
           clearable
@@ -76,9 +76,9 @@
   // 表单数据
   const form = reactive<Api.System.DeptDTO>({
     parentId: 0,
-    deptName: '',
+    name: '',
     leader: '',
-    phone: '',
+    phonenumber: '',
     email: '',
     sort: 1,
     status: 1,
@@ -87,11 +87,11 @@
 
   // 校验规则
   const rules: FormRules = {
-    deptName: [
+    name: [
       { required: true, message: '请输入部门名称', trigger: 'blur' },
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
     ],
-    phone: [
+    phonenumber: [
       { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
     ],
     email: [
@@ -110,7 +110,7 @@
       
       const node: any = {
         id: item.id,
-        deptName: item.deptName,
+        name: item.name,
         children: item.children?.length ? buildParentOptions(item.children, excludeId) : undefined
       }
       if (!node.children?.length) {
@@ -145,9 +145,9 @@
    */
   const formItems = computed<FormItem[]>(() => [
     { label: '上级部门', key: 'parentId' },
-    { label: '部门名称', key: 'deptName', type: 'input', props: { placeholder: '请输入部门名称' } },
+    { label: '部门名称', key: 'name', type: 'input', props: { placeholder: '请输入部门名称' } },
     { label: '负责人', key: 'leader', type: 'input', props: { placeholder: '请输入负责人' } },
-    { label: '联系电话', key: 'phone', type: 'input', props: { placeholder: '请输入联系电话' } },
+    { label: '联系电话', key: 'phonenumber', type: 'input', props: { placeholder: '请输入联系电话' } },
     { label: '邮箱', key: 'email', type: 'input', props: { placeholder: '请输入邮箱' } },
     { label: '排序', key: 'sort', type: 'number', props: { min: 0, controlsPosition: 'right', style: { width: '100%' } } },
     { label: '状态', key: 'status', type: 'switch', props: { activeValue: 1, inactiveValue: 0 } },
@@ -164,9 +164,9 @@
     Object.assign(form, {
       id: undefined,
       parentId: 0,
-      deptName: '',
+      name: '',
       leader: '',
-      phone: '',
+      phonenumber: '',
       email: '',
       sort: 1,
       status: 1,
@@ -186,9 +186,9 @@
     Object.assign(form, {
       id: row.id,
       parentId: row.parentId ?? 0,
-      deptName: row.deptName || '',
+      name: row.name || '',
       leader: row.leader || '',
-      phone: row.phone || '',
+      phonenumber: row.phonenumber || '',
       email: row.email || '',
       sort: row.sort ?? 1,
       status: row.status ?? 1,

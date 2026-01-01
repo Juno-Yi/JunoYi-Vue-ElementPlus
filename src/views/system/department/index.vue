@@ -76,7 +76,7 @@
 
   // 搜索相关
   const initialSearchState = {
-    deptName: '',
+    name: '',
     status: null as number | null
   }
 
@@ -92,7 +92,7 @@
   const formItems = computed(() => [
     {
       label: '部门名称',
-      key: 'deptName',
+      key: 'name',
       type: 'input',
       props: { clearable: true }
     },
@@ -148,7 +148,7 @@
   // 表格列配置
   const { columnChecks, columns } = useTableColumns(() => [
     {
-      prop: 'deptName',
+      prop: 'name',
       label: '部门名称',
       minWidth: 200,
       headerAlign: 'center'
@@ -162,12 +162,12 @@
       formatter: (row: Api.System.DeptVO) => row.leader || '-'
     },
     {
-      prop: 'phone',
+      prop: 'phonenumber',
       label: '联系电话',
       width: 140,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: Api.System.DeptVO) => row.phone || '-'
+      formatter: (row: Api.System.DeptVO) => row.phonenumber || '-'
     },
     {
       prop: 'sort',
@@ -256,9 +256,9 @@
   const searchDept = (items: Api.System.DeptVO[]): Api.System.DeptVO[] => {
     const results: Api.System.DeptVO[] = []
     for (const item of items) {
-      const searchName = appliedFilters.deptName?.toLowerCase().trim() || ''
+      const searchName = appliedFilters.name?.toLowerCase().trim() || ''
       const searchStatus = appliedFilters.status
-      const deptName = (item.deptName || '').toLowerCase()
+      const deptName = (item.name || '').toLowerCase()
       const nameMatch = !searchName || deptName.includes(searchName)
       const statusMatch = searchStatus === null || item.status === searchStatus
 
@@ -341,7 +341,7 @@
     const hasChildren = row.children && row.children.length > 0
     
     if (hasChildren) {
-      ElMessageBox.alert(`部门「${row.deptName}」下有子部门，请先删除子部门后再删除`, '提示', {
+      ElMessageBox.alert(`部门「${row.name}」下有子部门，请先删除子部门后再删除`, '提示', {
         confirmButtonText: '知道了',
         type: 'warning'
       })
@@ -349,7 +349,7 @@
     }
     
     try {
-      await ElMessageBox.confirm(`确定要删除部门「${row.deptName}」吗？删除后无法恢复`, '提示', {
+      await ElMessageBox.confirm(`确定要删除部门「${row.name}」吗？删除后无法恢复`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

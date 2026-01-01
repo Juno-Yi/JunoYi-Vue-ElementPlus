@@ -7,7 +7,13 @@ declare namespace Api.System {
    */
   interface DeptQueryDTO {
     /** 部门名称 */
-    deptName?: string
+    name?: string
+    /** 负责人 */
+    leader?: string
+    /** 联系电话 */
+    phonenumber?: string
+    /** 邮箱 */
+    email?: string
     /** 状态 */
     status?: number
   }
@@ -21,15 +27,15 @@ declare namespace Api.System {
     /** 父部门ID */
     parentId: number
     /** 部门名称 */
-    deptName: string
+    name: string
+    /** 排序号 */
+    sort: number
     /** 负责人 */
     leader: string
     /** 联系电话 */
-    phone: string
+    phonenumber: string
     /** 邮箱 */
     email: string
-    /** 排序号 */
-    sort: number
     /** 状态（0禁用 1启用） */
     status: number
     /** 备注 */
@@ -51,11 +57,11 @@ declare namespace Api.System {
     /** 父部门ID */
     parentId?: number
     /** 部门名称 */
-    deptName?: string
+    name?: string
     /** 负责人 */
     leader?: string
     /** 联系电话 */
-    phone?: string
+    phonenumber?: string
     /** 邮箱 */
     email?: string
     /** 排序号 */
