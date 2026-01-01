@@ -75,7 +75,7 @@ export const upgradeLogList = ref<UpgradeLog[]>([
                 '批量删除测试角色测试'
             ]
         },
-        remark: '角色权限分配功能并未完善，需要在后续权限管理功能完善后，添加上'
+        remark: '角色权限分配功能并未完善，需要在后续权限管理功能完善后，再进行添加完善'
     },
     {
         version: 'v0.1.3-alpha',
