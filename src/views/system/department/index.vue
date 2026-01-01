@@ -157,7 +157,7 @@
     {
       prop: 'name',
       label: '部门名称',
-      width: 150,
+      width: 200,
       headerAlign: 'center'
     },
     {

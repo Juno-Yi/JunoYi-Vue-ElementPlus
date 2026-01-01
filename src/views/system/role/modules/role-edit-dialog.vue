@@ -32,8 +32,8 @@
       </ElFormItem>
       <ElFormItem v-if="dialogType === 'edit'" label="状态" prop="status">
         <ElRadioGroup v-model="form.status">
-          <ElRadio :value="0">启用</ElRadio>
-          <ElRadio :value="1">禁用</ElRadio>
+          <ElRadio :value="1">启用</ElRadio>
+          <ElRadio :value="0">禁用</ElRadio>
         </ElRadioGroup>
       </ElFormItem>
       <ElFormItem label="备注" prop="remark">
