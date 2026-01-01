@@ -32,3 +32,23 @@ declare module 'qrcode.vue' {
 
 // 全局变量声明
 declare const __APP_VERSION__: string // 版本号
+
+// Vite 环境变量类型声明
+interface ImportMetaEnv {
+  readonly VITE_VERSION: string
+  readonly VITE_PORT: string
+  readonly VITE_BASE_URL: string
+  readonly VITE_API_URL: string
+  readonly VITE_API_PREFIX: string
+  readonly VITE_WITH_CREDENTIALS: string
+  readonly VITE_OPEN_ROUTE_INFO: string
+  readonly VITE_LOCK_ENCRYPT_KEY: string
+  readonly VITE_AUTO_FILL_LOGIN: string
+  readonly VITE_DROP_CONSOLE: string
+  readonly VITE_API_ENCRYPT: string
+  readonly VITE_API_ENCRYPT_PUBLIC_KEY: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

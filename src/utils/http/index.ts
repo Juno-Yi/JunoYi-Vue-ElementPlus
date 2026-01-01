@@ -20,6 +20,7 @@ import { ApiStatus } from './status'
 import { HttpError, handleError, showError, showSuccess } from './error'
 import { $t } from '@/locales'
 import { BaseResponse } from '@/types'
+import { encryptRequest, decryptResponse, isApiEncryptEnabled } from './crypto'
 
 /** 请求配置常量 */
 const REQUEST_TIMEOUT = 15000
@@ -40,6 +41,7 @@ let refreshSubscribers: Array<(token: string) => void> = []
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   showErrorMessage?: boolean
   showSuccessMessage?: boolean
+  noEncrypt?: boolean // 禁用加密（针对单个请求）
   _retry?: boolean // 标记是否为重试请求
 }
 
@@ -53,6 +55,17 @@ const axiosInstance = axios.create({
   validateStatus: (status) => status >= 200 && status < 300,
   transformResponse: [
     (data, headers) => {
+      // 当开启加密时，自动解密响应
+      if (isApiEncryptEnabled() && typeof data === 'string' && data.length > 0) {
+        try {
+          const decryptedData = decryptResponse(data)
+          return JSON.parse(decryptedData)
+        } catch (e) {
+          console.error('响应解密失败:', e)
+          // 解密失败，尝试作为普通 JSON 解析
+        }
+      }
+      
       const contentType = headers['content-type']
       if (contentType?.includes('application/json')) {
         try {
@@ -76,9 +89,21 @@ axiosInstance.interceptors.request.use(
       request.headers.set('Authorization', token)
     }
 
+    // 获取扩展配置
+    const extConfig = request as InternalAxiosRequestConfig & ExtendedAxiosRequestConfig
+
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
       request.headers.set('Content-Type', 'application/json')
-      request.data = JSON.stringify(request.data)
+      
+      // 加密请求数据
+      if (isApiEncryptEnabled() && !extConfig.noEncrypt) {
+        const jsonData = typeof request.data === 'string' ? request.data : JSON.stringify(request.data)
+        request.data = encryptRequest(jsonData)
+        request.headers.set('X-Encrypted', 'true')
+        request.headers.set('Content-Type', 'text/plain')
+      } else {
+        request.data = typeof request.data === 'string' ? request.data : JSON.stringify(request.data)
+      }
     }
 
     return request
