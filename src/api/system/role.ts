@@ -4,7 +4,7 @@ import type { PageResult } from '@/types/common/response'
 /**
  * 获取角色列表（分页）
  */
-export function fetchRoleList(params?: Api.System.RoleQueryDTO) {
+export function fetchGetRoleList(params?: Api.System.RoleQueryDTO) {
   return request.get<PageResult<Api.System.RoleVO>>({
     url: '/system/role',
     params
@@ -14,7 +14,7 @@ export function fetchRoleList(params?: Api.System.RoleQueryDTO) {
 /**
  * 获取角色下拉列表选项
  */
-export function fetchRoleOptions() {
+export function fetchGetRoleOptions() {
   return request.get<Api.System.RoleVO[]>({
     url: '/system/role/options'
   })
@@ -23,7 +23,7 @@ export function fetchRoleOptions() {
 /**
  * 获取角色详情
  */
-export function fetchRoleById(id: number | string) {
+export function fetchGetRoleById(id: number | string) {
   return request.get<Api.System.RoleVO>({
     url: `/system/role/${id}`
   })
@@ -32,7 +32,7 @@ export function fetchRoleById(id: number | string) {
 /**
  * 添加角色
  */
-export function addRole(data: Api.System.RoleDTO) {
+export function fetchAddRole(data: Api.System.RoleDTO) {
   return request.post<void>({
     url: '/system/role',
     data,
@@ -43,7 +43,7 @@ export function addRole(data: Api.System.RoleDTO) {
 /**
  * 更新角色
  */
-export function updateRole(data: Api.System.RoleDTO) {
+export function fetchUpdateRole(data: Api.System.RoleDTO) {
   return request.put<void>({
     url: '/system/role',
     data,
@@ -54,7 +54,7 @@ export function updateRole(data: Api.System.RoleDTO) {
 /**
  * 删除角色
  */
-export function deleteRole(id: number | string) {
+export function fetchDeleteRole(id: number | string) {
   return request.del<void>({
     url: `/system/role/${id}`,
     showSuccessMessage: true
@@ -64,7 +64,7 @@ export function deleteRole(id: number | string) {
 /**
  * 批量删除角色
  */
-export function deleteRoleBatch(ids: number[]) {
+export function fetchDeleteRoleBatch(ids: number[]) {
   return request.del<void>({
     url: '/system/role/batch',
     data: ids,

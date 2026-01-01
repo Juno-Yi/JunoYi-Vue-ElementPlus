@@ -4,7 +4,7 @@ import type { PageResult } from '@/types/common/response'
 /**
  * 获取菜单树形列表（不分页）
  */
-export function fetchMenuTree(params?: Api.System.MenuQueryDTO) {
+export function fetchGetMenuTree(params?: Api.System.MenuQueryDTO) {
   return request.get<Api.System.MenuVO[]>({
     url: '/system/menu/tree',
     params
@@ -14,7 +14,7 @@ export function fetchMenuTree(params?: Api.System.MenuQueryDTO) {
 /**
  * 获取菜单列表（分页）
  */
-export function fetchMenuList(params?: Api.System.MenuQueryDTO) {
+export function fetchGetMenuList(params?: Api.System.MenuQueryDTO) {
   return request.get<PageResult<Api.System.MenuVO>>({
     url: '/system/menu/list',
     params
@@ -24,7 +24,7 @@ export function fetchMenuList(params?: Api.System.MenuQueryDTO) {
 /**
  * 获取菜单详情
  */
-export function fetchMenuById(id: number | string) {
+export function fetchGetMenuById(id: number | string) {
   return request.get<Api.System.MenuVO>({
     url: `/system/menu/${id}`
   })
@@ -33,7 +33,7 @@ export function fetchMenuById(id: number | string) {
 /**
  * 添加菜单
  */
-export function addMenu(data: Api.System.MenuDTO) {
+export function fetchAddMenu(data: Api.System.MenuDTO) {
   return request.post<number>({
     url: '/system/menu',
     data,
@@ -44,7 +44,7 @@ export function addMenu(data: Api.System.MenuDTO) {
 /**
  * 更新菜单
  */
-export function updateMenu(data: Api.System.MenuDTO) {
+export function fetchUpdateMenu(data: Api.System.MenuDTO) {
   return request.put<void>({
     url: '/system/menu',
     data,
@@ -55,18 +55,17 @@ export function updateMenu(data: Api.System.MenuDTO) {
 /**
  * 删除菜单
  */
-export function deleteMenu(id: number | string) {
+export function fetchDeleteMenu(id: number | string) {
   return request.del<void>({
     url: `/system/menu/${id}`,
     showSuccessMessage: true
   })
 }
 
-
 /**
  * 批量更新菜单排序
  */
-export function updateMenuSort(data: Api.System.MenuSortDTO) {
+export function fetchUpdateMenuSort(data: Api.System.MenuSortDTO) {
   return request.put<void>({
     url: '/system/menu/sort',
     data,

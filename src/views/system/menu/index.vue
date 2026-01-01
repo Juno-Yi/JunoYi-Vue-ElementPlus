@@ -100,7 +100,7 @@
   import MenuDialog from './modules/menu-dialog.vue'
   import DragTreeNode from './modules/drag-tree-node.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { fetchMenuTree, deleteMenu, updateMenuSort } from '@/api/system/menu'
+  import { fetchGetMenuTree, fetchDeleteMenu, fetchUpdateMenuSort } from '@/api/system/menu'
 
   defineOptions({ name: 'Menus' })
 
@@ -176,7 +176,7 @@
   const getMenuList = async (): Promise<void> => {
     loading.value = true
     try {
-      const list = await fetchMenuTree()
+      const list = await fetchGetMenuTree()
       tableData.value = list || []
     } catch (error) {
       console.error('获取菜单失败:', error)
@@ -484,7 +484,7 @@
         type: 'warning'
       })
       
-      await deleteMenu(row.id)
+      await fetchDeleteMenu(row.id)
       getMenuList()
     } catch (error) {
       // 用户取消操作
@@ -747,7 +747,7 @@
     try {
       loading.value = true
       const items = collectSortData(dragTableData.value)
-      await updateMenuSort({ items })
+      await fetchUpdateMenuSort({ items })
       await getMenuList()
       isDragMode.value = false
       dragTableData.value = []

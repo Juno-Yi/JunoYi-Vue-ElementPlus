@@ -10,14 +10,14 @@
 import type { AppRouteRecord } from '@/types/router';
 import { RoutesAlias } from '../routesAlias';
 import { formatMenuTitle } from '@/utils';
-import { fetchRouter} from "@/api/system/router";
+import { fetchGetRouter } from "@/api/system/router";
 
 export class MenuProcessor {
   /**
    * 获取菜单数据（从后端接口获取）
    */
   async getMenuList(): Promise<AppRouteRecord[]> {
-    const menuList = await fetchRouter();
+    const menuList = await fetchGetRouter();
 
     // 在规范化路径之前，验证原始路径配置
     this.validateMenuPaths(menuList)

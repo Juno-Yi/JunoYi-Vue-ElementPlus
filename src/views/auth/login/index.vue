@@ -105,7 +105,7 @@
   import { useUserStore } from '@/store/modules/user'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchLogin, getCaptcha } from '@/api/auth'
+  import { fetchLogin, fetchGetCaptcha } from '@/api/auth'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
 
   defineOptions({ name: 'Login' })
@@ -156,7 +156,7 @@
   const getCaptchaImage = async () => {
     try {
       captchaLoading.value = true
-      const res = await getCaptcha()
+      const res = await fetchGetCaptcha()
       formData.captchaId = res.captchaId
       captchaImage.value = res.image
     } catch (error) {

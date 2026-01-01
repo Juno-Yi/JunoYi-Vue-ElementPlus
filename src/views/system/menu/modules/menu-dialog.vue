@@ -64,7 +64,7 @@
   import ArtForm from '@/components/core/forms/art-form/index.vue'
   import ArtIconPicker from '@/components/core/forms/art-icon-picker/index.vue'
   import { useWindowSize } from '@vueuse/core'
-  import { addMenu, updateMenu, fetchMenuTree } from '@/api/system/menu'
+  import { fetchAddMenu, fetchUpdateMenu, fetchGetMenuTree } from '@/api/system/menu'
   import { formatMenuTitle } from '@/utils/router'
 
   const { width } = useWindowSize()
@@ -207,7 +207,7 @@
    */
   const loadMenuTree = async () => {
     try {
-      const list = await fetchMenuTree()
+      const list = await fetchGetMenuTree()
       menuTreeData.value = list || []
     } catch (error) {
       console.error('获取菜单树失败:', error)
@@ -489,9 +489,9 @@
       }
 
       if (isEdit.value) {
-        await updateMenu(submitData)
+        await fetchUpdateMenu(submitData)
       } else {
-        await addMenu(submitData)
+        await fetchAddMenu(submitData)
       }
 
       emit('success')

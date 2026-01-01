@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
-  import { addRole, updateRole } from '@/api/system/role'
+  import { fetchAddRole, fetchUpdateRole } from '@/api/system/role'
 
   type RoleVO = Api.System.RoleVO
 
@@ -173,9 +173,9 @@
       submitting.value = true
 
       if (props.dialogType === 'add') {
-        await addRole(form)
+        await fetchAddRole(form)
       } else {
-        await updateRole(form)
+        await fetchUpdateRole(form)
       }
 
       emit('success')

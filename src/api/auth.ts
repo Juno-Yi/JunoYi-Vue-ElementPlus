@@ -38,7 +38,7 @@ export function fetchRefreshToken(refreshToken: string) {
  * 获取验证码
  * @returns 验证码响应
  */
-export function getCaptcha() {
+export function fetchGetCaptcha() {
   return request.get<Api.Auth.CaptchaResponse>({
     url: '/captcha/image'
   })

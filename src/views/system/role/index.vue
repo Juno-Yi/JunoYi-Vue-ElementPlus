@@ -69,7 +69,7 @@
   import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { usePermission } from '@/hooks/core/usePermission'
-  import { fetchRoleList, deleteRole as deleteRoleApi, deleteRoleBatch } from '@/api/system/role'
+  import { fetchGetRoleList, fetchDeleteRole, fetchDeleteRoleBatch } from '@/api/system/role'
   import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
@@ -111,7 +111,7 @@
   } = useTable({
     // 核心配置
     core: {
-      apiFn: fetchRoleList,
+      apiFn: fetchGetRoleList,
       apiParams: {
         pageNum: 1,
         pageSize: 20
@@ -305,7 +305,7 @@
         type: 'warning'
       })
       
-      await deleteRoleApi(row.id)
+      await fetchDeleteRole(row.id)
       refreshData()
     } catch {
       // 用户取消
@@ -328,7 +328,7 @@
         type: 'warning'
       })
       
-      await deleteRoleBatch(selectedIds.value)
+      await fetchDeleteRoleBatch(selectedIds.value)
       selectedIds.value = []
       refreshData()
     } catch {
