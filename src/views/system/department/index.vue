@@ -61,6 +61,8 @@
 
   defineOptions({ name: 'Department' })
 
+  type DeptVO = Api.System.DeptVO
+
   // 权限
   const { hasPermission } = usePermission()
 
@@ -148,9 +150,14 @@
   // 表格列配置
   const { columnChecks, columns } = useTableColumns(() => [
     {
+      type: 'selection',
+      width: 50,
+      align: 'center'
+    },
+    {
       prop: 'name',
       label: '部门名称',
-      minWidth: 200,
+      width: 150,
       headerAlign: 'center'
     },
     {
@@ -159,15 +166,23 @@
       width: 120,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: Api.System.DeptVO) => row.leader || '-'
+      formatter: (row: DeptVO) => row.leader || '-'
     },
     {
       prop: 'phonenumber',
       label: '联系电话',
-      width: 140,
+      width: 160,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: Api.System.DeptVO) => row.phonenumber || '-'
+      formatter: (row: DeptVO) => row.phonenumber || '-'
+    },
+    {
+      prop: 'email',
+      label: '邮箱',
+      width: 160,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: DeptVO) => row.email || '-'
     },
     {
       prop: 'sort',
@@ -175,15 +190,15 @@
       width: 80,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: Api.System.DeptVO) => row.sort ?? 0
+      formatter: (row: DeptVO) => row.sort ?? 0
     },
     {
       prop: 'status',
       label: '状态',
-      width: 80,
+      width: 100,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: Api.System.DeptVO) => {
+      formatter: (row: DeptVO) => {
         const status = row.status ?? 1
         return h(ElTag, { type: status === 1 ? 'success' : 'danger', size: 'small' }, () => status === 1 ? '启用' : '禁用')
       }
@@ -191,10 +206,24 @@
     {
       prop: 'createTime',
       label: '创建时间',
-      width: 170,
+      width: 180,
       align: 'center',
       headerAlign: 'center',
-      formatter: (row: Api.System.DeptVO) => formatTime(row.createTime)
+      formatter: (row: DeptVO) => formatTime(row.createTime)
+    },
+    {
+      prop: 'updateTime',
+      label: '更新时间',
+      width: 180,
+      align: 'center',
+      headerAlign: 'center',
+      formatter: (row: DeptVO) => formatTime(row.updateTime)
+    },
+    {
+      prop: 'remark',
+      label: '备注',
+      minWidth: '200',
+      headerAlign: 'center'
     },
     {
       prop: 'operation',
@@ -203,7 +232,7 @@
       align: 'center',
       headerAlign: 'center',
       fixed: 'right',
-      formatter: (row: Api.System.DeptVO) => {
+      formatter: (row: DeptVO) => {
         const buttons = []
         if (hasPermission('system.ui.dept.button.add')) {
           buttons.push(
