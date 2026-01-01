@@ -68,6 +68,7 @@
 <script setup lang="ts">
   import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
+  import { usePermission } from '@/hooks/core/usePermission'
   import { fetchRoleList, deleteRole as deleteRoleApi, deleteRoleBatch } from '@/api/system/role'
   import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
   import RoleSearch from './modules/role-search.vue'
@@ -76,6 +77,8 @@
   import { ElTag, ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'Role' })
+
+  const { hasPermission } = usePermission()
 
   type RoleVO = Api.System.RoleVO
 
@@ -187,31 +190,44 @@
           prop: 'operation',
           label: '操作',
           width: 80,
+          align: 'center',
+          headerAlign: 'center',
           fixed: 'right',
-          formatter: (row: RoleVO) =>
-            h('div', [
-              h(ArtButtonMore, {
-                list: [
-                  {
-                    key: 'permission',
-                    label: '菜单权限',
-                    icon: 'ri:shield-keyhole-line'
-                  },
-                  {
-                    key: 'edit',
-                    label: '编辑角色',
-                    icon: 'ri:edit-2-line'
-                  },
-                  {
-                    key: 'delete',
-                    label: '删除角色',
-                    icon: 'ri:delete-bin-4-line',
-                    color: '#f56c6c'
-                  }
-                ],
-                onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row)
+          formatter: (row: RoleVO) => {
+            const list: ButtonMoreItem[] = []
+            
+            if (hasPermission('system.ui.role.button.permission')) {
+              list.push({
+                key: 'permission',
+                label: '菜单权限',
+                icon: 'ri:shield-keyhole-line'
               })
-            ])
+            }
+            
+            if (hasPermission('system.ui.role.button.edit')) {
+              list.push({
+                key: 'edit',
+                label: '编辑角色',
+                icon: 'ri:edit-2-line'
+              })
+            }
+            
+            if (hasPermission('system.ui.role.button.delete')) {
+              list.push({
+                key: 'delete',
+                label: '删除角色',
+                icon: 'ri:delete-bin-4-line',
+                color: '#f56c6c'
+              })
+            }
+            
+            if (list.length === 0) return '-'
+            
+            return h(ArtButtonMore, {
+              list,
+              onClick: (item: ButtonMoreItem) => handleButtonMoreClick(item, row)
+            })
+          }
         }
       ]
     }
@@ -249,7 +265,15 @@
     getData()
   }
 
-  const buttonMoreClick = (item: ButtonMoreItem, row: RoleVO) => {
+  const showPermissionDialog = (row?: RoleVO) => {
+    permissionDialog.value = true
+    currentRoleData.value = row
+  }
+
+  /**
+   * 操作按钮点击
+   */
+  const handleButtonMoreClick = (item: ButtonMoreItem, row: RoleVO) => {
     switch (item.key) {
       case 'permission':
         showPermissionDialog(row)
@@ -258,14 +282,9 @@
         showDialog('edit', row)
         break
       case 'delete':
-        deleteRole(row)
+        handleDeleteRole(row)
         break
     }
-  }
-
-  const showPermissionDialog = (row?: RoleVO) => {
-    permissionDialog.value = true
-    currentRoleData.value = row
   }
 
   /**
@@ -315,9 +334,5 @@
     } catch {
       // 用户取消
     }
-  }
-
-  const deleteRole = (row: RoleVO) => {
-    handleDeleteRole(row)
   }
 </script>
