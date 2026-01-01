@@ -5,7 +5,7 @@
     <ArtSearchBar
       v-model="formFilters"
       :items="formItems"
-      :showExpand="false"
+      :showExpand="true"
       @reset="handleReset"
       @search="handleSearch"
     />
@@ -34,7 +34,7 @@
         rowKey="id"
         :loading="loading"
         :columns="columns"
-        :data="filteredTableData"
+        :data="tableData"
         :stripe="false"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         :default-expand-all="false"
@@ -79,11 +79,13 @@
   // 搜索相关
   const initialSearchState = {
     name: '',
+    leader: '',
+    phonenumber: '',
+    email: '',
     status: null as number | null
   }
 
   const formFilters = reactive({ ...initialSearchState })
-  const appliedFilters = reactive({ ...initialSearchState })
 
   // 状态选项
   const statusOptions = [
@@ -95,6 +97,24 @@
     {
       label: '部门名称',
       key: 'name',
+      type: 'input',
+      props: { clearable: true }
+    },
+    {
+      label: '负责人',
+      key: 'leader',
+      type: 'input',
+      props: { clearable: true }
+    },
+    {
+      label: '联系电话',
+      key: 'phonenumber',
+      type: 'input',
+      props: { clearable: true }
+    },
+    {
+      label: '邮箱',
+      key: 'email',
       type: 'input',
       props: { clearable: true }
     },
@@ -122,7 +142,7 @@
   const getDeptList = async (): Promise<void> => {
     loading.value = true
     try {
-      const list = await fetchGetDeptTree()
+      const list = await fetchGetDeptTree(formFilters)
       tableData.value = list || []
     } catch (error) {
       console.error('获取部门失败:', error)
@@ -264,61 +284,11 @@
   ])
 
   /**
-   * 深度克隆对象
-   */
-  const deepClone = <T,>(obj: T): T => {
-    if (obj === null || typeof obj !== 'object') return obj
-    if (obj instanceof Date) return new Date(obj) as T
-    if (Array.isArray(obj)) return obj.map((item) => deepClone(item)) as T
-    const cloned = {} as T
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        cloned[key] = deepClone(obj[key])
-      }
-    }
-    return cloned
-  }
-
-  /**
-   * 搜索部门
-   */
-  const searchDept = (items: Api.System.DeptVO[]): Api.System.DeptVO[] => {
-    const results: Api.System.DeptVO[] = []
-    for (const item of items) {
-      const searchName = appliedFilters.name?.toLowerCase().trim() || ''
-      const searchStatus = appliedFilters.status
-      const deptName = (item.name || '').toLowerCase()
-      const nameMatch = !searchName || deptName.includes(searchName)
-      const statusMatch = searchStatus === null || item.status === searchStatus
-
-      if (item.children?.length) {
-        const matchedChildren = searchDept(item.children)
-        if (matchedChildren.length > 0) {
-          const clonedItem = deepClone(item)
-          clonedItem.children = matchedChildren
-          results.push(clonedItem)
-          continue
-        }
-      }
-
-      if (nameMatch && statusMatch) {
-        results.push(deepClone(item))
-      }
-    }
-    return results
-  }
-
-  // 过滤后的表格数据
-  const filteredTableData = computed(() => {
-    return searchDept(tableData.value)
-  })
-
-  /**
    * 重置搜索条件
    */
   const handleReset = (): void => {
     Object.assign(formFilters, { ...initialSearchState })
-    Object.assign(appliedFilters, { ...initialSearchState })
+    isExpanded.value = false
     getDeptList()
   }
 
@@ -326,7 +296,7 @@
    * 执行搜索
    */
   const handleSearch = (): void => {
-    Object.assign(appliedFilters, { ...formFilters })
+    getDeptList()
   }
 
   /**
@@ -397,7 +367,7 @@
   const toggleExpand = (): void => {
     isExpanded.value = !isExpanded.value
     nextTick(() => {
-      if (tableRef.value?.elTableRef && filteredTableData.value) {
+      if (tableRef.value?.elTableRef && tableData.value) {
         const processRows = (rows: Api.System.DeptVO[]) => {
           rows.forEach((row) => {
             if (row.children?.length) {
@@ -406,7 +376,7 @@
             }
           })
         }
-        processRows(filteredTableData.value)
+        processRows(tableData.value)
       }
     })
   }
