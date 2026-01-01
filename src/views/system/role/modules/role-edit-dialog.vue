@@ -30,6 +30,12 @@
           <ElOption label="自定义数据" value="5" />
         </ElSelect>
       </ElFormItem>
+      <ElFormItem v-if="dialogType === 'edit'" label="状态" prop="status">
+        <ElRadioGroup v-model="form.status">
+          <ElRadio :value="1">启用</ElRadio>
+          <ElRadio :value="0">禁用</ElRadio>
+        </ElRadioGroup>
+      </ElFormItem>
       <ElFormItem label="备注" prop="remark">
         <ElInput
           v-model="form.remark"
@@ -107,6 +113,7 @@
     roleKey: '',
     sort: 1,
     dataScope: '1',
+    status: 1,
     remark: ''
   })
 
@@ -131,6 +138,7 @@
         roleKey: props.roleData.roleKey,
         sort: props.roleData.sort,
         dataScope: props.roleData.dataScope,
+        status: props.roleData.status,
         remark: props.roleData.remark || ''
       })
     } else {
@@ -140,6 +148,7 @@
         roleKey: '',
         sort: 1,
         dataScope: '1',
+        status: 1,
         remark: ''
       })
     }
