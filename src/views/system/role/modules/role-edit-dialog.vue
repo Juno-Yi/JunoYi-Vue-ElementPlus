@@ -2,45 +2,60 @@
   <ElDialog
     v-model="visible"
     :title="dialogType === 'add' ? '新增角色' : '编辑角色'"
-    width="30%"
+    width="500px"
     align-center
     @close="handleClose"
   >
-    <ElForm ref="formRef" :model="form" :rules="rules" label-width="120px">
+    <ElForm ref="formRef" :model="form" :rules="rules" label-width="100px">
       <ElFormItem label="角色名称" prop="roleName">
         <ElInput v-model="form.roleName" placeholder="请输入角色名称" />
       </ElFormItem>
-      <ElFormItem label="角色编码" prop="roleCode">
-        <ElInput v-model="form.roleCode" placeholder="请输入角色编码" />
+      <ElFormItem label="角色标识" prop="roleKey">
+        <ElInput v-model="form.roleKey" placeholder="请输入角色标识" />
       </ElFormItem>
-      <ElFormItem label="描述" prop="description">
-        <ElInput
-          v-model="form.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入角色描述"
+      <ElFormItem label="排序" prop="sort">
+        <ElInputNumber
+          v-model="form.sort"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
         />
       </ElFormItem>
-      <ElFormItem label="启用">
-        <ElSwitch v-model="form.enabled" />
+      <ElFormItem label="数据范围" prop="dataScope">
+        <ElSelect v-model="form.dataScope" placeholder="请选择数据范围" style="width: 100%">
+          <ElOption label="全部数据" value="1" />
+          <ElOption label="本部门数据" value="2" />
+          <ElOption label="本部门及以下" value="3" />
+          <ElOption label="仅本人数据" value="4" />
+          <ElOption label="自定义数据" value="5" />
+        </ElSelect>
+      </ElFormItem>
+      <ElFormItem label="备注" prop="remark">
+        <ElInput
+          v-model="form.remark"
+          type="textarea"
+          :rows="3"
+          placeholder="请输入备注信息"
+        />
       </ElFormItem>
     </ElForm>
     <template #footer>
       <ElButton @click="handleClose">取消</ElButton>
-      <ElButton type="primary" @click="handleSubmit">提交</ElButton>
+      <ElButton type="primary" :loading="submitting" @click="handleSubmit">确定</ElButton>
     </template>
   </ElDialog>
 </template>
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
+  import { addRole, updateRole } from '@/api/system/role'
 
-  type RoleListItem = Api.SystemManage.RoleListItem
+  type RoleVO = Api.System.RoleVO
 
   interface Props {
     modelValue: boolean
     dialogType: 'add' | 'edit'
-    roleData?: RoleListItem
+    roleData?: RoleVO
   }
 
   interface Emits {
@@ -57,6 +72,7 @@
   const emit = defineEmits<Emits>()
 
   const formRef = ref<FormInstance>()
+  const submitting = ref(false)
 
   /**
    * 弹窗显示状态双向绑定
@@ -74,23 +90,24 @@
       { required: true, message: '请输入角色名称', trigger: 'blur' },
       { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
     ],
-    roleCode: [
-      { required: true, message: '请输入角色编码', trigger: 'blur' },
+    roleKey: [
+      { required: true, message: '请输入角色标识', trigger: 'blur' },
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
     ],
-    description: [{ required: true, message: '请输入角色描述', trigger: 'blur' }]
+    sort: [{ required: true, message: '请输入排序', trigger: 'blur' }],
+    dataScope: [{ required: true, message: '请选择数据范围', trigger: 'change' }]
   })
 
   /**
    * 表单数据
    */
-  const form = reactive<RoleListItem>({
-    roleId: 0,
+  const form = reactive<Api.System.RoleDTO>({
+    id: undefined,
     roleName: '',
-    roleCode: '',
-    description: '',
-    createTime: '',
-    enabled: true
+    roleKey: '',
+    sort: 1,
+    dataScope: '1',
+    remark: ''
   })
 
   /**
@@ -104,31 +121,26 @@
   )
 
   /**
-   * 监听角色数据变化，更新表单
-   */
-  watch(
-    () => props.roleData,
-    (newData) => {
-      if (newData && props.modelValue) initForm()
-    },
-    { deep: true }
-  )
-
-  /**
    * 初始化表单数据
-   * 根据弹窗类型填充表单或重置表单
    */
   const initForm = () => {
     if (props.dialogType === 'edit' && props.roleData) {
-      Object.assign(form, props.roleData)
+      Object.assign(form, {
+        id: props.roleData.id,
+        roleName: props.roleData.roleName,
+        roleKey: props.roleData.roleKey,
+        sort: props.roleData.sort,
+        dataScope: props.roleData.dataScope,
+        remark: props.roleData.remark || ''
+      })
     } else {
       Object.assign(form, {
-        roleId: 0,
+        id: undefined,
         roleName: '',
-        roleCode: '',
-        description: '',
-        createTime: '',
-        enabled: true
+        roleKey: '',
+        sort: 1,
+        dataScope: '1',
+        remark: ''
       })
     }
   }
@@ -143,20 +155,26 @@
 
   /**
    * 提交表单
-   * 验证通过后调用接口保存数据
    */
   const handleSubmit = async () => {
-    if (!formRef.value) return
+    if (!formRef.value || submitting.value) return
 
     try {
       await formRef.value.validate()
-      // TODO: 调用新增/编辑接口
-      const message = props.dialogType === 'add' ? '新增成功' : '修改成功'
-      ElMessage.success(message)
+      submitting.value = true
+
+      if (props.dialogType === 'add') {
+        await addRole(form)
+      } else {
+        await updateRole(form)
+      }
+
       emit('success')
       handleClose()
     } catch (error) {
       console.log('表单验证失败:', error)
+    } finally {
+      submitting.value = false
     }
   }
 </script>
