@@ -22,6 +22,15 @@
         <template #left>
           <ElSpace wrap>
             <ElButton v-permission="'system.ui.role.button.add'" @click="showDialog('add')" v-ripple>新增角色</ElButton>
+            <ElButton 
+              v-permission="'system.ui.role.button.delete'" 
+              type="danger" 
+              :disabled="selectedIds.length === 0"
+              @click="handleBatchDelete" 
+              v-ripple
+            >
+              批量删除
+            </ElButton>
           </ElSpace>
         </template>
       </ArtTableHeader>
@@ -32,6 +41,7 @@
         :data="data"
         :columns="columns"
         :pagination="pagination"
+        @selection-change="handleSelectionChange"
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       >
@@ -58,7 +68,7 @@
 <script setup lang="ts">
   import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchRoleList } from '@/api/system/role'
+  import { fetchRoleList, deleteRole as deleteRoleApi, deleteRoleBatch } from '@/api/system/role'
   import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
@@ -81,6 +91,7 @@
   const dialogVisible = ref(false)
   const permissionDialog = ref(false)
   const currentRoleData = ref<RoleVO | undefined>(undefined)
+  const selectedIds = ref<number[]>([])
 
   const {
     columns,
@@ -103,6 +114,11 @@
         pageSize: 20
       },
       columnsFactory: () => [
+        {
+          type: 'selection',
+          width: 50,
+          align: 'center'
+        },
         {
           prop: 'id',
           label: 'ID',
@@ -252,19 +268,56 @@
     currentRoleData.value = row
   }
 
+  /**
+   * 表格选择变化
+   */
+  const handleSelectionChange = (selection: RoleVO[]) => {
+    selectedIds.value = selection.map(item => item.id)
+  }
+
+  /**
+   * 删除单个角色
+   */
+  const handleDeleteRole = async (row: RoleVO) => {
+    try {
+      await ElMessageBox.confirm(`确定删除角色「${row.roleName}」吗？此操作不可恢复！`, '删除确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      
+      await deleteRoleApi(row.id)
+      refreshData()
+    } catch {
+      // 用户取消
+    }
+  }
+
+  /**
+   * 批量删除角色
+   */
+  const handleBatchDelete = async () => {
+    if (selectedIds.value.length === 0) {
+      ElMessage.warning('请选择要删除的角色')
+      return
+    }
+
+    try {
+      await ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 个角色吗？此操作不可恢复！`, '批量删除确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      
+      await deleteRoleBatch(selectedIds.value)
+      selectedIds.value = []
+      refreshData()
+    } catch {
+      // 用户取消
+    }
+  }
+
   const deleteRole = (row: RoleVO) => {
-    ElMessageBox.confirm(`确定删除角色「${row.roleName}」吗？此操作不可恢复！`, '删除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-      .then(() => {
-        // TODO: 调用删除接口
-        ElMessage.success('删除成功')
-        refreshData()
-      })
-      .catch(() => {
-        ElMessage.info('已取消删除')
-      })
+    handleDeleteRole(row)
   }
 </script>
