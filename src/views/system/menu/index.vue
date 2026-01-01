@@ -206,7 +206,7 @@
   }
 
   /**
-   * 格式化时间（年-月-日）
+   * 格式化时间
    */
   const formatTime = (time: string | undefined): string => {
     if (!time) return '-'
@@ -215,9 +215,11 @@
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   }
-
   // 表格列配置
   const { columnChecks, columns } = useTableColumns(() => [
     {

@@ -58,7 +58,7 @@
 <script setup lang="ts">
   import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import { fetchGetRoleList } from '@/api/system-manage'
+  import { fetchRoleList } from '@/api/system/role'
   import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
@@ -67,22 +67,20 @@
 
   defineOptions({ name: 'Role' })
 
-  type RoleListItem = Api.SystemManage.RoleListItem
+  type RoleVO = Api.System.RoleVO
 
   // 搜索表单
   const searchForm = ref({
     roleName: undefined,
-    roleCode: undefined,
-    description: undefined,
-    enabled: undefined,
-    daterange: undefined
+    roleKey: undefined,
+    status: undefined,
   })
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
 
   const dialogVisible = ref(false)
   const permissionDialog = ref(false)
-  const currentRoleData = ref<RoleListItem | undefined>(undefined)
+  const currentRoleData = ref<RoleVO | undefined>(undefined)
 
   const {
     columns,
@@ -99,69 +97,89 @@
   } = useTable({
     // 核心配置
     core: {
-      apiFn: fetchGetRoleList,
+      apiFn: fetchRoleList,
       apiParams: {
-        current: 1,
-        size: 20
+        pageNum: 1,
+        pageSize: 20
       },
-      // 排除 apiParams 中的属性
-      excludeParams: ['daterange'],
       columnsFactory: () => [
         {
-          prop: 'roleId',
-          label: '角色ID',
-          width: 100
+          prop: 'id',
+          label: 'ID',
+          align: 'center',
+          headerAlign: 'center',
+          width: 80
         },
         {
           prop: 'roleName',
           label: '角色名称',
+          headerAlign: 'center',
           minWidth: 120
         },
         {
-          prop: 'roleCode',
-          label: '角色编码',
+          prop: 'roleKey',
+          label: '角色标识',
+          headerAlign: 'center',
           minWidth: 120
         },
         {
-          prop: 'description',
-          label: '角色描述',
-          minWidth: 150,
-          showOverflowTooltip: true
+          prop: 'sort',
+          label: '排序',
+          align: 'center',
+          headerAlign: 'center',
+          width: 80,
         },
         {
-          prop: 'enabled',
-          label: '角色状态',
+          prop: 'status',
+          label: '状态',
+          align: 'center',
+          headerAlign: 'center',
           width: 100,
-          formatter: (row) => {
-            const statusConfig = row.enabled
+          formatter: (row: RoleVO) => {
+            const statusConfig = row.status === 1
               ? { type: 'success', text: '启用' }
-              : { type: 'warning', text: '禁用' }
+              : { type: 'danger', text: '禁用' }
             return h(
               ElTag,
-              { type: statusConfig.type as 'success' | 'warning' },
+              { type: statusConfig.type as 'success' | 'danger', size: 'small' },
               () => statusConfig.text
             )
           }
         },
         {
           prop: 'createTime',
-          label: '创建日期',
+          label: '创建时间',
+          align: 'center',
+          headerAlign: 'center',
           width: 180,
-          sortable: true
+          formatter: (row: RoleVO) => formatTime(row.createTime)
+        },
+        {
+          prop: 'updateTime',
+          label: '更新时间',
+          width: 180,
+          formatter: (row: RoleVO) => formatTime(row.updateTime)
+        },
+        {
+          prop: 'remark',
+          label: '备注',
+          width: 150,
+          showOverflowTooltip: true,
+          formatter: (row: RoleVO) => row.remark || '-'
         },
         {
           prop: 'operation',
           label: '操作',
           width: 80,
           fixed: 'right',
-          formatter: (row) =>
+          formatter: (row: RoleVO) =>
             h('div', [
               h(ArtButtonMore, {
                 list: [
                   {
                     key: 'permission',
                     label: '菜单权限',
-                    icon: 'ri:user-3-line'
+                    icon: 'ri:shield-keyhole-line'
                   },
                   {
                     key: 'edit',
@@ -183,9 +201,25 @@
     }
   })
 
+  /**
+   * 格式化时间
+   */
+  const formatTime = (time: string | undefined): string => {
+    if (!time) return '-'
+    const date = new Date(time)
+    if (isNaN(date.getTime())) return '-'
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+  }
+
   const dialogType = ref<'add' | 'edit'>('add')
 
-  const showDialog = (type: 'add' | 'edit', row?: RoleListItem) => {
+  const showDialog = (type: 'add' | 'edit', row?: RoleVO) => {
     dialogVisible.value = true
     dialogType.value = type
     currentRoleData.value = row
@@ -193,19 +227,13 @@
 
   /**
    * 搜索处理
-   * @param params 搜索参数
    */
   const handleSearch = (params: Record<string, any>) => {
-    // 处理日期区间参数，把 daterange 转换为 startTime 和 endTime
-    const { daterange, ...filtersParams } = params
-    const [startTime, endTime] = Array.isArray(daterange) ? daterange : [null, null]
-
-    // 搜索参数赋值
-    Object.assign(searchParams, { ...filtersParams, startTime, endTime })
+    Object.assign(searchParams, params)
     getData()
   }
 
-  const buttonMoreClick = (item: ButtonMoreItem, row: RoleListItem) => {
+  const buttonMoreClick = (item: ButtonMoreItem, row: RoleVO) => {
     switch (item.key) {
       case 'permission':
         showPermissionDialog(row)
@@ -219,13 +247,13 @@
     }
   }
 
-  const showPermissionDialog = (row?: RoleListItem) => {
+  const showPermissionDialog = (row?: RoleVO) => {
     permissionDialog.value = true
     currentRoleData.value = row
   }
 
-  const deleteRole = (row: RoleListItem) => {
-    ElMessageBox.confirm(`确定删除角色"${row.roleName}"吗？此操作不可恢复！`, '删除确认', {
+  const deleteRole = (row: RoleVO) => {
+    ElMessageBox.confirm(`确定删除角色「${row.roleName}」吗？此操作不可恢复！`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
