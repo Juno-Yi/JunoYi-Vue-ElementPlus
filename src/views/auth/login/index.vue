@@ -95,6 +95,16 @@
           </ElForm>
         </div>
       </div>
+
+      <!-- 版权信息 -->
+      <div v-if="systemInfo" class="login-footer">
+        <p class="copyright">
+          Copyright © {{ systemInfo.copyrightYear }} {{ systemInfo.copyright }}
+        </p>
+        <p v-if="systemInfo.registration" class="registration">
+          {{ systemInfo.registration }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -106,6 +116,7 @@
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
   import { fetchLogin, fetchGetCaptcha } from '@/api/auth'
+  import { fetchGetSystemInfo, type SystemInfo } from '@/api/system/info'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
 
   defineOptions({ name: 'Login' })
@@ -129,6 +140,9 @@
   const captchaImage = ref('')
   const captchaLoading = ref(false)
 
+  // 系统信息
+  const systemInfo = ref<SystemInfo | null>(null)
+
   // 是否自动填充登录信息
   const autoFillLogin = import.meta.env.VITE_AUTO_FILL_LOGIN === 'true'
 
@@ -150,7 +164,17 @@
 
   onMounted(() => {
     getCaptchaImage()
+    getSystemInfo()
   })
+
+  // 获取系统信息
+  const getSystemInfo = async () => {
+    try {
+      systemInfo.value = await fetchGetSystemInfo()
+    } catch (error) {
+      console.error('获取系统信息失败:', error)
+    }
+  }
 
   // 获取验证码
   const getCaptchaImage = async () => {
@@ -245,6 +269,24 @@
 
     &:hover {
       opacity: 0.8;
+    }
+  }
+
+  .login-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+
+    .copyright {
+      margin-bottom: 4px;
+    }
+
+    .registration {
+      color: var(--el-text-color-placeholder);
     }
   }
 </style>
