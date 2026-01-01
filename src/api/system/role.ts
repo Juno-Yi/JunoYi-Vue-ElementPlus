@@ -12,6 +12,15 @@ export function fetchRoleList(params?: Api.System.RoleQueryDTO) {
 }
 
 /**
+ * 获取角色下拉列表选项
+ */
+export function fetchRoleOptions() {
+  return request.get<Api.System.RoleVO[]>({
+    url: '/system/role/options'
+  })
+}
+
+/**
  * 获取角色详情
  */
 export function fetchRoleById(id: number | string) {
@@ -24,7 +33,7 @@ export function fetchRoleById(id: number | string) {
  * 添加角色
  */
 export function addRole(data: Api.System.RoleDTO) {
-  return request.post<number>({
+  return request.post<void>({
     url: '/system/role',
     data,
     showSuccessMessage: true
@@ -53,12 +62,12 @@ export function deleteRole(id: number | string) {
 }
 
 /**
- * 更新角色状态
+ * 批量删除角色
  */
-export function updateRoleStatus(id: number, status: number) {
-  return request.put<void>({
-    url: `/system/role/${id}/status`,
-    data: { status },
+export function deleteRoleBatch(ids: number[]) {
+  return request.del<void>({
+    url: '/system/role/batch',
+    data: ids,
     showSuccessMessage: true
   })
 }
