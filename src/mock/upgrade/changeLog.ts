@@ -16,6 +16,28 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.1.5-alpha',
+        title: '小部分优化重构',
+        date: '2026-1-2',
+        detail: {
+            added: [
+                '前端添加API加密配置',
+                '前端添加API请求响应加密功能',
+                '前端登录页面添加系统版权信息显示',
+
+            ],
+            changed: [
+                '调整前端开发环境配置',
+                '统一前端API封装函数命名规范',
+                '重构前端API封装',
+                '调整前端API函数调用',
+                '重构数据库部分数据表',
+                '优化数据库'
+            ],
+        },
+        remark: '本版本更新内容少，核心主要整理开发思路，调整规范后续开发计划'
+    },
+    {
         version: 'v0.1.4-alpha',
         title: '角色管理',
         date: '2026-1-1',
