@@ -123,7 +123,7 @@
 
   defineOptions({ name: 'User' })
 
-  const { hasPermission } = usePermission()
+  const { hasPermission, isSuperAdmin } = usePermission()
 
   type SysUserVO = Api.System.SysUserVO
 
@@ -285,6 +285,15 @@
                 icon: 'ri:edit-2-line'
               })
             }
+
+            // 只有超级管理员能重置用户密码
+            if (isSuperAdmin){
+              list.push({
+                key: 'restPassword',
+                label: '重置密码',
+                icon: 'ri:lock-fill',
+              })
+            }
             
             if (hasPermission('system.ui.user.button.role')) {
               list.push({
@@ -310,6 +319,7 @@
                 color: '#f56c6c'
               })
             }
+
             
             if (list.length === 0) return '-'
             
