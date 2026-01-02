@@ -70,7 +70,6 @@ export function fetchUpdateUserRoles(userId: number, roleIds: number[]) {
   return request.put<void>({
     url: `/system/user/${userId}/roles`,
     data: roleIds,
-    showSuccessMessage: true
   })
 }
 
