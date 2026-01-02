@@ -55,4 +55,32 @@ declare namespace Api.System {
     /** 备注 */
     remark?: string
   }
+
+  /**
+   * 用户传输数据
+   */
+  interface SysUserDTO {
+    /** 用户ID（修改时必填） */
+    id?: number
+    /** 用户名 */
+    userName: string
+    /** 密码（添加时必填） */
+    password?: string
+    /** 昵称 */
+    nickName?: string
+    /** 手机号 */
+    phonenumber?: string
+    /** 邮箱 */
+    email?: string
+    /** 性别（0-男，1-女） */
+    sex?: string
+    /** 角色ID列表 */
+    roleIds?: number[]
+    /** 部门ID列表 */
+    deptIds?: number[]
+    /** 状态（1-启用，0-禁用） */
+    status?: number
+    /** 备注 */
+    remark?: string
+  }
 }

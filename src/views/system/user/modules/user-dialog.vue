@@ -73,6 +73,7 @@
 <script setup lang="ts">
   import { fetchGetRoleOptions } from '@/api/system/role'
   import { fetchGetDeptTree } from '@/api/system/department'
+  import { fetchAddUser } from '@/api/system/user'
   import type { FormInstance, FormRules } from 'element-plus'
 
   interface Props {
@@ -208,12 +209,29 @@
   const handleSubmit = async () => {
     if (!formRef.value) return
 
-    await formRef.value.validate((valid) => {
+    await formRef.value.validate(async (valid) => {
       if (valid) {
-        // TODO: 调用添加/更新接口
-        ElMessage.success(dialogType.value === 'add' ? '添加成功' : '更新成功')
-        dialogVisible.value = false
-        emit('submit')
+        try {
+          if (dialogType.value === 'add') {
+            await fetchAddUser({
+              userName: formData.userName,
+              password: formData.password,
+              nickName: formData.nickName,
+              phonenumber: formData.phonenumber,
+              email: formData.email,
+              sex: formData.sex,
+              roleIds: formData.roleIds,
+              deptIds: formData.deptIds,
+              remark: formData.remark
+            })
+          } else {
+            // TODO: 调用更新接口
+          }
+          dialogVisible.value = false
+          emit('submit')
+        } catch (error) {
+          console.error('提交失败:', error)
+        }
       }
     })
   }
