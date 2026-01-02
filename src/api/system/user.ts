@@ -91,3 +91,15 @@ export function fetchUpdateUserDepts(userId: number, deptIds: number[]) {
     data: deptIds,
   })
 }
+
+/**
+ * 重置用户密码
+ */
+export function fetchResetUserPassword(data: { userId: number; newPassword: string }) {
+  return request.put<void>({
+    url: `/system/user/${data.userId}/password`,
+    data: {
+      newPassword: data.newPassword
+    },
+  })
+}

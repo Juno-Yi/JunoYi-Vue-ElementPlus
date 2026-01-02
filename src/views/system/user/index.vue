@@ -103,6 +103,14 @@
       :user-name="currentUserName"
       @submit="handleDeptDialogSubmit"
     />
+
+    <!-- 重置密码弹窗 -->
+    <UserPasswordDialog
+      v-model:visible="passwordDialogVisible"
+      :user-id="currentUserId"
+      :user-name="currentUserName"
+      @submit="handlePasswordDialogSubmit"
+    />
   </div>
 </template>
 
@@ -118,6 +126,7 @@
   import UserDialog from './modules/user-dialog.vue'
   import UserRoleDialog from './modules/user-role-dialog.vue'
   import UserDeptDialog from './modules/user-dept-dialog.vue'
+  import UserPasswordDialog from './modules/user-password-dialog.vue'
   import { ElTag, ElMessageBox, ElTree } from 'element-plus'
   import { DialogType } from '@/types'
 
@@ -146,6 +155,9 @@
 
   // 分配部门弹窗
   const deptDialogVisible = ref(false)
+
+  // 重置密码弹窗
+  const passwordDialogVisible = ref(false)
 
   // 选中行
   const selectedRows = ref<SysUserVO[]>([])
@@ -436,6 +448,9 @@
       case 'edit':
         showDialog('edit', row)
         break
+      case 'restPassword':
+        showPasswordDialog(row)
+        break
       case 'assignRole':
         showRoleDialog(row)
         break
@@ -480,6 +495,22 @@
   const handleDeptDialogSubmit = () => {
     // 部门分配成功后可以刷新数据
     getData()
+  }
+
+  /**
+   * 显示重置密码弹窗
+   */
+  const showPasswordDialog = (row: SysUserVO): void => {
+    currentUserId.value = row.userId
+    currentUserName.value = row.userName
+    passwordDialogVisible.value = true
+  }
+
+  /**
+   * 重置密码弹窗提交
+   */
+  const handlePasswordDialogSubmit = () => {
+    // 密码重置成功
   }
 
   /**
