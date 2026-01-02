@@ -87,6 +87,14 @@
       :user-data="currentUserData"
       @submit="handleDialogSubmit"
     />
+
+    <!-- 分配角色弹窗 -->
+    <UserRoleDialog
+      v-model:visible="roleDialogVisible"
+      :user-id="currentUserId"
+      :user-name="currentUserName"
+      @submit="handleRoleDialogSubmit"
+    />
   </div>
 </template>
 
@@ -100,6 +108,7 @@
   import { fetchGetDeptTree } from '@/api/system/department'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
+  import UserRoleDialog from './modules/user-role-dialog.vue'
   import { ElTag, ElMessageBox, ElTree } from 'element-plus'
   import { DialogType } from '@/types'
 
@@ -120,6 +129,11 @@
   const dialogType = ref<DialogType>('add')
   const dialogVisible = ref(false)
   const currentUserData = ref<Partial<SysUserVO>>({})
+
+  // 分配角色弹窗
+  const roleDialogVisible = ref(false)
+  const currentUserId = ref<number | null>(null)
+  const currentUserName = ref('')
 
   // 选中行
   const selectedRows = ref<SysUserVO[]>([])
@@ -401,8 +415,7 @@
         showDialog('edit', row)
         break
       case 'assignRole':
-        // TODO: 打开分配角色弹窗
-        console.log('分配角色', row)
+        showRoleDialog(row)
         break
       case 'assignDept':
         // TODO: 打开分配部门弹窗
@@ -412,6 +425,23 @@
         deleteUser(row)
         break
     }
+  }
+
+  /**
+   * 显示分配角色弹窗
+   */
+  const showRoleDialog = (row: SysUserVO): void => {
+    currentUserId.value = row.userId
+    currentUserName.value = row.userName
+    roleDialogVisible.value = true
+  }
+
+  /**
+   * 分配角色弹窗提交
+   */
+  const handleRoleDialogSubmit = () => {
+    // 角色分配成功后可以刷新数据
+    getData()
   }
 
   /**

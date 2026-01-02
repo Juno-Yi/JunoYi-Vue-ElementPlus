@@ -53,3 +53,23 @@ export function fetchDeleteUserBatch(ids: number[]) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 获取用户已绑定的角色列表
+ */
+export function fetchGetUserRoles(userId: number) {
+  return request.get<Api.System.RoleVO[]>({
+    url: `/system/user/${userId}/roles`
+  })
+}
+
+/**
+ * 更新用户角色绑定
+ */
+export function fetchUpdateUserRoles(userId: number, roleIds: number[]) {
+  return request.put<void>({
+    url: `/system/user/${userId}/roles`,
+    data: roleIds,
+    showSuccessMessage: true
+  })
+}
