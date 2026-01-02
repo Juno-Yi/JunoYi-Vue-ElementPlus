@@ -71,4 +71,24 @@ declare namespace Api.System {
     /** 备注 */
     remark?: string
   }
+
+  /**
+   * 部门排序项
+   */
+  interface DeptSortItem {
+    /** 部门ID */
+    id: number
+    /** 父部门ID */
+    parentId: number
+    /** 排序值 */
+    sort: number
+  }
+
+  /**
+   * 部门排序DTO
+   */
+  interface DeptSortDTO {
+    /** 排序项列表 */
+    items: DeptSortItem[]
+  }
 }

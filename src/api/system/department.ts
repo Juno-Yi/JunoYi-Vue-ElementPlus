@@ -50,3 +50,14 @@ export function fetchDeleteDept(id: number | string) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 更新部门排序
+ */
+export function fetchUpdateDeptSort(data: Api.System.DeptSortDTO) {
+  return request.put<void>({
+    url: '/system/dept/sort',
+    data,
+    showSuccessMessage: true
+  })
+}
