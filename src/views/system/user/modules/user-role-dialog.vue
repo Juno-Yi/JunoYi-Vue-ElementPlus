@@ -10,7 +10,7 @@
     <!-- 提示信息 -->
     <div class="tip-box mb-5" :style="tipBoxStyle">
       <ArtSvgIcon icon="ri:information-line" class="mr-2 flex-shrink-0" :style="{ color: primaryColor }" />
-      <span>拖拽操作：将左侧角色拖到右侧完成绑定，将右侧角色拖到左侧完成解绑</span>
+      <span>操作方式：拖拽左侧角色到右侧完成绑定，点击右侧角色的 × 按钮或拖回左侧完成解绑</span>
     </div>
 
     <div class="flex gap-4 h-80">
@@ -66,7 +66,15 @@
           >
             <ArtSvgIcon icon="ri:shield-check-line" class="mr-2" :style="{ color: primaryColor }" />
             <span class="flex-1 truncate">{{ role.roleName }}</span>
-            <span class="text-xs text-gray-400">{{ role.roleKey }}</span>
+            <span class="text-xs text-gray-400 mr-2">{{ role.roleKey }}</span>
+            <ElButton 
+              link 
+              size="small" 
+              class="remove-btn"
+              @click.stop="removeRole(role)"
+            >
+              <ArtSvgIcon icon="ri:close-line" class="text-gray-400 hover:text-red-500" />
+            </ElButton>
           </div>
           <div v-if="boundRoles.length === 0" class="text-center text-gray-400 py-8">
             暂无已绑定角色
@@ -182,6 +190,11 @@
     }
   }
 
+  // 移除角色（点击删除按钮）
+  const removeRole = (role: RoleItem) => {
+    boundRoleIds.value = boundRoleIds.value.filter(id => id !== role.id)
+  }
+
   // 加载数据
   const loadData = async () => {
     if (!props.userId) return
@@ -269,5 +282,15 @@
   .role-item-bound:hover {
     background: v-bind(primaryColorLight);
     filter: brightness(0.95);
+  }
+
+  .role-item-bound:hover .remove-btn {
+    opacity: 1;
+  }
+
+  .remove-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 2px;
   }
 </style>

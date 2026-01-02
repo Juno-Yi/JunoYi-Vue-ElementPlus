@@ -73,3 +73,23 @@ export function fetchUpdateUserRoles(userId: number, roleIds: number[]) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 获取用户已绑定的部门列表
+ */
+export function fetchGetUserDepts(userId: number) {
+  return request.get<Api.System.DeptVO[]>({
+    url: `/system/user/${userId}/depts`
+  })
+}
+
+/**
+ * 更新用户部门绑定
+ */
+export function fetchUpdateUserDepts(userId: number, deptIds: number[]) {
+  return request.put<void>({
+    url: `/system/user/${userId}/depts`,
+    data: deptIds,
+    showSuccessMessage: true
+  })
+}
