@@ -24,7 +24,6 @@
             <ElButton v-permission="'system.ui.role.button.add'" @click="showDialog('add')" v-ripple>新增角色</ElButton>
             <ElButton 
               v-permission="'system.ui.role.button.delete'" 
-              type="danger" 
               :disabled="selectedIds.length === 0"
               @click="handleBatchDelete" 
               v-ripple
