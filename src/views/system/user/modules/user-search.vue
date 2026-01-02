@@ -52,13 +52,14 @@
       label: '手机号',
       key: 'phonenumber',
       type: 'input',
-      props: { placeholder: '请输入手机号', maxlength: '11' }
+      props: { placeholder: '请输入手机号', maxlength: '11', clearable: true },
     },
     {
       label: '邮箱',
       key: 'email',
       type: 'input',
-      props: { placeholder: '请输入邮箱' }
+      clearable: true,
+      props: { placeholder: '请输入邮箱',clearable: true }
     },
     {
       label: '状态',
@@ -79,8 +80,8 @@
       props: {
         placeholder: '请选择性别',
         options: [
-          { label: '男', value: '0' },
-          { label: '女', value: '1' }
+          { label: '男', value: '1' },
+          { label: '女', value: '0' }
         ]
       }
     }

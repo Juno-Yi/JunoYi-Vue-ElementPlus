@@ -164,30 +164,56 @@
       },
       columnsFactory: () => [
         { type: 'selection' },
-        { type: 'index', width: 60, label: '序号' },
+        {
+          prop: 'userId',
+          label: 'ID',
+          width: 60,
+          align: 'center',
+          headerAlign: 'center'
+        },
         {
           prop: 'userName',
           label: '用户名',
-          width: 120
+          width: 120,
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           prop: 'nickName',
           label: '昵称',
-          width: 120
+          width: 120,
+          align: 'center',
+          headerAlign: 'center'
         },
         {
           prop: 'sex',
           label: '性别',
           width: 80,
-          formatter: (row) => (row.sex === '0' ? '男' : row.sex === '1' ? '女' : '未知')
+          align: 'center',
+          headerAlign: 'center',
+          formatter: (row: SysUserVO) => (row.sex === '1' ? '男' : row.sex === '0' ? '女' : '未知')
         },
-        { prop: 'phonenumber', label: '手机号', width: 130 },
-        { prop: 'email', label: '邮箱', minWidth: 180 },
+        {
+          prop: 'phonenumber',
+          label: '手机号',
+          width: 130,
+          align: 'center',
+          headerAlign: 'center'
+        },
+        {
+          prop: 'email',
+          label: '邮箱',
+          minWidth: 180,
+          align: 'center',
+          headerAlign: 'center'
+        },
         {
           prop: 'status',
           label: '状态',
           width: 80,
-          formatter: (row) => {
+          align: 'center',
+          headerAlign: 'center',
+          formatter: (row: SysUserVO) => {
             const statusConfig = getUserStatusConfig(row.status)
             return h(ElTag, { type: statusConfig.type }, () => statusConfig.text)
           }
@@ -195,8 +221,16 @@
         {
           prop: 'createTime',
           label: '创建时间',
-          width: 170,
-          sortable: true
+          headerAlign: 'center',
+          width: 180,
+          formatter: (row: SysUserVO) => formatTime(row.createTime)
+        },
+        {
+          prop: 'updateTime',
+          label: '更新时间',
+          width: 180,
+          headerAlign: 'center',
+          formatter: (row: SysUserVO) => formatTime(row.updateTime)
         },
         {
           prop: 'operation',
@@ -218,6 +252,22 @@
       ]
     }
   })
+
+  /**
+   * 格式化时间
+   */
+  const formatTime = (time: string | undefined): string => {
+    if (!time) return '-'
+    const date = new Date(time)
+    if (isNaN(date.getTime())) return '-'
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+  }
 
   /**
    * 获取部门树数据

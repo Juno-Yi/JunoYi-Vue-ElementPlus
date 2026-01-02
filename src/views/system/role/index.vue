@@ -168,7 +168,6 @@
         {
           prop: 'createTime',
           label: '创建时间',
-          align: 'center',
           headerAlign: 'center',
           width: 180,
           formatter: (row: RoleVO) => formatTime(row.createTime)

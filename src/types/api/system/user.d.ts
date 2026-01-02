@@ -31,7 +31,7 @@ declare namespace Api.System {
    */
   interface SysUserVO {
     /** 用户ID */
-    id: number
+    userId: number
     /** 部门ID */
     deptId?: number
     /** 用户名 */
