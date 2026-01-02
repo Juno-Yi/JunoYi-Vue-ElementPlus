@@ -30,30 +30,7 @@
   })
 
   // 校验规则
-  const rules = {
-    // userName: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
-  }
-
-  // 动态 options
-  const statusOptions = ref<{ label: string; value: string; disabled?: boolean }[]>([])
-
-  // 模拟接口返回状态数据
-  function fetchStatusOptions(): Promise<typeof statusOptions.value> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          { label: '在线', value: '1' },
-          { label: '离线', value: '2' },
-          { label: '异常', value: '3' },
-          { label: '注销', value: '4' }
-        ])
-      }, 1000)
-    })
-  }
-
-  onMounted(async () => {
-    statusOptions.value = await fetchStatusOptions()
-  })
+  const rules = {}
 
   // 表单配置
   const formItems = computed(() => [
@@ -65,14 +42,21 @@
       clearable: true
     },
     {
+      label: '昵称',
+      key: 'nickName',
+      type: 'input',
+      placeholder: '请输入昵称',
+      clearable: true
+    },
+    {
       label: '手机号',
-      key: 'userPhone',
+      key: 'phonenumber',
       type: 'input',
       props: { placeholder: '请输入手机号', maxlength: '11' }
     },
     {
       label: '邮箱',
-      key: 'userEmail',
+      key: 'email',
       type: 'input',
       props: { placeholder: '请输入邮箱' }
     },
@@ -82,17 +66,21 @@
       type: 'select',
       props: {
         placeholder: '请选择状态',
-        options: statusOptions.value
+        options: [
+          { label: '启用', value: 1 },
+          { label: '禁用', value: 0 }
+        ]
       }
     },
     {
       label: '性别',
-      key: 'userGender',
-      type: 'radiogroup',
+      key: 'sex',
+      type: 'select',
       props: {
+        placeholder: '请选择性别',
         options: [
-          { label: '男', value: '1' },
-          { label: '女', value: '2' }
+          { label: '男', value: '0' },
+          { label: '女', value: '1' }
         ]
       }
     }
@@ -100,13 +88,11 @@
 
   // 事件
   function handleReset() {
-    console.log('重置表单')
     emit('reset')
   }
 
   async function handleSearch() {
     await searchBarRef.value.validate()
     emit('search', formData.value)
-    console.log('表单数据', formData.value)
   }
 </script>
