@@ -57,7 +57,6 @@
               <ElSpace wrap>
                 <ElButton @click="showDialog('add')" v-ripple>新增用户</ElButton>
                 <ElButton 
-                  type="danger" 
                   :disabled="selectedRows.length === 0"
                   @click="batchDeleteUsers" 
                   v-ripple
