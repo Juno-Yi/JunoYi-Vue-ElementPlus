@@ -55,7 +55,7 @@
           <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
             <template #left>
               <ElSpace wrap>
-                <ElButton @click="showDialog('add')" v-ripple type="primary">新增用户</ElButton>
+                <ElButton @click="showDialog('add')" v-ripple>新增用户</ElButton>
               </ElSpace>
             </template>
           </ArtTableHeader>
