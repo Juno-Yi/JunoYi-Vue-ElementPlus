@@ -89,6 +89,5 @@ export function fetchUpdateUserDepts(userId: number, deptIds: number[]) {
   return request.put<void>({
     url: `/system/user/${userId}/depts`,
     data: deptIds,
-    showSuccessMessage: true
   })
 }
