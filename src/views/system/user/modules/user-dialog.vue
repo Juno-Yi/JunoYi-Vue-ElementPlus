@@ -73,7 +73,7 @@
 <script setup lang="ts">
   import { fetchGetRoleOptions } from '@/api/system/role'
   import { fetchGetDeptTree } from '@/api/system/department'
-  import { fetchAddUser } from '@/api/system/user'
+  import { fetchAddUser, fetchUpdateUser } from '@/api/system/user'
   import type { FormInstance, FormRules } from 'element-plus'
 
   interface Props {
@@ -225,7 +225,18 @@
               remark: formData.remark
             })
           } else {
-            // TODO: 调用更新接口
+            await fetchUpdateUser({
+              id: props.userData?.userId,
+              userName: formData.userName,
+              nickName: formData.nickName,
+              phonenumber: formData.phonenumber,
+              email: formData.email,
+              sex: formData.sex,
+              roleIds: formData.roleIds,
+              deptIds: formData.deptIds,
+              status: formData.status,
+              remark: formData.remark
+            })
           }
           dialogVisible.value = false
           emit('submit')

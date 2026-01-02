@@ -21,3 +21,14 @@ export function fetchAddUser(data: Api.System.SysUserDTO) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 更新用户
+ */
+export function fetchUpdateUser(data: Api.System.SysUserDTO) {
+  return request.put<void>({
+    url: '/system/user',
+    data,
+    showSuccessMessage: true
+  })
+}
