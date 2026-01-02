@@ -533,6 +533,8 @@
   const cancelDragMode = (): void => {
     isDragMode.value = false
     dragTableData.value = []
+    // 重置展开状态
+    isExpanded.value = false
   }
 
   /**
@@ -751,6 +753,8 @@
       await getMenuList()
       isDragMode.value = false
       dragTableData.value = []
+      // 重置展开状态
+      isExpanded.value = false
     } catch (error) {
       console.error('保存排序失败:', error)
     } finally {
