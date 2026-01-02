@@ -12,12 +12,6 @@
       <ElFormItem v-if="dialogType === 'add'" label="密码" prop="password">
         <ElInput v-model="formData.password" type="password" placeholder="请输入密码" show-password />
       </ElFormItem>
-      <ElFormItem label="性别" prop="sex">
-        <ElSelect v-model="formData.sex" placeholder="请选择性别">
-          <ElOption label="男" value="1" />
-          <ElOption label="女" value="0" />
-        </ElSelect>
-      </ElFormItem>
       <ElFormItem label="昵称" prop="nickName">
         <ElInput v-model="formData.nickName" placeholder="请输入昵称" />
       </ElFormItem>
@@ -27,29 +21,11 @@
       <ElFormItem label="邮箱" prop="email">
         <ElInput v-model="formData.email" placeholder="请输入邮箱" />
       </ElFormItem>
-      <ElFormItem label="角色" prop="roleIds">
-        <ElSelect v-model="formData.roleIds" multiple placeholder="请选择角色" style="width: 100%">
-          <ElOption
-            v-for="role in roleList"
-            :key="role.id"
-            :value="role.id"
-            :label="role.roleName"
-          />
+      <ElFormItem label="性别" prop="sex">
+        <ElSelect v-model="formData.sex" placeholder="请选择性别">
+          <ElOption label="男" value="0" />
+          <ElOption label="女" value="1" />
         </ElSelect>
-      </ElFormItem>
-      <ElFormItem label="部门" prop="deptIds">
-        <ElTreeSelect
-          v-model="formData.deptIds"
-          :data="deptTreeData"
-          :props="{ label: 'name', value: 'id', children: 'children' }"
-          placeholder="请选择部门"
-          multiple
-          check-strictly
-          clearable
-          collapse-tags
-          collapse-tags-tooltip
-          style="width: 100%"
-        />
       </ElFormItem>
       <ElFormItem v-if="dialogType === 'edit'" label="状态" prop="status">
         <ElRadioGroup v-model="formData.status">
@@ -71,8 +47,6 @@
 </template>
 
 <script setup lang="ts">
-  import { fetchGetRoleOptions } from '@/api/system/role'
-  import { fetchGetDeptTree } from '@/api/system/department'
   import { fetchAddUser, fetchUpdateUser } from '@/api/system/user'
   import type { FormInstance, FormRules } from 'element-plus'
 
@@ -89,11 +63,6 @@
 
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
-
-  // 角色列表数据
-  const roleList = ref<Api.System.RoleVO[]>([])
-  // 部门树数据
-  const deptTreeData = ref<Api.System.DeptVO[]>([])
 
   // 对话框显示控制
   const dialogVisible = computed({
@@ -114,8 +83,6 @@
     phonenumber: '',
     email: '',
     sex: '0',
-    roleIds: [] as number[],
-    deptIds: [] as number[],
     status: 1,
     remark: ''
   })
@@ -141,30 +108,6 @@
   }
 
   /**
-   * 获取角色列表
-   */
-  const loadRoleOptions = async () => {
-    try {
-      const data = await fetchGetRoleOptions()
-      roleList.value = data || []
-    } catch (error) {
-      console.error('获取角色列表失败:', error)
-    }
-  }
-
-  /**
-   * 获取部门树
-   */
-  const loadDeptTree = async () => {
-    try {
-      const data = await fetchGetDeptTree()
-      deptTreeData.value = data || []
-    } catch (error) {
-      console.error('获取部门树失败:', error)
-    }
-  }
-
-  /**
    * 初始化表单数据
    */
   const initFormData = () => {
@@ -178,8 +121,6 @@
       phonenumber: isEdit && row ? row.phonenumber || '' : '',
       email: isEdit && row ? row.email || '' : '',
       sex: isEdit && row ? row.sex || '0' : '0',
-      roleIds: [],
-      deptIds: isEdit && row && row.deptId ? [row.deptId] : [],
       status: isEdit && row ? row.status ?? 1 : 1,
       remark: isEdit && row ? row.remark || '' : ''
     })
@@ -192,8 +133,6 @@
     () => [props.visible, props.type, props.userData],
     ([visible]) => {
       if (visible) {
-        loadRoleOptions()
-        loadDeptTree()
         initFormData()
         nextTick(() => {
           formRef.value?.clearValidate()
@@ -220,8 +159,6 @@
               phonenumber: formData.phonenumber,
               email: formData.email,
               sex: formData.sex,
-              roleIds: formData.roleIds,
-              deptIds: formData.deptIds,
               remark: formData.remark
             })
           } else {
@@ -232,8 +169,6 @@
               phonenumber: formData.phonenumber,
               email: formData.email,
               sex: formData.sex,
-              roleIds: formData.roleIds,
-              deptIds: formData.deptIds,
               status: formData.status,
               remark: formData.remark
             })

@@ -85,17 +85,20 @@
 
 <script setup lang="ts">
   import { Search } from '@element-plus/icons-vue'
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtButtonMore, { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTable } from '@/hooks/core/useTable'
+  import { usePermission } from '@/hooks/core/usePermission'
   import { fetchGetUserList } from '@/api/system/user'
   import { fetchGetDeptTree } from '@/api/system/department'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
-  import { ElTag, ElMessageBox, ElImage, ElTree } from 'element-plus'
+  import { ElTag, ElMessageBox, ElTree } from 'element-plus'
   import { DialogType } from '@/types'
 
   defineOptions({ name: 'User' })
+
+  const { hasPermission } = usePermission()
 
   type SysUserVO = Api.System.SysUserVO
 
@@ -235,19 +238,53 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 120,
+          width: 80,
+          align: 'center',
+          headerAlign: 'center',
           fixed: 'right',
-          formatter: (row) =>
-            h('div', [
-              h(ArtButtonTable, {
-                type: 'edit',
-                onClick: () => showDialog('edit', row)
-              }),
-              h(ArtButtonTable, {
-                type: 'delete',
-                onClick: () => deleteUser(row)
+          formatter: (row: SysUserVO) => {
+            const list: ButtonMoreItem[] = []
+            
+            if (hasPermission('system.ui.user.button.edit')) {
+              list.push({
+                key: 'edit',
+                label: '编辑用户',
+                icon: 'ri:edit-2-line'
               })
-            ])
+            }
+            
+            if (hasPermission('system.ui.user.button.role')) {
+              list.push({
+                key: 'assignRole',
+                label: '分配角色',
+                icon: 'ri:user-settings-line'
+              })
+            }
+            
+            if (hasPermission('system.ui.user.button.dept')) {
+              list.push({
+                key: 'assignDept',
+                label: '分配部门',
+                icon: 'ri:building-2-line'
+              })
+            }
+            
+            if (hasPermission('system.ui.user.button.delete')) {
+              list.push({
+                key: 'delete',
+                label: '删除用户',
+                icon: 'ri:delete-bin-4-line',
+                color: '#f56c6c'
+              })
+            }
+            
+            if (list.length === 0) return '-'
+            
+            return h(ArtButtonMore, {
+              list,
+              onClick: (item: ButtonMoreItem) => handleButtonMoreClick(item, row)
+            })
+          }
         }
       ]
     }
@@ -346,6 +383,28 @@
     nextTick(() => {
       dialogVisible.value = true
     })
+  }
+
+  /**
+   * 操作按钮点击
+   */
+  const handleButtonMoreClick = (item: ButtonMoreItem, row: SysUserVO) => {
+    switch (item.key) {
+      case 'edit':
+        showDialog('edit', row)
+        break
+      case 'assignRole':
+        // TODO: 打开分配角色弹窗
+        console.log('分配角色', row)
+        break
+      case 'assignDept':
+        // TODO: 打开分配部门弹窗
+        console.log('分配部门', row)
+        break
+      case 'delete':
+        deleteUser(row)
+        break
+    }
   }
 
   /**

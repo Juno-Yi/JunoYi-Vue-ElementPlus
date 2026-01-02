@@ -74,10 +74,6 @@ declare namespace Api.System {
     email?: string
     /** 性别（0-男，1-女） */
     sex?: string
-    /** 角色ID列表 */
-    roleIds?: number[]
-    /** 部门ID列表 */
-    deptIds?: number[]
     /** 状态（1-启用，0-禁用） */
     status?: number
     /** 备注 */
