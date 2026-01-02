@@ -32,3 +32,24 @@ export function fetchUpdateUser(data: Api.System.SysUserDTO) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 删除用户
+ */
+export function fetchDeleteUser(id: number) {
+  return request.del<void>({
+    url: `/system/user/${id}`,
+    showSuccessMessage: true
+  })
+}
+
+/**
+ * 批量删除用户
+ */
+export function fetchDeleteUserBatch(ids: number[]) {
+  return request.del<void>({
+    url: '/system/user/batch',
+    data: ids,
+    showSuccessMessage: true
+  })
+}

@@ -56,6 +56,14 @@
             <template #left>
               <ElSpace wrap>
                 <ElButton @click="showDialog('add')" v-ripple>新增用户</ElButton>
+                <ElButton 
+                  type="danger" 
+                  :disabled="selectedRows.length === 0"
+                  @click="batchDeleteUsers" 
+                  v-ripple
+                >
+                  批量删除
+                </ElButton>
               </ElSpace>
             </template>
           </ArtTableHeader>
@@ -89,7 +97,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { usePermission } from '@/hooks/core/usePermission'
-  import { fetchGetUserList } from '@/api/system/user'
+  import { fetchGetUserList, fetchDeleteUser, fetchDeleteUserBatch } from '@/api/system/user'
   import { fetchGetDeptTree } from '@/api/system/department'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
@@ -410,16 +418,41 @@
   /**
    * 删除用户
    */
-  const deleteUser = (row: SysUserVO): void => {
-    ElMessageBox.confirm(`确定要删除用户 "${row.userName}" 吗？`, '删除用户', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(() => {
-      // TODO: 调用删除接口
-      ElMessage.success('删除成功')
+  const deleteUser = async (row: SysUserVO): Promise<void> => {
+    try {
+      await ElMessageBox.confirm(`确定要删除用户 "${row.userName}" 吗？`, '删除用户', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      await fetchDeleteUser(row.userId)
       getData()
-    })
+    } catch (error) {
+      // 用户取消或删除失败
+    }
+  }
+
+  /**
+   * 批量删除用户
+   */
+  const batchDeleteUsers = async (): Promise<void> => {
+    if (selectedRows.value.length === 0) {
+      ElMessage.warning('请先选择要删除的用户')
+      return
+    }
+    try {
+      await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 个用户吗？`, '批量删除', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      const ids = selectedRows.value.map(item => item.userId)
+      await fetchDeleteUserBatch(ids)
+      selectedRows.value = []
+      getData()
+    } catch (error) {
+      // 用户取消或删除失败
+    }
   }
 
   /**
