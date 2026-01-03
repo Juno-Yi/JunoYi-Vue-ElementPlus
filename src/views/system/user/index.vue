@@ -299,7 +299,7 @@
             }
 
             // 只有超级管理员能重置用户密码
-            if (isSuperAdmin){
+            if (isSuperAdmin.value){
               list.push({
                 key: 'restPassword',
                 label: '重置密码',
