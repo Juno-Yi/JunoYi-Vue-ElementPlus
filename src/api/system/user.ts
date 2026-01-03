@@ -6,7 +6,7 @@ import { PageResult } from '@/types'
  */
 export function fetchGetUserList(params: Api.System.UserQueryDTO) {
   return request.get<PageResult<Api.System.SysUserVO>>({
-    url: '/system/user',
+    url: '/system/user/list',
     params
   })
 }
