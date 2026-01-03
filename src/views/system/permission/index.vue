@@ -100,7 +100,7 @@
   const initialSearchState = {
     groupName: '',
     groupCode: '',
-    status: null as number | null
+    status: undefined as number | undefined
   }
 
   const formFilters = reactive({ ...initialSearchState })
@@ -336,7 +336,6 @@
       }
     })
     Object.assign(searchParams, validParams)
-    pagination.current = 1
     refreshData()
   }
 

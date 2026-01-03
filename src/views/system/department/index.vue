@@ -130,7 +130,7 @@
     leader: '',
     phonenumber: '',
     email: '',
-    status: null as number | null
+    status: undefined as number | undefined
   }
 
   const formFilters = reactive({ ...initialSearchState })

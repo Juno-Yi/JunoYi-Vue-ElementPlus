@@ -44,11 +44,11 @@
   import { useMenuStore } from '@/store/modules/menu'
   import { formatMenuTitle } from '@/utils/router'
 
-  type RoleListItem = Api.SystemManage.RoleListItem
+  type RoleVO = Api.System.RoleVO
 
   interface Props {
     modelValue: boolean
-    roleData?: RoleListItem
+    roleData?: RoleVO
   }
 
   interface Emits {

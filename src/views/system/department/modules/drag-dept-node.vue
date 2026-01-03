@@ -55,8 +55,8 @@
       :node="child"
       :level="level + 1"
       :currentDropNodeId="currentDropNodeId"
-      @drop="(dragId, targetId, position) => emit('drop', dragId, targetId, position)"
-      @update:currentDropNodeId="(id) => emit('update:currentDropNodeId', id)"
+      @drop="(dragId: number, targetId: number, position: 'before' | 'after' | 'inside') => emit('drop', dragId, targetId, position)"
+      @update:currentDropNodeId="(id: number | null) => emit('update:currentDropNodeId', id)"
     />
   </template>
 </template>

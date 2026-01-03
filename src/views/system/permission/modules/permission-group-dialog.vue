@@ -232,12 +232,12 @@
   /**
    * 获取权限类型
    */
-  const getPermType = (perm: string): 'warning' | 'primary' | 'success' | 'info' | '' => {
+  const getPermType = (perm: string): 'warning' | 'primary' | 'success' | 'info' | 'danger' => {
     if (perm === '*') return 'warning'
     if (perm.includes('.ui.')) return 'primary'
     if (perm.includes('.api.')) return 'success'
     if (perm.includes('.data.')) return 'info'
-    return ''
+    return 'info'
   }
 
   /**
