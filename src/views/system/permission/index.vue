@@ -194,6 +194,13 @@
           formatter: (row: PermissionGroupVO) => row.description || '-'
         },
         {
+          prop: 'parentName',
+          label: '父级权限组',
+          minWidth: 150,
+          headerAlign: 'center',
+          formatter: (row: PermissionGroupVO) => row.parentName || '-'
+        },
+        {
           prop: 'priority',
           label: '优先级',
           width: 90,

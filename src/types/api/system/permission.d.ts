@@ -30,6 +30,8 @@ declare namespace Api.System {
     groupName: string
     /** 父级权限组ID */
     parentId?: number
+    /** 父级权限组名称 */
+    parentName?: string
     /** 优先级 */
     priority?: number
     /** 权限列表 */
