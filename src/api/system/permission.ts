@@ -67,7 +67,7 @@ export function fetchDeletePermissionGroup(id: number) {
 export function fetchDeletePermissionGroupBatch(ids: number[]) {
   return request.del<void>({
     url: '/system/permission/batch',
-    data: { ids },
+    data: ids,
     showSuccessMessage: true
   })
 }
