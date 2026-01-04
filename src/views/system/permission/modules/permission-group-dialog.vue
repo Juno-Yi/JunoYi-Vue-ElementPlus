@@ -47,7 +47,7 @@
         <ElCol :span="12">
           <ElFormItem label="状态" prop="status">
             <ElRadioGroup v-model="formData.status">
-              <ElRadio :value="1">启用</ElRadio>
+              <ElRadio :value="1">正常</ElRadio>
               <ElRadio :value="0">禁用</ElRadio>
             </ElRadioGroup>
           </ElFormItem>
@@ -189,7 +189,7 @@
     priority: 0,
     permissions: [] as string[],
     description: '',
-    status: 1
+    status: 1  // 1=正常 0=禁用
   })
 
   const formRules: FormRules = {
@@ -339,7 +339,7 @@
       priority: 0,
       permissions: [],
       description: '',
-      status: 1
+      status: 1  // 1=正常 0=禁用
     })
     newPermission.value = ''
   }
@@ -357,7 +357,7 @@
         priority: props.editData.priority ?? 0,
         permissions: [...(props.editData.permissions || [])],
         description: props.editData.description || '',
-        status: props.editData.status ?? 1
+        status: props.editData.status ?? 1  // 1=正常 0=禁用
       })
     }
   })

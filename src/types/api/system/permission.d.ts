@@ -36,7 +36,7 @@ declare namespace Api.System {
     permissions: string[]
     /** 描述 */
     description?: string
-    /** 状态 1启用 0禁用 */
+    /** 状态 1正常 0禁用 */
     status: number
     /** 创建时间 */
     createTime?: string
@@ -62,7 +62,7 @@ declare namespace Api.System {
     permissions: string[]
     /** 描述 */
     description?: string
-    /** 状态 1启用 0禁用 */
+    /** 状态 1正常 0禁用 */
     status?: number
   }
 }

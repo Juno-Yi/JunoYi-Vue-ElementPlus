@@ -105,9 +105,9 @@
 
   const formFilters = reactive({ ...initialSearchState })
 
-  // 状态选项
+  // 状态选项（1=正常 0=禁用）
   const statusOptions = [
-    { label: '启用', value: 1 },
+    { label: '正常', value: 1 },
     { label: '禁用', value: 0 }
   ]
 
@@ -233,7 +233,7 @@
               type: status === 1 ? 'success' : 'danger', 
               size: 'small',
               effect: 'light'
-            }, () => status === 1 ? '启用' : '禁用')
+            }, () => status === 1 ? '正常' : '禁用')
           }
         },
         {

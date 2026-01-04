@@ -60,12 +60,12 @@ export function decryptResponse(encryptedText: string): string {
     throw new Error('加密数据格式错误')
   }
 
-  // 1. Base64 解码
+  // Base64 解码
   const encryptedAesKey = forge.util.decode64(parts[0])
   const iv = forge.util.decode64(parts[1])
   const encryptedData = forge.util.decode64(parts[2])
 
-  // 2. 使用 RSA 公钥解密 AES 密钥
+  // 使用 RSA 公钥解密 AES 密钥
   // 注意：这里是"公钥解密私钥加密的数据"，需要用 raw RSA
   const publicKey = getPublicKey()
   const n = publicKey.n
@@ -80,7 +80,7 @@ export function decryptResponse(encryptedText: string): string {
   // 去除 PKCS1 填充
   const aesKeyBytes = removePkcs1Padding(decryptedBytes)
 
-  // 3. 使用 AES-GCM 解密数据
+  // 使用 AES-GCM 解密数据
   const decipher = forge.cipher.createDecipher('AES-GCM', aesKeyBytes)
   decipher.start({
     iv: iv,
@@ -100,24 +100,24 @@ export function decryptResponse(encryptedText: string): string {
  * @returns 加密后的文本
  */
 export function encryptRequest(plainText: string): string {
-  // 1. 生成随机 AES 密钥 (32 bytes = 256 bits)
+  // 生成随机 AES 密钥 (32 bytes = 256 bits)
   const aesKey = forge.random.getBytesSync(32)
 
-  // 2. 生成随机 IV (12 bytes for GCM)
+  // 生成随机 IV (12 bytes for GCM)
   const iv = forge.random.getBytesSync(12)
 
-  // 3. 使用 AES-GCM 加密数据
+  // 使用 AES-GCM 加密数据
   const cipher = forge.cipher.createCipher('AES-GCM', aesKey)
   cipher.start({ iv: iv, tagLength: 128 })
   cipher.update(forge.util.createBuffer(plainText, 'utf8'))
   cipher.finish()
   const encryptedData = cipher.output.getBytes() + cipher.mode.tag.getBytes()
 
-  // 4. 使用 RSA 公钥加密 AES 密钥
+  // 使用 RSA 公钥加密 AES 密钥
   const publicKey = getPublicKey()
   const encryptedAesKey = publicKey.encrypt(aesKey, 'RSAES-PKCS1-V1_5')
 
-  // 5. 组合结果
+  // 组合结果
   return [
     forge.util.encode64(encryptedAesKey),
     forge.util.encode64(iv),

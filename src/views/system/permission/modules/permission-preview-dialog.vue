@@ -24,7 +24,7 @@
         <div class="info-row">
           <span class="info-label">状态</span>
           <ElTag :type="data?.status === 1 ? 'success' : 'danger'" size="small" effect="light">
-            {{ data?.status === 1 ? '启用' : '禁用' }}
+            {{ data?.status === 1 ? '正常' : '禁用' }}
           </ElTag>
         </div>
         <div v-if="data?.description" class="info-row">
