@@ -103,3 +103,22 @@ export function fetchResetUserPassword(data: { userId: number; newPassword: stri
     },
   })
 }
+
+/**
+ * 获取用户已绑定的权限组列表
+ */
+export function fetchGetUserPermissionGroups(userId: number) {
+  return request.get<Api.System.PermissionGroupVO[]>({
+    url: `/system/user/${userId}/permission-groups`
+  })
+}
+
+/**
+ * 更新用户权限组绑定
+ */
+export function fetchUpdateUserPermissionGroups(userId: number, groupIds: number[]) {
+  return request.put<void>({
+    url: `/system/user/${userId}/permission-groups`,
+    data: groupIds,
+  })
+}

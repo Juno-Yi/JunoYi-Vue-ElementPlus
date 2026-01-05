@@ -111,6 +111,14 @@
       :user-name="currentUserName"
       @submit="handlePasswordDialogSubmit"
     />
+
+    <!-- 分配权限组弹窗 -->
+    <UserPermissionDialog
+      v-model:visible="permissionDialogVisible"
+      :user-id="currentUserId"
+      :user-name="currentUserName"
+      @submit="handlePermissionDialogSubmit"
+    />
   </div>
 </template>
 
@@ -127,6 +135,7 @@
   import UserRoleDialog from './modules/user-role-dialog.vue'
   import UserDeptDialog from './modules/user-dept-dialog.vue'
   import UserPasswordDialog from './modules/user-password-dialog.vue'
+  import UserPermissionDialog from './modules/user-permission-dialog.vue'
   import { ElTag, ElMessageBox, ElTree } from 'element-plus'
   import { DialogType } from '@/types'
 
@@ -158,6 +167,9 @@
 
   // 重置密码弹窗
   const passwordDialogVisible = ref(false)
+
+  // 分配权限组弹窗
+  const permissionDialogVisible = ref(false)
 
   // 选中行
   const selectedRows = ref<SysUserVO[]>([])
@@ -322,6 +334,14 @@
                 icon: 'ri:building-2-line'
               })
             }
+
+            if (hasPermission('system.ui.user.button.permission')){
+              list.push({
+                key: 'assignPermission',
+                label: '分配权限组',
+                icon: 'ri:folder-lock-line'
+              })
+            }
             
             if (hasPermission('system.ui.user.button.delete')) {
               list.push({
@@ -332,7 +352,6 @@
               })
             }
 
-            
             if (list.length === 0) return '-'
             
             return h(ArtButtonMore, {
@@ -457,6 +476,9 @@
       case 'assignDept':
         showDeptDialog(row)
         break
+      case 'assignPermission':
+        showPermissionDialog(row)
+        break
       case 'delete':
         deleteUser(row)
         break
@@ -511,6 +533,23 @@
    */
   const handlePasswordDialogSubmit = () => {
     // 密码重置成功
+  }
+
+  /**
+   * 显示分配权限组弹窗
+   */
+  const showPermissionDialog = (row: SysUserVO): void => {
+    currentUserId.value = row.userId
+    currentUserName.value = row.userName
+    permissionDialogVisible.value = true
+  }
+
+  /**
+   * 分配权限组弹窗提交
+   */
+  const handlePermissionDialogSubmit = () => {
+    // 权限组分配成功后可以刷新数据
+    getData()
   }
 
   /**
