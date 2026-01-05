@@ -122,3 +122,31 @@ export function fetchUpdateUserPermissionGroups(userId: number, groupIds: number
     data: groupIds,
   })
 }
+
+/**
+ * 获取用户独立权限列表
+ */
+export function fetchGetUserPermissions(userId: number) {
+  return request.get<Api.System.SysUserPermVO[]>({
+    url: `/system/user/${userId}/permissions`
+  })
+}
+
+/**
+ * 更新用户独立权限（全量替换）
+ */
+export function fetchUpdateUserPermissions(userId: number, data: Api.System.SysUserPermDTO) {
+  return request.put<void>({
+    url: `/system/user/${userId}/permissions`,
+    data
+  })
+}
+
+/**
+ * 删除用户单个独立权限
+ */
+export function fetchDeleteUserPermission(userId: number, permId: number) {
+  return request.del<void>({
+    url: `/system/user/${userId}/permissions/${permId}`
+  })
+}

@@ -120,6 +120,14 @@
       :user-name="currentUserName"
       @submit="handlePermissionDialogSubmit"
     />
+
+    <!-- 独立权限设置弹窗 -->
+    <UserIndividualPermDialog
+      v-model:visible="individualPermDialogVisible"
+      :user-id="currentUserId"
+      :user-name="currentUserName"
+      @submit="handleIndividualPermDialogSubmit"
+    />
   </div>
 </template>
 
@@ -137,6 +145,7 @@
   import UserDeptDialog from './modules/user-dept-dialog.vue'
   import UserPasswordDialog from './modules/user-password-dialog.vue'
   import UserPermissionDialog from './modules/user-permission-dialog.vue'
+  import UserIndividualPermDialog from './modules/user-individual-perm-dialog.vue'
   import { ElTag, ElMessageBox, ElTree } from 'element-plus'
   import { DialogType } from '@/types'
 
@@ -171,6 +180,9 @@
 
   // 分配权限组弹窗
   const permissionDialogVisible = ref(false)
+
+  // 独立权限设置弹窗
+  const individualPermDialogVisible = ref(false)
 
   // 选中行
   const selectedRows = ref<SysUserVO[]>([])
@@ -343,6 +355,14 @@
                 icon: 'ri:folder-lock-line'
               })
             }
+
+            if (hasPermission('system.ui.user.button.individual-perm')){
+              list.push({
+                key: 'individualPerm',
+                label: '独立权限',
+                icon: 'ri:key-2-line'
+              })
+            }
             
             if (hasPermission('system.ui.user.button.delete')) {
               list.push({
@@ -480,6 +500,9 @@
       case 'assignPermission':
         showPermissionDialog(row)
         break
+      case 'individualPerm':
+        showIndividualPermDialog(row)
+        break
       case 'delete':
         deleteUser(row)
         break
@@ -550,6 +573,23 @@
    */
   const handlePermissionDialogSubmit = () => {
     // 权限组分配成功后可以刷新数据
+    getData()
+  }
+
+  /**
+   * 显示独立权限设置弹窗
+   */
+  const showIndividualPermDialog = (row: SysUserVO): void => {
+    currentUserId.value = row.userId
+    currentUserName.value = row.userName
+    individualPermDialogVisible.value = true
+  }
+
+  /**
+   * 独立权限弹窗提交
+   */
+  const handleIndividualPermDialogSubmit = () => {
+    // 独立权限设置成功后可以刷新数据
     getData()
   }
 
