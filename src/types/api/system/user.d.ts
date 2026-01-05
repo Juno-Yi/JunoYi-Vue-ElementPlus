@@ -88,19 +88,7 @@ declare namespace Api.System {
     id: number
     /** 权限标识 */
     permission: string
-    /** 过期时间 */
-    expireTime?: string | null
     /** 创建时间 */
     createTime?: string
-  }
-
-  /**
-   * 用户独立权限DTO
-   */
-  interface SysUserPermDTO {
-    /** 权限标识列表 */
-    permissions: string[]
-    /** 过期时间（可选，为空表示永不过期） */
-    expireTime?: string | null
   }
 }

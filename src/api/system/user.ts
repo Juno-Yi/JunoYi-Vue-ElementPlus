@@ -133,12 +133,12 @@ export function fetchGetUserPermissions(userId: number) {
 }
 
 /**
- * 更新用户独立权限（全量替换）
+ * 添加用户独立权限（增量添加，已存在的不会重复）
  */
-export function fetchUpdateUserPermissions(userId: number, data: Api.System.SysUserPermDTO) {
-  return request.put<void>({
+export function fetchAddUserPermissions(userId: number, permissions: string[]) {
+  return request.post<void>({
     url: `/system/user/${userId}/permissions`,
-    data
+    data: permissions
   })
 }
 
