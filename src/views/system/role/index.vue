@@ -61,6 +61,13 @@
       :role-data="currentRoleData"
       @success="refreshData"
     />
+
+    <!-- 分配权限组弹窗 -->
+    <RolePermissionGroupDialog
+      v-model:visible="permissionGroupDialog"
+      :role-data="currentRoleData"
+      @success="refreshData"
+    />
   </div>
 </template>
 
@@ -73,6 +80,7 @@
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
   import RolePermissionDialog from './modules/role-permission-dialog.vue'
+  import RolePermissionGroupDialog from './modules/role-permission-group-dialog.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'Role' })
@@ -92,6 +100,7 @@
 
   const dialogVisible = ref(false)
   const permissionDialog = ref(false)
+  const permissionGroupDialog = ref(false)
   const currentRoleData = ref<RoleVO | undefined>(undefined)
   const selectedIds = ref<number[]>([])
 
@@ -193,20 +202,20 @@
           fixed: 'right',
           formatter: (row: RoleVO) => {
             const list: ButtonMoreItem[] = []
-            
-            if (hasPermission('system.ui.role.button.permission')) {
-              list.push({
-                key: 'permission',
-                label: '菜单权限',
-                icon: 'ri:shield-keyhole-line'
-              })
-            }
-            
+
             if (hasPermission('system.ui.role.button.edit')) {
               list.push({
                 key: 'edit',
                 label: '编辑角色',
                 icon: 'ri:edit-2-line'
+              })
+            }
+
+            if (hasPermission('system.ui.role.button.permission')){
+              list.push({
+                key: 'assignPermission',
+                label: '分配权限组',
+                icon: 'ri:folder-lock-line'
               })
             }
             
@@ -218,6 +227,8 @@
                 color: '#f56c6c'
               })
             }
+
+
             
             if (list.length === 0) return '-'
             
@@ -269,12 +280,23 @@
   }
 
   /**
+   * 显示分配权限组弹窗
+   */
+  const showPermissionGroupDialog = (row?: RoleVO) => {
+    permissionGroupDialog.value = true
+    currentRoleData.value = row
+  }
+
+  /**
    * 操作按钮点击
    */
   const handleButtonMoreClick = (item: ButtonMoreItem, row: RoleVO) => {
     switch (item.key) {
       case 'permission':
         showPermissionDialog(row)
+        break
+      case 'assignPermission':
+        showPermissionGroupDialog(row)
         break
       case 'edit':
         showDialog('edit', row)

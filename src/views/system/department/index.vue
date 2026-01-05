@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtButtonMore, { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import { usePermission } from '@/hooks/core/usePermission'
@@ -296,37 +296,44 @@
     {
       prop: 'operation',
       label: '操作',
-      width: 160,
+      width: 80,
       align: 'center',
       headerAlign: 'center',
       fixed: 'right',
       formatter: (row: DeptVO) => {
-        const buttons = []
+        const list: ButtonMoreItem[] = []
+        
         if (hasPermission('system.ui.dept.button.add')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'add',
-              onClick: () => handleAddChildDept(row)
-            })
-          )
+          list.push({
+            key: 'addChild',
+            label: '添加子部门',
+            icon: 'ri:add-line'
+          })
         }
+        
         if (hasPermission('system.ui.dept.button.edit')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'edit',
-              onClick: () => handleEditDept(row)
-            })
-          )
+          list.push({
+            key: 'edit',
+            label: '编辑部门',
+            icon: 'ri:edit-2-line'
+          })
         }
+        
         if (hasPermission('system.ui.dept.button.delete')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'delete',
-              onClick: () => handleDeleteDept(row)
-            })
-          )
+          list.push({
+            key: 'delete',
+            label: '删除部门',
+            icon: 'ri:delete-bin-4-line',
+            color: '#f56c6c'
+          })
         }
-        return buttons.length ? h('div', { style: 'text-align: center' }, buttons) : '-'
+        
+        if (list.length === 0) return '-'
+        
+        return h(ArtButtonMore, {
+          list,
+          onClick: (item: ButtonMoreItem) => handleButtonMoreClick(item, row)
+        })
       }
     }
   ])
@@ -377,6 +384,23 @@
     editData.value = null
     parentId.value = 0
     dialogVisible.value = true
+  }
+
+  /**
+   * 操作按钮点击
+   */
+  const handleButtonMoreClick = (item: ButtonMoreItem, row: DeptVO) => {
+    switch (item.key) {
+      case 'addChild':
+        handleAddChildDept(row)
+        break
+      case 'edit':
+        handleEditDept(row)
+        break
+      case 'delete':
+        handleDeleteDept(row)
+        break
+    }
   }
 
   /**

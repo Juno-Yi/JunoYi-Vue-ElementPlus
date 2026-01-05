@@ -71,3 +71,22 @@ export function fetchDeleteRoleBatch(ids: number[]) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 获取角色已绑定的权限组列表
+ */
+export function fetchGetRolePermissionGroups(roleId: number) {
+  return request.get<Api.System.PermissionGroupVO[]>({
+    url: `/system/role/${roleId}/permission-groups`
+  })
+}
+
+/**
+ * 更新角色权限组绑定
+ */
+export function fetchUpdateRolePermissionGroups(roleId: number, groupIds: number[]) {
+  return request.put<void>({
+    url: `/system/role/${roleId}/permission-groups`,
+    data: groupIds,
+  })
+}
