@@ -15,16 +15,18 @@
 
     <!-- 添加权限区域 -->
     <div class="add-perm-section mb-5">
-      <div class="flex gap-3 items-end">
-        <ElFormItem label="权限标识" class="flex-1 mb-0">
+      <div class="flex gap-3 items-center">
+        <div class="flex-1">
+          <div class="text-sm text-gray-500 mb-1.5">权限标识</div>
           <ElInput
             v-model="newPermission"
             placeholder="输入权限标识，如：system.user.view"
             clearable
             @keyup.enter="handleAddPermission"
           />
-        </ElFormItem>
-        <ElFormItem label="过期时间" class="w-52 mb-0">
+        </div>
+        <div class="w-52">
+          <div class="text-sm text-gray-500 mb-1.5">过期时间</div>
           <ElDatePicker
             v-model="newExpireTime"
             type="datetime"
@@ -33,12 +35,15 @@
             value-format="YYYY-MM-DDTHH:mm:ss"
             :disabled-date="disabledDate"
             clearable
+            class="w-full"
           />
-        </ElFormItem>
-        <ElButton type="primary" @click="handleAddPermission" :disabled="!newPermission.trim()">
-          <ArtSvgIcon icon="ri:add-line" class="mr-1" />
-          添加
-        </ElButton>
+        </div>
+        <div class="pt-6 ml-2">
+          <ElButton type="primary" @click="handleAddPermission" :disabled="!newPermission.trim()">
+            <ArtSvgIcon icon="ri:add-line" class="mr-1" />
+            添加
+          </ElButton>
+        </div>
       </div>
     </div>
 
