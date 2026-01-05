@@ -10,7 +10,7 @@
     <!-- 提示信息 -->
     <div class="tip-box mb-5" :style="tipBoxStyle">
       <ArtSvgIcon icon="ri:information-line" class="mr-2 flex-shrink-0" :style="{ color: primaryColor }" />
-      <span>独立权限是直接赋予用户的特殊权限，优先级高于角色和部门权限，支持设置过期时间</span>
+      <span>独立权限是直接赋予用户的特殊权限，优先级高于角色和部门权限</span>
     </div>
 
     <!-- 添加权限区域 -->
@@ -23,19 +23,6 @@
             placeholder="输入权限标识，如：system.user.view"
             clearable
             @keyup.enter="handleAddPermission"
-          />
-        </div>
-        <div class="w-52">
-          <div class="text-sm text-gray-500 mb-1.5">过期时间</div>
-          <ElDatePicker
-            v-model="newExpireTime"
-            type="datetime"
-            placeholder="永不过期"
-            format="YYYY-MM-DD HH:mm"
-            value-format="YYYY-MM-DDTHH:mm:ss"
-            :disabled-date="disabledDate"
-            clearable
-            class="w-full"
           />
         </div>
         <div class="pt-6 ml-2">
@@ -70,26 +57,20 @@
             v-for="perm in permissionList"
             :key="perm.id"
             class="perm-item"
-            :class="{ 'perm-expired': isExpired(perm.expireTime) }"
           >
             <div class="perm-info">
               <div class="perm-name">
-                <ArtSvgIcon icon="ri:key-2-line" class="mr-2 text-gray-500" />
+                <ArtSvgIcon :icon="getPermIcon(perm.permission)" class="mr-2" :style="{ color: getPermColor(perm.permission) }" />
                 <span class="font-mono">{{ perm.permission }}</span>
+                <ElTag :type="getPermType(perm.permission)" size="small" class="ml-2">
+                  {{ getPermLabel(perm.permission) }}
+                </ElTag>
               </div>
-              <div class="perm-meta">
-                <span v-if="perm.expireTime" class="expire-tag" :class="getExpireClass(perm.expireTime)">
-                  <ArtSvgIcon :icon="isExpired(perm.expireTime) ? 'ri:time-line' : 'ri:calendar-line'" class="mr-1" />
-                  {{ formatExpireTime(perm.expireTime) }}
-                </span>
-                <span v-else class="expire-tag permanent">
-                  <ArtSvgIcon icon="ri:infinity-line" class="mr-1" />
-                  永久有效
-                </span>
+            <div class="perm-meta">
                 <span class="create-time">
                   创建于 {{ formatTime(perm.createTime) }}
                 </span>
-              </div>
+            </div>
             </div>
             <ElButton
               link
@@ -117,7 +98,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { 
     fetchGetUserPermissions, 
-    fetchUpdateUserPermissions, 
+    fetchAddUserPermissions, 
     fetchDeleteUserPermission 
   } from '@/api/system/user'
   import { useSettingStore } from '@/store/modules/setting'
@@ -163,50 +144,51 @@
   const loading = ref(false)
   const permissionList = ref<SysUserPermVO[]>([])
   const newPermission = ref('')
-  const newExpireTime = ref<string | null>(null)
 
-  // 禁用过去的日期
-  const disabledDate = (time: Date) => {
-    return time.getTime() < Date.now() - 8.64e7
+  /**
+   * 获取权限图标
+   */
+  const getPermIcon = (perm: string): string => {
+    if (perm === '*') return 'ri:vip-crown-line'
+    if (perm.includes('.ui.')) return 'ri:layout-line'
+    if (perm.includes('.api.')) return 'ri:code-s-slash-line'
+    if (perm.includes('.data.')) return 'ri:database-2-line'
+    if (perm.endsWith('*')) return 'ri:folder-line'
+    return 'ri:key-2-line'
   }
 
-  // 判断是否过期
-  const isExpired = (expireTime?: string | null): boolean => {
-    if (!expireTime) return false
-    return new Date(expireTime).getTime() < Date.now()
+  /**
+   * 获取权限颜色
+   */
+  const getPermColor = (perm: string): string => {
+    if (perm === '*') return 'var(--el-color-warning)'
+    if (perm.includes('.ui.')) return 'var(--el-color-primary)'
+    if (perm.includes('.api.')) return 'var(--el-color-success)'
+    if (perm.includes('.data.')) return 'var(--el-color-info)'
+    return 'var(--el-text-color-secondary)'
   }
 
-  // 获取过期时间样式类
-  const getExpireClass = (expireTime?: string | null): string => {
-    if (!expireTime) return 'permanent'
-    if (isExpired(expireTime)) return 'expired'
-    
-    const diff = new Date(expireTime).getTime() - Date.now()
-    const days = diff / (1000 * 60 * 60 * 24)
-    if (days <= 7) return 'expiring-soon'
-    return 'normal'
+  /**
+   * 获取权限类型
+   */
+  const getPermType = (perm: string): 'warning' | 'primary' | 'success' | 'info' => {
+    if (perm === '*') return 'warning'
+    if (perm.includes('.ui.')) return 'primary'
+    if (perm.includes('.api.')) return 'success'
+    if (perm.includes('.data.')) return 'info'
+    return 'info'
   }
 
-  // 格式化过期时间
-  const formatExpireTime = (time?: string | null): string => {
-    if (!time) return '永久有效'
-    
-    const expireDate = new Date(time)
-    if (isExpired(time)) {
-      return `已过期 (${formatTime(time)})`
-    }
-    
-    const diff = expireDate.getTime() - Date.now()
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    
-    if (days === 0) {
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      return hours > 0 ? `${hours}小时后过期` : '即将过期'
-    } else if (days <= 7) {
-      return `${days}天后过期`
-    }
-    
-    return formatTime(time) + ' 过期'
+  /**
+   * 获取权限标签
+   */
+  const getPermLabel = (perm: string): string => {
+    if (perm === '*') return '超级'
+    if (perm.endsWith('**') || perm.endsWith('*')) return '通配'
+    if (perm.includes('.ui.')) return 'UI'
+    if (perm.includes('.api.')) return 'API'
+    if (perm.includes('.data.')) return '数据'
+    return '其他'
   }
 
   // 格式化时间
@@ -254,16 +236,11 @@
     if (!props.userId) return
 
     try {
-      // 获取当前所有权限，加上新权限
-      const permissions = [...permissionList.value.map(p => p.permission), perm]
-      await fetchUpdateUserPermissions(props.userId, {
-        permissions,
-        expireTime: newExpireTime.value
-      })
+      // 增量添加权限
+      await fetchAddUserPermissions(props.userId, [perm])
       
       ElMessage.success('添加权限成功')
       newPermission.value = ''
-      newExpireTime.value = null
       await loadData()
     } catch (error) {
       console.error('添加权限失败:', error)
@@ -296,7 +273,6 @@
   const handleClose = () => {
     dialogVisible.value = false
     newPermission.value = ''
-    newExpireTime.value = null
     permissionList.value = []
   }
 
@@ -348,11 +324,6 @@
     background: var(--el-fill-color);
   }
 
-  .perm-item.perm-expired {
-    opacity: 0.6;
-    background: var(--el-color-danger-light-9);
-  }
-
   .perm-info {
     flex: 1;
     min-width: 0;
@@ -372,34 +343,6 @@
     gap: 12px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-  }
-
-  .expire-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-  }
-
-  .expire-tag.permanent {
-    background: var(--el-color-success-light-9);
-    color: var(--el-color-success);
-  }
-
-  .expire-tag.normal {
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-  }
-
-  .expire-tag.expiring-soon {
-    background: var(--el-color-warning-light-9);
-    color: var(--el-color-warning);
-  }
-
-  .expire-tag.expired {
-    background: var(--el-color-danger-light-9);
-    color: var(--el-color-danger);
   }
 
   .create-time {
