@@ -55,10 +55,11 @@
           <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
             <template #left>
               <ElSpace wrap>
-                <ElButton @click="showDialog('add')" v-ripple>新增用户</ElButton>
+                <ElButton @click="showDialog('add')" v-permission="'system.ui.user.button.add'" v-ripple>新增用户</ElButton>
                 <ElButton 
                   :disabled="selectedRows.length === 0"
-                  @click="batchDeleteUsers" 
+                  @click="batchDeleteUsers"
+                  v-permission="'system.ui.user.button.delete'"
                   v-ripple
                 >
                   批量删除
