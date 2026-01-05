@@ -61,3 +61,22 @@ export function fetchUpdateDeptSort(data: Api.System.DeptSortDTO) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 获取部门已绑定的权限组列表
+ */
+export function fetchGetDeptPermissionGroups(deptId: number) {
+  return request.get<Api.System.PermissionGroupVO[]>({
+    url: `/system/dept/${deptId}/permission-groups`
+  })
+}
+
+/**
+ * 更新部门权限组绑定
+ */
+export function fetchUpdateDeptPermissionGroups(deptId: number, groupIds: number[]) {
+  return request.put<void>({
+    url: `/system/dept/${deptId}/permission-groups`,
+    data: groupIds,
+  })
+}

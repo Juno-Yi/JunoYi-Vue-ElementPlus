@@ -87,6 +87,13 @@
         :defaultParentId="parentId"
         @success="getDeptList"
       />
+
+      <!-- 分配权限组弹窗 -->
+      <DeptPermissionDialog
+        v-model:visible="permissionDialogVisible"
+        :dept-data="currentDeptData"
+        @success="getDeptList"
+      />
     </ElCard>
   </div>
 </template>
@@ -97,6 +104,7 @@
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import { usePermission } from '@/hooks/core/usePermission'
   import DeptDialog from './modules/dept-dialog.vue'
+  import DeptPermissionDialog from './modules/dept-permission-dialog.vue'
   import DragDeptNode from './modules/drag-dept-node.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
   import { fetchGetDeptTree, fetchDeleteDept, fetchUpdateDeptSort } from '@/api/system/department'
@@ -121,7 +129,9 @@
 
   // 弹窗相关
   const dialogVisible = ref(false)
+  const permissionDialogVisible = ref(false)
   const editData = ref<DeptVO | null>(null)
+  const currentDeptData = ref<DeptVO | null>(null)
   const parentId = ref<number>(0)
 
   // 搜索相关
@@ -318,6 +328,14 @@
             icon: 'ri:edit-2-line'
           })
         }
+
+        if (hasPermission('system.ui.dept.button.permission')){
+          list.push({
+            key: 'assignPermission',
+            label: '分配权限组',
+            icon: 'ri:folder-lock-line'
+          })
+        }
         
         if (hasPermission('system.ui.dept.button.delete')) {
           list.push({
@@ -397,10 +415,21 @@
       case 'edit':
         handleEditDept(row)
         break
+      case 'assignPermission':
+        showPermissionDialog(row)
+        break
       case 'delete':
         handleDeleteDept(row)
         break
     }
+  }
+
+  /**
+   * 显示分配权限组弹窗
+   */
+  const showPermissionDialog = (row: DeptVO): void => {
+    currentDeptData.value = row
+    permissionDialogVisible.value = true
   }
 
   /**
