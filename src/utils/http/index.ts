@@ -103,6 +103,17 @@ axiosInstance.interceptors.request.use(
     // 获取扩展配置
     const extConfig = request as InternalAxiosRequestConfig & ExtendedAxiosRequestConfig
 
+    // POST/PUT/PATCH 请求：如果 params 有数据但 data 为空，自动转换到 data
+    // 这个转换必须在加密之前执行
+    if (
+      ['POST', 'PUT', 'PATCH'].includes(request.method?.toUpperCase() || '') &&
+      extConfig.params &&
+      !request.data
+    ) {
+      request.data = extConfig.params
+      extConfig.params = undefined
+    }
+
     if (request.data && !(request.data instanceof FormData) && !request.headers['Content-Type']) {
       request.headers.set('Content-Type', 'application/json')
       
@@ -281,16 +292,6 @@ function delay(ms: number) {
 
 /** 请求函数 */
 async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> {
-  // POST | PUT 参数自动填充
-  if (
-    ['POST', 'PUT'].includes(config.method?.toUpperCase() || '') &&
-    config.params &&
-    !config.data
-  ) {
-    config.data = config.params
-    config.params = undefined
-  }
-
   try {
     const res = await axiosInstance.request<BaseResponse<T>>(config)
 

@@ -73,9 +73,10 @@
             :key="item.id"
             :node="item"
             :level="0"
-            :currentDropNodeId="currentDropNodeId"
-            @drop="handleDrop"
-            @update:currentDropNodeId="(id) => currentDropNodeId = id"
+            :dragNodeId="treeDrag.dragNodeId.value"
+            :dropTargetId="treeDrag.dropTargetId.value"
+            :dropPosition="treeDrag.dropPosition.value"
+            :getNodeDragHandlers="treeDrag.getNodeDragHandlers"
           />
         </div>
       </div>
@@ -97,6 +98,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import { usePermission } from '@/hooks/core/usePermission'
+  import { useTreeDrag } from '@/hooks/core/useTouchDrag'
   import MenuDialog from './modules/menu-dialog.vue'
   import DragTreeNode from './modules/drag-tree-node.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
@@ -116,7 +118,15 @@
   // 拖拽模式
   const isDragMode = ref(false)
   const dragTableData = ref<Api.System.MenuVO[]>([])
-  const currentDropNodeId = ref<number | null>(null)
+
+  // 使用树形拖拽 hook
+  const treeDrag = useTreeDrag({
+    canBeParent: (nodeId, element) => {
+      // 只有目录（menuType === 0）可以作为父级
+      return element.classList.contains('is-directory')
+    },
+    onDrop: handleDrop
+  })
 
   // 弹窗相关
   const dialogVisible = ref(false)
@@ -540,7 +550,7 @@
   /**
    * 处理拖拽放置
    */
-  const handleDrop = (dragId: number, targetId: number, position: 'before' | 'after' | 'inside'): void => {
+  function handleDrop(dragId: number, targetId: number, position: 'before' | 'after' | 'inside'): void {
     const dragNode = findNodeById(dragTableData.value, dragId)
     if (!dragNode) return
 

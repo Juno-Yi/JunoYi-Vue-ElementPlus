@@ -22,7 +22,7 @@
         </div>
         <div
           ref="availableListRef"
-          class="flex-1 overflow-auto p-2"
+          class="flex-1 overflow-auto p-2 drop-zone"
           @dragover.prevent
           @drop="handleDropToAvailable"
         >
@@ -33,6 +33,9 @@
             draggable="true"
             @dragstart="handleDragStart($event, group, 'available')"
             @dragend="handleDragEnd"
+            @touchstart="onTouchStart($event, group, 'available')"
+            @touchmove="onTouchMove"
+            @touchend="onTouchEnd"
           >
             <ArtSvgIcon icon="ri:folder-shield-line" class="mr-2 text-gray-500" />
             <span class="flex-1 truncate">{{ group.groupName }}</span>
@@ -53,7 +56,7 @@
         </div>
         <div
           ref="boundListRef"
-          class="flex-1 overflow-auto p-2"
+          class="flex-1 overflow-auto p-2 drop-zone"
           @dragover.prevent
           @drop="handleDropToBound"
         >
@@ -64,6 +67,9 @@
             draggable="true"
             @dragstart="handleDragStart($event, group, 'bound')"
             @dragend="handleDragEnd"
+            @touchstart="onTouchStart($event, group, 'bound')"
+            @touchmove="onTouchMove"
+            @touchend="onTouchEnd"
           >
             <ArtSvgIcon icon="ri:folder-shield-2-line" class="mr-2" :style="{ color: primaryColor }" />
             <span class="flex-1 truncate">{{ group.groupName }}</span>
@@ -160,9 +166,16 @@
     return group.permissions?.length === 1 && group.permissions[0] === '*'
   }
 
+  // 放置区域引用
+  const availableListRef = ref<HTMLElement>()
+  const boundListRef = ref<HTMLElement>()
+
   // 拖拽相关
   let draggedGroup: PermissionGroupVO | null = null
   let dragSource: 'available' | 'bound' | null = null
+  let dragClone: HTMLElement | null = null
+  let touchStartX = 0
+  let touchStartY = 0
 
   const handleDragStart = (event: DragEvent, group: PermissionGroupVO, source: 'available' | 'bound') => {
     draggedGroup = group
@@ -191,6 +204,100 @@
         boundGroupIds.value.push(draggedGroup.id)
       }
     }
+  }
+
+  // 移动端触摸拖拽
+  const onTouchStart = (event: TouchEvent, group: PermissionGroupVO, source: 'available' | 'bound') => {
+    if (event.touches.length !== 1) return
+    
+    const touch = event.touches[0]
+    touchStartX = touch.clientX
+    touchStartY = touch.clientY
+    
+    draggedGroup = group
+    dragSource = source
+    
+    const target = event.currentTarget as HTMLElement
+    
+    // 创建拖拽克隆
+    dragClone = target.cloneNode(true) as HTMLElement
+    dragClone.style.position = 'fixed'
+    dragClone.style.zIndex = '9999'
+    dragClone.style.pointerEvents = 'none'
+    dragClone.style.opacity = '0.9'
+    dragClone.style.transform = 'scale(1.02)'
+    dragClone.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+    dragClone.style.width = `${target.offsetWidth}px`
+    dragClone.style.left = `${touch.clientX - target.offsetWidth / 2}px`
+    dragClone.style.top = `${touch.clientY - 20}px`
+    document.body.appendChild(dragClone)
+    
+    target.style.opacity = '0.4'
+    
+    event.preventDefault()
+  }
+
+  const onTouchMove = (event: TouchEvent) => {
+    if (!draggedGroup || event.touches.length !== 1) return
+    
+    const touch = event.touches[0]
+    touchStartX = touch.clientX
+    touchStartY = touch.clientY
+    
+    if (dragClone) {
+      dragClone.style.left = `${touch.clientX - dragClone.offsetWidth / 2}px`
+      dragClone.style.top = `${touch.clientY - 20}px`
+    }
+    
+    // 高亮放置区域
+    const isOverAvailable = isPointInElement(touch.clientX, touch.clientY, availableListRef.value)
+    const isOverBound = isPointInElement(touch.clientX, touch.clientY, boundListRef.value)
+    
+    availableListRef.value?.classList.toggle('drop-zone-active', isOverAvailable && dragSource === 'bound')
+    boundListRef.value?.classList.toggle('drop-zone-active', isOverBound && dragSource === 'available')
+    
+    event.preventDefault()
+  }
+
+  const onTouchEnd = (event: TouchEvent) => {
+    if (!draggedGroup) return
+    
+    const target = event.currentTarget as HTMLElement
+    target.style.opacity = ''
+    
+    // 移除克隆
+    if (dragClone) {
+      dragClone.remove()
+      dragClone = null
+    }
+    
+    // 移除高亮
+    availableListRef.value?.classList.remove('drop-zone-active')
+    boundListRef.value?.classList.remove('drop-zone-active')
+    
+    // 检查放置位置
+    const touch = event.changedTouches[0]
+    if (touch) {
+      const isOverAvailable = isPointInElement(touch.clientX, touch.clientY, availableListRef.value)
+      const isOverBound = isPointInElement(touch.clientX, touch.clientY, boundListRef.value)
+      
+      if (isOverBound && dragSource === 'available') {
+        if (!boundGroupIds.value.includes(draggedGroup.id)) {
+          boundGroupIds.value.push(draggedGroup.id)
+        }
+      } else if (isOverAvailable && dragSource === 'bound') {
+        boundGroupIds.value = boundGroupIds.value.filter(id => id !== draggedGroup!.id)
+      }
+    }
+    
+    draggedGroup = null
+    dragSource = null
+  }
+
+  const isPointInElement = (x: number, y: number, element?: HTMLElement): boolean => {
+    if (!element) return false
+    const rect = element.getBoundingClientRect()
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
   }
 
   // 移除权限组（点击删除按钮）
@@ -264,6 +371,7 @@
     cursor: grab;
     transition: all 0.2s;
     user-select: none;
+    touch-action: none;
   }
 
   .perm-item:hover {
@@ -291,5 +399,22 @@
     opacity: 0;
     transition: opacity 0.2s;
     padding: 2px;
+  }
+
+  /* 移动端始终显示删除按钮 */
+  @media (max-width: 768px) {
+    .remove-btn {
+      opacity: 1;
+    }
+  }
+
+  /* 放置区域激活状态 */
+  .drop-zone {
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+
+  .drop-zone-active {
+    background-color: var(--el-color-primary-light-9) !important;
+    border: 2px dashed var(--el-color-primary) !important;
   }
 </style>

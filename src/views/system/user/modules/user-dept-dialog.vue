@@ -31,7 +31,7 @@
         </div>
         <div
           ref="availableListRef"
-          class="flex-1 overflow-auto p-2"
+          class="flex-1 overflow-auto p-2 drop-zone"
           @dragover.prevent
           @drop="handleDropToAvailable"
         >
@@ -68,7 +68,7 @@
         </div>
         <div
           ref="boundListRef"
-          class="flex-1 overflow-auto p-2"
+          class="flex-1 overflow-auto p-2 drop-zone"
           @dragover.prevent
           @drop="handleDropToBound"
         >
@@ -79,6 +79,9 @@
             draggable="true"
             @dragstart="handleDeptDragStart($event, dept)"
             @dragend="handleDragEnd"
+            @touchstart="onTouchStart($event, dept)"
+            @touchmove="onTouchMove"
+            @touchend="onTouchEnd"
           >
             <ArtSvgIcon icon="ri:building-2-line" class="mr-2" :style="{ color: primaryColor }" />
             <span class="flex-1 truncate">{{ dept.name }}</span>
@@ -204,9 +207,16 @@
     return flatDeptList.value.filter(d => boundDeptIds.value.includes(d.id))
   })
 
+  // 放置区域引用
+  const availableListRef = ref<HTMLElement>()
+  const boundListRef = ref<HTMLElement>()
+
   // 拖拽相关
   let draggedDept: DeptItem | null = null
   let dragSource: 'tree' | 'bound' | null = null
+  let dragClone: HTMLElement | null = null
+  let touchStartX = 0
+  let touchStartY = 0
 
   // 树节点拖拽开始
   const handleTreeDragStart = (node: any) => {
@@ -250,6 +260,95 @@
         boundDeptIds.value.push(draggedDept.id)
       }
     }
+  }
+
+  // 移动端触摸拖拽（已绑定部门）
+  const onTouchStart = (event: TouchEvent, dept: DeptItem) => {
+    if (event.touches.length !== 1) return
+    
+    const touch = event.touches[0]
+    touchStartX = touch.clientX
+    touchStartY = touch.clientY
+    
+    draggedDept = dept
+    dragSource = 'bound'
+    
+    const target = event.currentTarget as HTMLElement
+    
+    // 创建拖拽克隆
+    dragClone = target.cloneNode(true) as HTMLElement
+    dragClone.style.position = 'fixed'
+    dragClone.style.zIndex = '9999'
+    dragClone.style.pointerEvents = 'none'
+    dragClone.style.opacity = '0.9'
+    dragClone.style.transform = 'scale(1.02)'
+    dragClone.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+    dragClone.style.width = `${target.offsetWidth}px`
+    dragClone.style.left = `${touch.clientX - target.offsetWidth / 2}px`
+    dragClone.style.top = `${touch.clientY - 20}px`
+    document.body.appendChild(dragClone)
+    
+    target.style.opacity = '0.4'
+    
+    event.preventDefault()
+  }
+
+  const onTouchMove = (event: TouchEvent) => {
+    if (!draggedDept || event.touches.length !== 1) return
+    
+    const touch = event.touches[0]
+    touchStartX = touch.clientX
+    touchStartY = touch.clientY
+    
+    if (dragClone) {
+      dragClone.style.left = `${touch.clientX - dragClone.offsetWidth / 2}px`
+      dragClone.style.top = `${touch.clientY - 20}px`
+    }
+    
+    // 高亮放置区域
+    const isOverAvailable = isPointInElement(touch.clientX, touch.clientY, availableListRef.value)
+    const isOverBound = isPointInElement(touch.clientX, touch.clientY, boundListRef.value)
+    
+    availableListRef.value?.classList.toggle('drop-zone-active', isOverAvailable && dragSource === 'bound')
+    boundListRef.value?.classList.toggle('drop-zone-active', isOverBound && dragSource === 'tree')
+    
+    event.preventDefault()
+  }
+
+  const onTouchEnd = (event: TouchEvent) => {
+    if (!draggedDept) return
+    
+    const target = event.currentTarget as HTMLElement
+    target.style.opacity = ''
+    
+    // 移除克隆
+    if (dragClone) {
+      dragClone.remove()
+      dragClone = null
+    }
+    
+    // 移除高亮
+    availableListRef.value?.classList.remove('drop-zone-active')
+    boundListRef.value?.classList.remove('drop-zone-active')
+    
+    // 检查放置位置
+    const touch = event.changedTouches[0]
+    if (touch) {
+      const isOverAvailable = isPointInElement(touch.clientX, touch.clientY, availableListRef.value)
+      
+      if (isOverAvailable && dragSource === 'bound') {
+        boundDeptIds.value = boundDeptIds.value.filter(id => id !== draggedDept!.id)
+      }
+    }
+    
+    draggedDept = null
+    dragSource = null
+  }
+
+  const isPointInElement = (x: number, y: number, element?: HTMLElement): boolean => {
+    if (!element) return false
+    const rect = element.getBoundingClientRect()
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
   }
 
   // 移除部门（点击删除按钮）
@@ -341,6 +440,7 @@
     cursor: grab;
     transition: all 0.2s;
     user-select: none;
+    touch-action: none;
   }
 
   .dept-item:hover {
@@ -367,5 +467,22 @@
 
   :deep(.el-tree-node__content:active) {
     cursor: grabbing;
+  }
+
+  /* 移动端始终显示删除按钮 */
+  @media (max-width: 768px) {
+    .remove-btn {
+      opacity: 1;
+    }
+  }
+
+  /* 放置区域激活状态 */
+  .drop-zone {
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+
+  .drop-zone-active {
+    background-color: var(--el-color-primary-light-9) !important;
+    border: 2px dashed var(--el-color-primary) !important;
   }
 </style>

@@ -73,9 +73,10 @@
             :key="item.id"
             :node="item"
             :level="0"
-            :currentDropNodeId="currentDropNodeId"
-            @drop="handleDrop"
-            @update:currentDropNodeId="(id) => currentDropNodeId = id"
+            :dragNodeId="treeDrag.dragNodeId.value"
+            :dropTargetId="treeDrag.dropTargetId.value"
+            :dropPosition="treeDrag.dropPosition.value"
+            :getNodeDragHandlers="treeDrag.getNodeDragHandlers"
           />
         </div>
       </div>
@@ -103,6 +104,7 @@
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import { usePermission } from '@/hooks/core/usePermission'
+  import { useTreeDrag } from '@/hooks/core/useTouchDrag'
   import DeptDialog from './modules/dept-dialog.vue'
   import DeptPermissionDialog from './modules/dept-permission-dialog.vue'
   import DragDeptNode from './modules/drag-dept-node.vue'
@@ -125,7 +127,12 @@
   // 拖拽模式
   const isDragMode = ref(false)
   const dragTableData = ref<DeptVO[]>([])
-  const currentDropNodeId = ref<number | null>(null)
+
+  // 使用树形拖拽 hook
+  const treeDrag = useTreeDrag({
+    canBeParent: () => true, // 部门都可以作为父级
+    onDrop: handleDrop
+  })
 
   // 弹窗相关
   const dialogVisible = ref(false)
@@ -527,7 +534,7 @@
   /**
    * 处理拖拽放置
    */
-  const handleDrop = (dragId: number, targetId: number, position: 'before' | 'after' | 'inside'): void => {
+  function handleDrop(dragId: number, targetId: number, position: 'before' | 'after' | 'inside'): void {
     const dragNode = findNodeById(dragTableData.value, dragId)
     if (!dragNode) return
 
