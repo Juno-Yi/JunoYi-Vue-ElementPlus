@@ -21,7 +21,9 @@ function getPublicKeyPem(): string {
   if (!key) {
     throw new Error('未配置 API 加密公钥 (VITE_API_ENCRYPT_PUBLIC_KEY)')
   }
-  return `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`
+  // 将单行 Base64 转换为每 64 字符换行的 PEM 格式
+  const formattedKey = key.match(/.{1,64}/g)?.join('\n') || key
+  return `-----BEGIN PUBLIC KEY-----\n${formattedKey}\n-----END PUBLIC KEY-----`
 }
 
 // 延迟解析公钥（避免环境变量未加载时报错）
@@ -73,8 +75,9 @@ export function decryptResponse(encryptedText: string): string {
   const encryptedBigInt = new forge.jsbn.BigInteger(forge.util.bytesToHex(encryptedAesKey), 16)
   const decryptedBigInt = encryptedBigInt.modPow(e, n)
   let decryptedHex = decryptedBigInt.toString(16)
-  // 补齐前导零
-  while (decryptedHex.length < 512) decryptedHex = '0' + decryptedHex
+  // 根据密钥长度补齐前导零（1024位密钥=256字符，2048位密钥=512字符）
+  const keyLength = Math.ceil(n.bitLength() / 4)
+  while (decryptedHex.length < keyLength) decryptedHex = '0' + decryptedHex
   const decryptedBytes = forge.util.hexToBytes(decryptedHex)
 
   // 去除 PKCS1 填充
