@@ -13,9 +13,6 @@
 </template>
 
 <script setup lang="ts">
-  import { useCommon } from '@/hooks/core/useCommon'
-  import { RoutesAlias } from '@/router/routesAlias'
-
   const router = useRouter()
 
   interface ExceptionData {
@@ -36,11 +33,7 @@
     {}
   )
 
-  const { homePath } = useCommon()
-
   const backHome = () => {
-    // 优先使用 homePath，如果为空则回退到布局首页
-    const targetPath = homePath.value || RoutesAlias.Layout
-    router.replace(targetPath)
+    router.replace('/')
   }
 </script>
