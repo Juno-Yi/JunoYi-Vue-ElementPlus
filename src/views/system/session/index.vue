@@ -22,7 +22,6 @@
             <ElButton
               v-permission="'system.ui.session.button.logout'"
               :disabled="selectedRows.length === 0"
-              type="danger"
               @click="handleBatchLogout"
               v-ripple
             >
