@@ -45,12 +45,23 @@ interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean // 标记是否为重试请求
 }
 
-const { VITE_API_URL, VITE_WITH_CREDENTIALS } = import.meta.env
+const { VITE_API_URL, VITE_API_PREFIX, VITE_WITH_CREDENTIALS } = import.meta.env
+
+/** 计算完整的 API 基础路径 */
+const getBaseURL = (): string => {
+  const apiUrl = VITE_API_URL || ''
+  const apiPrefix = VITE_API_PREFIX || ''
+  // 拼接 URL 和前缀，避免重复斜杠
+  if (!apiPrefix) return apiUrl
+  const normalizedUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
+  const normalizedPrefix = apiPrefix.startsWith('/') ? apiPrefix : `/${apiPrefix}`
+  return `${normalizedUrl}${normalizedPrefix}`
+}
 
 /** Axios实例 */
 const axiosInstance = axios.create({
   timeout: REQUEST_TIMEOUT,
-  baseURL: VITE_API_URL,
+  baseURL: getBaseURL(),
   withCredentials: VITE_WITH_CREDENTIALS === 'true',
   validateStatus: (status) => status >= 200 && status < 300,
   transformResponse: [
@@ -141,7 +152,7 @@ async function tryRefreshToken(originalRequest: ExtendedAxiosRequestConfig): Pro
 
   try {
     const response = await axios.post<BaseResponse<{ accessToken: string; refreshToken: string }>>(
-      `${VITE_API_URL}/auth/refresh`,
+      `${getBaseURL()}/auth/refresh`,
       null,
       { params: { refreshToken: currentRefreshToken } }
     )
