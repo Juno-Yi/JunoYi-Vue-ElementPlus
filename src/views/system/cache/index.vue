@@ -2,17 +2,22 @@
 <template>
   <div class="art-full-height">
     <!-- Redis 信息卡片 -->
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
-      <div v-for="item in infoCards" :key="item.label" class="info-card">
-        <div class="info-card-icon" :style="{ backgroundColor: item.bgColor }">
-          <ArtSvgIcon :icon="item.icon" :style="{ color: item.color }" />
-        </div>
-        <div class="info-card-content">
-          <div class="info-card-value">{{ item.value }}</div>
-          <div class="info-card-label">{{ item.label }}</div>
+    <ElCard class="mb-4" shadow="never">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div v-for="item in infoCards" :key="item.label" class="flex-c gap-3">
+          <div
+            class="w-10 h-10 rounded-lg flex-cc flex-shrink-0"
+            :style="{ backgroundColor: `color-mix(in srgb, ${primaryColor} 15%, transparent)` }"
+          >
+            <ArtSvgIcon :icon="item.icon" :style="{ color: primaryColor }" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-lg font-semibold text-g-900 truncate">{{ item.value }}</div>
+            <div class="text-xs text-g-500">{{ item.label }}</div>
+          </div>
         </div>
       </div>
-    </div>
+    </ElCard>
 
     <!-- 搜索栏 -->
     <ArtSearchBar
@@ -28,7 +33,7 @@
       <ArtTableHeader
         :loading="loading"
         v-model:columns="columnChecks"
-        @refresh="refreshData"
+        @refresh="handleRefreshAll"
       >
         <template #left>
           <ElSpace wrap>
@@ -53,9 +58,9 @@
               清空缓存
             </ElButton>
             <ElDivider direction="vertical" />
-            <div class="flex items-center gap-3 text-sm">
-              <span class="text-gray-600 dark:text-gray-300">
-                共 <b class="text-primary">{{ pagination.total }}</b> 个键
+            <div class="flex-c gap-3 text-sm">
+              <span class="text-g-600">
+                共 <b :style="{ color: primaryColor }">{{ pagination.total }}</b> 个键
               </span>
             </div>
           </ElSpace>
@@ -86,35 +91,35 @@
       </div>
       <div v-else-if="currentDetail" class="space-y-4">
         <!-- 基本信息 -->
-        <div class="detail-section">
-          <div class="detail-section-title">基本信息</div>
-          <div class="detail-item">
-            <span class="detail-label">键名</span>
-            <span class="detail-value font-mono text-sm break-all">{{ currentDetail.key }}</span>
+        <div class="bg-g-100 rounded-lg p-4">
+          <div class="text-sm font-medium text-g-700 mb-3 pb-2 border-b-d">基本信息</div>
+          <div class="flex items-start gap-3 py-2">
+            <span class="text-sm text-g-500 w-20 flex-shrink-0">键名</span>
+            <span class="text-sm text-g-800 flex-1 font-mono break-all">{{ currentDetail.key }}</span>
           </div>
-          <div class="detail-item">
-            <span class="detail-label">类型</span>
+          <div class="flex items-start gap-3 py-2">
+            <span class="text-sm text-g-500 w-20 flex-shrink-0">类型</span>
             <ElTag :type="getTypeTagType(currentDetail.type)" size="small">{{ currentDetail.type }}</ElTag>
           </div>
-          <div class="detail-item">
-            <span class="detail-label">TTL</span>
-            <span class="detail-value">{{ formatTTL(currentDetail.ttl) }}</span>
+          <div class="flex items-start gap-3 py-2">
+            <span class="text-sm text-g-500 w-20 flex-shrink-0">TTL</span>
+            <span class="text-sm text-g-800">{{ formatTTL(currentDetail.ttl) }}</span>
           </div>
-          <div v-if="currentDetail.memoryUsage" class="detail-item">
-            <span class="detail-label">内存占用</span>
-            <span class="detail-value">{{ formatBytes(currentDetail.memoryUsage) }}</span>
+          <div v-if="currentDetail.memoryUsage" class="flex items-start gap-3 py-2">
+            <span class="text-sm text-g-500 w-20 flex-shrink-0">内存占用</span>
+            <span class="text-sm text-g-800">{{ formatBytes(currentDetail.memoryUsage) }}</span>
           </div>
         </div>
         <!-- 值内容 -->
-        <div class="detail-section">
-          <div class="detail-section-title flex items-center justify-between">
+        <div class="bg-g-100 rounded-lg p-4">
+          <div class="text-sm font-medium text-g-700 mb-3 pb-2 border-b-d flex-cb">
             <span>值内容</span>
             <ElButton size="small" text @click="copyValue">
               <ArtSvgIcon icon="ri:file-copy-line" class="mr-1" />复制
             </ElButton>
           </div>
-          <div class="value-content">
-            <pre class="value-pre">{{ formatValue(currentDetail.value) }}</pre>
+          <div class="bg-g-200 rounded-lg p-3 max-h-96 overflow-auto">
+            <pre class="text-sm font-mono text-g-800 whitespace-pre-wrap break-all m-0">{{ formatValue(currentDetail.value) }}</pre>
           </div>
         </div>
       </div>
@@ -125,6 +130,7 @@
 <script setup lang="ts">
   import { useTable } from '@/hooks/core/useTable'
   import { usePermission } from '@/hooks/core/usePermission'
+  import { useSettingStore } from '@/store/modules/setting'
   import {
     fetchGetRedisInfo,
     fetchGetCacheKeys,
@@ -134,34 +140,37 @@
     fetchClearAllCache
   } from '@/api/system/cache'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { ElTag, ElMessageBox, ElDrawer, ElIcon, ElButton } from 'element-plus'
+  import { ElTag, ElMessageBox, ElDrawer, ElIcon, ElButton, ElCard } from 'element-plus'
   import { Loading } from '@element-plus/icons-vue'
   import { useClipboard } from '@vueuse/core'
 
   defineOptions({ name: 'Cache' })
 
   const { hasPermission } = usePermission()
+  const settingStore = useSettingStore()
   const { copy } = useClipboard()
 
   type CacheKeyVO = Api.System.CacheKeyVO
   type CacheKeyDetailVO = Api.System.CacheKeyDetailVO
   type RedisInfo = Api.System.RedisInfo
 
+  // 主题色
+  const primaryColor = computed(() => settingStore.systemThemeColor || '#409eff')
+
   // Redis 信息
   const redisInfo = ref<RedisInfo | null>(null)
-  const infoLoading = ref(false)
 
   // 信息卡片
   const infoCards = computed(() => {
     const info = redisInfo.value
     if (!info) return []
     return [
-      { label: 'Redis版本', value: info.version, icon: 'ri:server-line', color: '#409eff', bgColor: 'rgba(64, 158, 255, 0.1)' },
-      { label: '运行时间', value: formatUptime(info.uptimeInSeconds), icon: 'ri:time-line', color: '#67c23a', bgColor: 'rgba(103, 194, 58, 0.1)' },
-      { label: '已用内存', value: info.usedMemoryHuman, icon: 'ri:database-2-line', color: '#e6a23c', bgColor: 'rgba(230, 162, 60, 0.1)' },
-      { label: '键数量', value: String(info.dbSize), icon: 'ri:key-2-line', color: '#909399', bgColor: 'rgba(144, 147, 153, 0.1)' },
-      { label: '命中率', value: info.hitRate, icon: 'ri:focus-3-line', color: '#f56c6c', bgColor: 'rgba(245, 108, 108, 0.1)' },
-      { label: '连接数', value: String(info.connectedClients), icon: 'ri:links-line', color: '#9c27b0', bgColor: 'rgba(156, 39, 176, 0.1)' }
+      { label: 'Redis版本', value: info.version, icon: 'ri:server-line' },
+      { label: '运行时间', value: formatUptime(info.uptimeInSeconds), icon: 'ri:time-line' },
+      { label: '已用内存', value: info.usedMemoryHuman, icon: 'ri:database-2-line' },
+      { label: '键数量', value: String(info.dbSize), icon: 'ri:key-2-line' },
+      { label: '命中率', value: info.hitRate, icon: 'ri:focus-3-line' },
+      { label: '连接数', value: String(info.connectedClients), icon: 'ri:links-line' }
     ]
   })
 
@@ -230,7 +239,11 @@
           headerAlign: 'center',
           showOverflowTooltip: true,
           formatter: (row: CacheKeyVO) => {
-            return h('span', { class: 'font-mono text-sm cursor-pointer text-primary hover:underline', onClick: () => showDetail(row) }, row.key)
+            return h('span', {
+              class: 'font-mono text-sm cursor-pointer hover:underline',
+              style: { color: primaryColor.value },
+              onClick: () => showDetail(row)
+            }, row.key)
           }
         },
         {
@@ -251,7 +264,7 @@
           headerAlign: 'center',
           formatter: (row: CacheKeyVO) => {
             const ttlText = formatTTL(row.ttl)
-            const color = row.ttl === -1 ? '#909399' : row.ttl < 60 ? '#f56c6c' : row.ttl < 3600 ? '#e6a23c' : '#67c23a'
+            const color = row.ttl === -1 ? 'var(--art-gray-500)' : row.ttl < 60 ? '#f56c6c' : row.ttl < 3600 ? '#e6a23c' : '#67c23a'
             return h('span', { style: { color } }, ttlText)
           }
         },
@@ -271,7 +284,7 @@
           headerAlign: 'center',
           fixed: 'right',
           formatter: (row: CacheKeyVO) => {
-            return h('div', { class: 'flex items-center justify-center gap-2' }, [
+            return h('div', { class: 'flex-cc gap-2' }, [
               h(ElButton, { type: 'primary', size: 'small', link: true, onClick: () => showDetail(row) }, () => '查看'),
               hasPermission('system.ui.cache.button.delete')
                 ? h(ElButton, { type: 'danger', size: 'small', link: true, onClick: () => handleDelete(row) }, () => '删除')
@@ -287,12 +300,19 @@
    * 获取 Redis 信息
    */
   const loadRedisInfo = async () => {
-    infoLoading.value = true
     try {
       redisInfo.value = await fetchGetRedisInfo()
-    } finally {
-      infoLoading.value = false
+    } catch {
+      // 忽略错误
     }
+  }
+
+  /**
+   * 刷新所有数据
+   */
+  const handleRefreshAll = () => {
+    loadRedisInfo()
+    refreshData()
   }
 
   /**
@@ -415,8 +435,7 @@
         type: 'warning'
       })
       await fetchDeleteCacheKey(row.key)
-      refreshData()
-      loadRedisInfo()
+      handleRefreshAll()
     } catch {
       // 用户取消
     }
@@ -439,8 +458,7 @@
       const keys = selectedRows.value.map(item => item.key)
       await fetchBatchDeleteCacheKeys(keys)
       selectedRows.value = []
-      refreshData()
-      loadRedisInfo()
+      handleRefreshAll()
     } catch {
       // 用户取消
     }
@@ -457,8 +475,7 @@
         type: 'error'
       })
       await fetchClearAllCache()
-      refreshData()
-      loadRedisInfo()
+      handleRefreshAll()
     } catch {
       // 用户取消
     }
@@ -468,44 +485,3 @@
     loadRedisInfo()
   })
 </script>
-
-<style scoped>
-  @reference "@/assets/styles/core/tailwind.css";
-
-  .info-card {
-    @apply flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700;
-  }
-  .info-card-icon {
-    @apply w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0;
-  }
-  .info-card-content {
-    @apply flex-1 min-w-0;
-  }
-  .info-card-value {
-    @apply text-lg font-semibold text-gray-800 dark:text-gray-100 truncate;
-  }
-  .info-card-label {
-    @apply text-xs text-gray-500 dark:text-gray-400;
-  }
-  .detail-section {
-    @apply bg-gray-50 dark:bg-gray-800 rounded-lg p-4;
-  }
-  .detail-section-title {
-    @apply text-sm font-medium text-gray-700 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-gray-600;
-  }
-  .detail-item {
-    @apply flex items-start gap-3 py-2;
-  }
-  .detail-label {
-    @apply text-sm text-gray-500 dark:text-gray-400 w-20 flex-shrink-0;
-  }
-  .detail-value {
-    @apply text-sm text-gray-800 dark:text-gray-200 flex-1;
-  }
-  .value-content {
-    @apply bg-gray-100 dark:bg-gray-900 rounded-lg p-3 max-h-96 overflow-auto;
-  }
-  .value-pre {
-    @apply text-sm font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-all m-0;
-  }
-</style>
