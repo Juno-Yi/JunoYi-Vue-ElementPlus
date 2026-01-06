@@ -49,8 +49,8 @@ const { VITE_API_URL, VITE_API_PREFIX, VITE_WITH_CREDENTIALS } = import.meta.env
 
 /** 计算完整的 API 基础路径 */
 const getBaseURL = (): string => {
-  const apiUrl = VITE_API_URL || ''
-  const apiPrefix = VITE_API_PREFIX || ''
+  const apiUrl = (VITE_API_URL || '').trim()
+  const apiPrefix = (VITE_API_PREFIX || '').trim()
   // 拼接 URL 和前缀，避免重复斜杠
   if (!apiPrefix) return apiUrl
   const normalizedUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
