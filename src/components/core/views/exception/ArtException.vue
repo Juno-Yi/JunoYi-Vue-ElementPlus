@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
   import { useCommon } from '@/hooks/core/useCommon'
+  import { RoutesAlias } from '@/router/routesAlias'
 
   const router = useRouter()
 
@@ -38,6 +39,8 @@
   const { homePath } = useCommon()
 
   const backHome = () => {
-    router.push(homePath.value)
+    // 优先使用 homePath，如果为空则回退到布局首页
+    const targetPath = homePath.value || RoutesAlias.Layout
+    router.replace(targetPath)
   }
 </script>
