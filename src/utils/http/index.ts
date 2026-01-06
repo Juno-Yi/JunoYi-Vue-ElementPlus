@@ -162,17 +162,28 @@ async function tryRefreshToken(originalRequest: ExtendedAxiosRequestConfig): Pro
   isRefreshing = true
 
   try {
-    const response = await axios.post<BaseResponse<{ accessToken: string; refreshToken: string }>>(
+    const response = await axios.post(
       `${getBaseURL()}/auth/refresh`,
       null,
       { params: { refreshToken: currentRefreshToken } }
     )
 
-    if (response.data.code !== ApiStatus.success) {
-      throw new Error(response.data.msg || response.data.message || 'Token 刷新失败')
+    // 解密响应数据（如果启用了加密）
+    let responseData = response.data
+    if (isApiEncryptEnabled() && typeof responseData === 'string' && responseData.length > 0) {
+      try {
+        const decryptedData = decryptResponse(responseData)
+        responseData = JSON.parse(decryptedData)
+      } catch (e) {
+        console.error('刷新Token响应解密失败:', e)
+      }
     }
 
-    const { accessToken, refreshToken } = response.data.data
+    if (responseData.code !== ApiStatus.success) {
+      throw new Error(responseData.msg || responseData.message || 'Token 刷新失败')
+    }
+
+    const { accessToken, refreshToken } = responseData.data
     userStore.setToken(accessToken, refreshToken)
 
     // 通知所有等待的请求
