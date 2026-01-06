@@ -108,7 +108,7 @@
   const selectedRows = ref<SessionVO[]>([])
 
   // 在线数量
-  const onlineCount = computed(() => data.value.filter(item => item.status === 1).length)
+  const onlineCount = computed(() => data.value.length)
 
   // 平台配置
   const platformConfig: Record<string, { icon: string; color: string; label: string }> = {
