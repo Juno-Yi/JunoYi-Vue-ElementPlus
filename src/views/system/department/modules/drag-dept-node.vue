@@ -70,7 +70,7 @@
     /** 放置位置（从父组件传入） */
     dropPosition?: DropPosition | null
     /** 获取节点拖拽事件处理器（从父组件传入） */
-    getNodeDragHandlers: (nodeId: number) => Record<string, (e: Event) => void>
+    getNodeDragHandlers: (nodeId: number) => Record<string, unknown>
   }
 
   const props = withDefaults(defineProps<Props>(), {
