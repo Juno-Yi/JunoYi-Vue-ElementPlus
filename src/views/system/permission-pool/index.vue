@@ -68,7 +68,6 @@
           />
           <div class="tag-content" @click="handleSelectChange(item.id, !selectedIds.includes(item.id))">
             <div class="tag-main">
-              <ArtSvgIcon icon="ri:key-2-line" class="tag-icon" />
               <span class="tag-text" :title="item.permission">{{ item.permission }}</span>
               <ElTag
                 size="small"
@@ -76,32 +75,30 @@
                 class="tag-type"
                 :type="getPermissionType(item.permission).tagType as any"
               >
-                <ArtSvgIcon :icon="getPermissionType(item.permission).icon" class="mr-1" />
                 {{ getPermissionType(item.permission).type }}
-              </ElTag>
-              <ElTag
-                :type="item.status === 1 ? 'success' : 'info'"
-                size="small"
-                effect="plain"
-                class="tag-status"
-              >
-                {{ item.status === 1 ? '启用' : '禁用' }}
               </ElTag>
             </div>
             <div class="tag-desc" v-if="item.description" :title="item.description">
               {{ item.description }}
             </div>
           </div>
-          <ElButton
-            type="danger"
-            size="small"
-            text
-            circle
-            class="tag-delete"
-            @click.stop="handleDelete(item)"
-          >
-            <ArtSvgIcon icon="ri:close-line" />
-          </ElButton>
+          <div class="tag-actions" @click.stop>
+            <ElSwitch
+              :model-value="item.status === 1"
+              size="small"
+              @change="handleToggleStatus(item)"
+            />
+            <ElButton
+              type="danger"
+              size="small"
+              text
+              circle
+              class="tag-delete"
+              @click="handleDelete(item)"
+            >
+              <ArtSvgIcon icon="ri:close-line" />
+            </ElButton>
+          </div>
         </div>
       </div>
 
@@ -135,7 +132,8 @@
     fetchGetPermissionPoolList,
     fetchAddPermissionPool,
     fetchDeletePermissionPool,
-    fetchDeletePermissionPoolBatch
+    fetchDeletePermissionPoolBatch,
+    fetchUpdatePermissionPoolStatus
   } from '@/api/system/permissionPool'
 
   defineOptions({ name: 'PermissionPool' })
@@ -281,6 +279,19 @@
       if (index > -1) {
         selectedIds.value.splice(index, 1)
       }
+    }
+  }
+
+  /**
+   * 切换权限状态
+   */
+  const handleToggleStatus = async (item: PermissionPoolVO) => {
+    const newStatus = item.status === 1 ? 0 : 1
+    try {
+      await fetchUpdatePermissionPoolStatus(item.id, newStatus)
+      item.status = newStatus
+    } catch (error) {
+      console.error('更新权限状态失败:', error)
     }
   }
 
@@ -505,11 +516,17 @@
           }
         }
 
-        .tag-delete {
+        .tag-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           flex-shrink: 0;
-          opacity: 0;
-          transition: opacity 0.2s;
-          margin-top: 2px;
+          margin-left: 8px;
+
+          .tag-delete {
+            opacity: 0;
+            transition: opacity 0.2s;
+          }
         }
       }
     }

@@ -51,3 +51,14 @@ export function fetchDeletePermissionPoolBatch(ids: number[]) {
     showSuccessMessage: true
   })
 }
+
+/**
+ * 更新权限状态
+ */
+export function fetchUpdatePermissionPoolStatus(id: number, status: number) {
+  return request.put<void>({
+    url: `/system/permission-pool/${id}/status`,
+    data: { status },
+    showSuccessMessage: true
+  })
+}
