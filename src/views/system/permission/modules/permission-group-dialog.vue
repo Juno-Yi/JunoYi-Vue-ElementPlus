@@ -3,7 +3,7 @@
   <ElDialog
     v-model="dialogVisible"
     :title="isEdit ? '编辑权限组' : '新增权限组'"
-    width="680px"
+    width="900px"
     :close-on-click-modal="false"
     @close="handleClose"
   >
@@ -65,65 +65,119 @@
         />
       </ElFormItem>
 
-      <ElFormItem label="权限列表" prop="permissions">
-        <div class="permission-container">
-          <!-- 添加权限输入框 -->
-          <div class="permission-add">
-            <ElInput
-              v-model="newPermission"
-              placeholder="输入权限标识符，回车添加"
-              clearable
-              @keyup.enter="addPermission"
-            >
-              <template #append>
-                <ElButton @click="addPermission" :disabled="!newPermission.trim()">
-                  添加
-                </ElButton>
-              </template>
-            </ElInput>
-          </div>
+      <ElFormItem label="权限分配" prop="permissions">
+        <!-- 提示信息 -->
+        <div class="tip-box mb-4" :style="tipBoxStyle">
+          <ArtSvgIcon icon="ri:information-line" class="mr-2 flex-shrink-0" :style="{ color: primaryColor }" />
+          <span>操作方式：拖拽左侧权限到右侧完成添加，点击右侧权限的 × 按钮或拖回左侧完成移除</span>
+        </div>
 
-          <!-- 快捷模板 -->
-          <div class="permission-templates">
-            <span class="template-label">快捷添加：</span>
-            <ElTag
-              v-for="tpl in quickTemplates"
-              :key="tpl.value"
-              size="small"
-              effect="plain"
-              class="template-tag"
-              @click="addQuickPermission(tpl.value)"
-            >
-              {{ tpl.label }}
-            </ElTag>
-          </div>
-
-          <!-- 权限列表 -->
-          <div class="permission-list" :class="{ 'has-items': formData.permissions.length > 0 }">
-            <TransitionGroup name="permission">
-              <div
-                v-for="(perm, index) in formData.permissions"
-                :key="perm"
-                class="permission-item"
+        <!-- 穿梭框 -->
+        <div class="permission-transfer">
+          <!-- 左侧：权限池 -->
+          <div class="transfer-panel">
+            <div class="panel-header">
+              <span class="font-medium text-sm">权限池</span>
+              <span class="text-gray-400 text-xs ml-2">({{ filteredPoolList.length }})</span>
+            </div>
+            <div class="panel-search">
+              <ElInput
+                v-model="poolSearch"
+                placeholder="搜索权限..."
+                clearable
+                size="small"
               >
-                <ArtSvgIcon :icon="getPermIcon(perm)" class="permission-icon" :style="{ color: getPermColor(perm) }" />
-                <span class="permission-text">{{ perm }}</span>
-                <ElTag :type="getPermType(perm)" size="small" class="permission-type">
-                  {{ getPermLabel(perm) }}
-                </ElTag>
-                <ElButton
-                  link
-                  size="small"
-                  class="permission-remove"
-                  @click="removePermission(index)"
-                >
-                  <ArtSvgIcon icon="ri:close-line" />
-                </ElButton>
+                <template #prefix>
+                  <ArtSvgIcon icon="ri:search-line" />
+                </template>
+              </ElInput>
+            </div>
+            <div 
+              ref="poolListRef" 
+              class="panel-content drop-zone"
+              @dragover.prevent 
+              @drop="handleDropToPool"
+            >
+              <div v-if="poolLoading" class="text-center text-gray-400 py-8">
+                <ElIcon class="is-loading"><Loading /></ElIcon>
+                <span class="ml-2">加载中...</span>
               </div>
-            </TransitionGroup>
-            <div v-if="formData.permissions.length === 0" class="permission-empty">
-              <ArtSvgIcon icon="ri:key-2-line" class="empty-icon" />
-              <span>暂无权限，请添加</span>
+              <template v-else-if="filteredPoolList.length > 0">
+                <div
+                  v-for="item in filteredPoolList"
+                  :key="item.id"
+                  class="perm-item"
+                  draggable="true"
+                  @dragstart="handleDragStart($event, item.permission, 'pool')"
+                  @dragend="handleDragEnd"
+                  @dblclick="addToSelected(item.permission)"
+                >
+                  <ArtSvgIcon :icon="getPermIcon(item.permission)" class="mr-2" :style="{ color: getPermColor(item.permission) }" />
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm truncate">{{ item.permission }}</div>
+                    <div class="text-xs text-gray-400 truncate" v-if="item.description">{{ item.description }}</div>
+                  </div>
+                  <ElTag :type="getPermType(item.permission)" size="small" effect="light">
+                    {{ getPermLabel(item.permission) }}
+                  </ElTag>
+                </div>
+              </template>
+              <div v-else class="text-center text-gray-400 py-8">
+                {{ poolSearch ? '无匹配权限' : '暂无可用权限' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧：已选权限 -->
+          <div class="transfer-panel">
+            <div class="panel-header panel-header-selected" :style="{ backgroundColor: primaryColorLight }">
+              <span class="font-medium text-sm" :style="{ color: primaryColor }">已选权限</span>
+              <span class="text-xs ml-2" :style="{ color: primaryColor, opacity: 0.7 }">({{ formData.permissions.length }})</span>
+            </div>
+            <div class="panel-search">
+              <ElInput
+                v-model="selectedSearch"
+                placeholder="搜索已选..."
+                clearable
+                size="small"
+              >
+                <template #prefix>
+                  <ArtSvgIcon icon="ri:search-line" />
+                </template>
+              </ElInput>
+            </div>
+            <div 
+              ref="selectedListRef" 
+              class="panel-content drop-zone"
+              @dragover.prevent 
+              @drop="handleDropToSelected"
+            >
+              <template v-if="filteredSelectedList.length > 0">
+                <div
+                  v-for="perm in filteredSelectedList"
+                  :key="perm"
+                  class="perm-item perm-item-selected"
+                  draggable="true"
+                  @dragstart="handleDragStart($event, perm, 'selected')"
+                  @dragend="handleDragEnd"
+                  @dblclick="removeFromSelected(perm)"
+                >
+                  <ArtSvgIcon :icon="getPermIcon(perm)" class="mr-2" :style="{ color: getPermColor(perm) }" />
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm truncate">{{ perm }}</div>
+                    <div class="text-xs text-gray-400 truncate" v-if="getPermDescription(perm)">{{ getPermDescription(perm) }}</div>
+                  </div>
+                  <ElTag :type="getPermType(perm)" size="small" effect="light" class="mr-2">
+                    {{ getPermLabel(perm) }}
+                  </ElTag>
+                  <ElButton link size="small" class="remove-btn" @click.stop="removeFromSelected(perm)">
+                    <ArtSvgIcon icon="ri:close-line" class="text-gray-400 hover:text-red-500" />
+                  </ElButton>
+                </div>
+              </template>
+              <div v-else class="text-center text-gray-400 py-8">
+                {{ selectedSearch ? '无匹配权限' : '拖拽或双击添加权限' }}
+              </div>
             </div>
           </div>
         </div>
@@ -141,10 +195,14 @@
   import { computed, ref, reactive, watch } from 'vue'
   import type { FormInstance, FormRules } from 'element-plus'
   import { ElMessage } from 'element-plus'
+  import { Loading } from '@element-plus/icons-vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { fetchAddPermissionGroup, fetchUpdatePermissionGroup } from '@/api/system/permission'
+  import { fetchGetPermissionPoolOptions } from '@/api/system/permissionPool'
+  import { useSettingStore } from '@/store/modules/setting'
 
   type PermissionGroupVO = Api.System.PermissionGroupVO
+  type PermissionPoolVO = Api.System.PermissionPoolVO
 
   interface Props {
     visible: boolean
@@ -160,6 +218,22 @@
     'success': []
   }>()
 
+  const settingStore = useSettingStore()
+
+  const primaryColor = computed(() => settingStore.systemThemeColor || '#409eff')
+  const primaryColorLight = computed(() => {
+    const hex = primaryColor.value.replace('#', '')
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+    return `rgba(${r}, ${g}, ${b}, 0.1)`
+  })
+  const tipBoxStyle = computed(() => ({
+    backgroundColor: primaryColorLight.value,
+    borderColor: primaryColor.value,
+    color: primaryColor.value
+  }))
+
   const dialogVisible = computed({
     get: () => props.visible,
     set: (val) => emit('update:visible', val)
@@ -169,17 +243,18 @@
 
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
-  const newPermission = ref('')
 
-  // 快捷模板
-  const quickTemplates = [
-    { label: '超级权限', value: '*' },
-    { label: '系统模块', value: 'system.*' },
-    { label: '菜单查看', value: 'system.ui.menu.view' },
-    { label: '用户查看', value: 'system.ui.user.view' },
-    { label: '角色查看', value: 'system.ui.role.view' },
-    { label: '部门查看', value: 'system.ui.dept.view' }
-  ]
+  // 权限池相关
+  const poolLoading = ref(false)
+  const poolList = ref<PermissionPoolVO[]>([])
+  const poolSearch = ref('')
+  const selectedSearch = ref('')
+  const poolListRef = ref<HTMLElement>()
+  const selectedListRef = ref<HTMLElement>()
+
+  // 拖拽相关
+  let draggedPermission: string | null = null
+  let dragSource: 'pool' | 'selected' | null = null
 
   const formData = reactive({
     id: undefined as number | undefined,
@@ -189,7 +264,7 @@
     priority: 0,
     permissions: [] as string[],
     description: '',
-    status: 1  // 1=正常 0=禁用
+    status: 1
   })
 
   const formRules: FormRules = {
@@ -206,15 +281,60 @@
     ]
   }
 
+  // 过滤后的权限池列表（排除已选）
+  const filteredPoolList = computed(() => {
+    let list = poolList.value.filter(item => 
+      item.status === 1 && !formData.permissions.includes(item.permission)
+    )
+    if (poolSearch.value) {
+      const keyword = poolSearch.value.toLowerCase()
+      list = list.filter(item => 
+        item.permission.toLowerCase().includes(keyword) ||
+        (item.description && item.description.toLowerCase().includes(keyword))
+      )
+    }
+    return list
+  })
+
+  // 过滤后的已选列表
+  const filteredSelectedList = computed(() => {
+    if (!selectedSearch.value) return formData.permissions
+    const keyword = selectedSearch.value.toLowerCase()
+    return formData.permissions.filter(perm => perm.toLowerCase().includes(keyword))
+  })
+
+  /**
+   * 获取权限池数据
+   */
+  const loadPoolData = async () => {
+    poolLoading.value = true
+    try {
+      const result = await fetchGetPermissionPoolOptions()
+      poolList.value = result || []
+    } catch (error) {
+      console.error('获取权限池失败:', error)
+    } finally {
+      poolLoading.value = false
+    }
+  }
+
+  /**
+   * 获取权限描述
+   */
+  const getPermDescription = (perm: string): string => {
+    const item = poolList.value.find(p => p.permission === perm)
+    return item?.description || ''
+  }
+
   /**
    * 获取权限图标
    */
   const getPermIcon = (perm: string): string => {
     if (perm === '*') return 'ri:vip-crown-line'
+    if (perm.includes('*')) return 'ri:asterisk'
     if (perm.includes('.ui.')) return 'ri:layout-line'
     if (perm.includes('.api.')) return 'ri:code-s-slash-line'
     if (perm.includes('.data.')) return 'ri:database-2-line'
-    if (perm.endsWith('*')) return 'ri:folder-line'
     return 'ri:key-2-line'
   }
 
@@ -222,10 +342,10 @@
    * 获取权限颜色
    */
   const getPermColor = (perm: string): string => {
-    if (perm === '*') return 'var(--el-color-warning)'
+    if (perm === '*' || perm.includes('*')) return 'var(--el-color-warning)'
     if (perm.includes('.ui.')) return 'var(--el-color-primary)'
     if (perm.includes('.api.')) return 'var(--el-color-success)'
-    if (perm.includes('.data.')) return 'var(--el-color-info)'
+    if (perm.includes('.data.')) return 'var(--el-color-danger)'
     return 'var(--el-text-color-secondary)'
   }
 
@@ -233,10 +353,10 @@
    * 获取权限类型
    */
   const getPermType = (perm: string): 'warning' | 'primary' | 'success' | 'info' | 'danger' => {
-    if (perm === '*') return 'warning'
+    if (perm === '*' || perm.includes('*')) return 'warning'
     if (perm.includes('.ui.')) return 'primary'
     if (perm.includes('.api.')) return 'success'
-    if (perm.includes('.data.')) return 'info'
+    if (perm.includes('.data.')) return 'danger'
     return 'info'
   }
 
@@ -244,49 +364,67 @@
    * 获取权限标签
    */
   const getPermLabel = (perm: string): string => {
-    if (perm === '*') return '超级'
-    if (perm.endsWith('*')) return '通配'
+    if (perm === '*' || perm.includes('*')) return '通配符'
     if (perm.includes('.ui.')) return 'UI'
     if (perm.includes('.api.')) return 'API'
-    if (perm.includes('.data.')) return '数据'
+    if (perm.includes('.data.')) return 'DATA'
     return '其他'
   }
 
   /**
-   * 添加权限
+   * 拖拽开始
    */
-  const addPermission = () => {
-    const perm = newPermission.value.trim()
-    if (!perm) return
-    
-    if (formData.permissions.includes(perm)) {
-      ElMessage.warning('该权限已存在')
-      return
+  const handleDragStart = (event: DragEvent, permission: string, source: 'pool' | 'selected') => {
+    draggedPermission = permission
+    dragSource = source
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move'
     }
-    if (!/^[a-zA-Z*][a-zA-Z0-9._*-]*$/.test(perm)) {
-      ElMessage.warning('权限格式不正确')
-      return
-    }
-    formData.permissions.push(perm)
-    newPermission.value = ''
   }
 
   /**
-   * 快捷添加权限
+   * 拖拽结束
    */
-  const addQuickPermission = (perm: string) => {
-    if (formData.permissions.includes(perm)) {
-      ElMessage.warning('该权限已存在')
-      return
-    }
-    formData.permissions.push(perm)
+  const handleDragEnd = () => {
+    draggedPermission = null
+    dragSource = null
   }
 
   /**
-   * 移除权限
+   * 拖放到已选区域
    */
-  const removePermission = (index: number) => {
-    formData.permissions.splice(index, 1)
+  const handleDropToSelected = () => {
+    if (draggedPermission && dragSource === 'pool') {
+      addToSelected(draggedPermission)
+    }
+  }
+
+  /**
+   * 拖放到权限池区域
+   */
+  const handleDropToPool = () => {
+    if (draggedPermission && dragSource === 'selected') {
+      removeFromSelected(draggedPermission)
+    }
+  }
+
+  /**
+   * 添加到已选
+   */
+  const addToSelected = (permission: string) => {
+    if (!formData.permissions.includes(permission)) {
+      formData.permissions.push(permission)
+    }
+  }
+
+  /**
+   * 从已选移除
+   */
+  const removeFromSelected = (permission: string) => {
+    const index = formData.permissions.indexOf(permission)
+    if (index > -1) {
+      formData.permissions.splice(index, 1)
+    }
   }
 
   /**
@@ -339,161 +477,137 @@
       priority: 0,
       permissions: [],
       description: '',
-      status: 1  // 1=正常 0=禁用
+      status: 1
     })
-    newPermission.value = ''
+    poolSearch.value = ''
+    selectedSearch.value = ''
   }
 
   /**
-   * 监听编辑数据变化
+   * 监听弹窗显示
    */
   watch(() => props.visible, (val) => {
-    if (val && props.editData) {
-      Object.assign(formData, {
-        id: props.editData.id,
-        groupName: props.editData.groupName,
-        groupCode: props.editData.groupCode,
-        parentId: props.editData.parentId,
-        priority: props.editData.priority ?? 0,
-        permissions: [...(props.editData.permissions || [])],
-        description: props.editData.description || '',
-        status: props.editData.status ?? 1  // 1=正常 0=禁用
-      })
+    if (val) {
+      loadPoolData()
+      if (props.editData) {
+        Object.assign(formData, {
+          id: props.editData.id,
+          groupName: props.editData.groupName,
+          groupCode: props.editData.groupCode,
+          parentId: props.editData.parentId,
+          priority: props.editData.priority ?? 0,
+          permissions: [...(props.editData.permissions || [])],
+          description: props.editData.description || '',
+          status: props.editData.status ?? 1
+        })
+      }
     }
   })
 </script>
 
 <style scoped>
-  .permission-container {
+  .tip-box {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid;
+    font-size: 13px;
     width: 100%;
   }
 
-  .permission-add {
-    margin-bottom: 10px;
+  .permission-transfer {
+    display: flex;
+    gap: 16px;
+    width: 100%;
   }
 
-  .permission-templates {
+  .transfer-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .panel-header {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    background: var(--el-fill-color-lighter);
-    border-radius: 6px;
+    padding: 10px 12px;
+    background: var(--el-fill-color-light);
+    border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
-  .template-label {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    margin-right: 4px;
-  }
-
-  .template-tag {
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .template-tag:hover {
-    background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary-light-5);
-    color: var(--el-color-primary);
-  }
-
-  .permission-list {
-    min-height: 120px;
-    max-height: 220px;
-    overflow-y: auto;
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
+  .panel-search {
     padding: 8px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
-  .permission-list.has-items {
-    background: var(--el-fill-color-lighter);
+  .panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    min-height: 240px;
+    max-height: 240px;
   }
 
-  .permission-item {
+  .perm-item {
     display: flex;
     align-items: center;
-    padding: 8px 10px;
+    padding: 8px 12px;
     margin-bottom: 6px;
-    background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color-lighter);
+    background: var(--el-fill-color-light);
     border-radius: 6px;
+    cursor: grab;
     transition: all 0.2s;
+    user-select: none;
   }
 
-  .permission-item:last-child {
+  .perm-item:last-child {
     margin-bottom: 0;
   }
 
-  .permission-item:hover {
-    border-color: var(--el-color-primary-light-5);
+  .perm-item:hover {
+    background: var(--el-fill-color);
   }
 
-  .permission-item:hover .permission-remove {
+  .perm-item:active {
+    cursor: grabbing;
+  }
+
+  .perm-item-selected {
+    background: v-bind(primaryColorLight);
+  }
+
+  .perm-item-selected:hover {
+    background: v-bind(primaryColorLight);
+    filter: brightness(0.95);
+  }
+
+  .perm-item-selected:hover .remove-btn {
     opacity: 1;
   }
 
-  .permission-icon {
-    margin-right: 8px;
-    flex-shrink: 0;
-    font-size: 15px;
-  }
-
-  .permission-text {
-    flex: 1;
-    font-family: 'SF Mono', Monaco, Consolas, monospace;
-    font-size: 12px;
-    color: var(--el-text-color-primary);
-    word-break: break-all;
-  }
-
-  .permission-type {
-    flex-shrink: 0;
-    margin: 0 8px;
-  }
-
-  .permission-remove {
+  .remove-btn {
     opacity: 0;
     transition: opacity 0.2s;
-    color: var(--el-text-color-placeholder);
+    padding: 2px;
   }
 
-  .permission-remove:hover {
-    color: var(--el-color-danger);
+  @media (max-width: 768px) {
+    .remove-btn {
+      opacity: 1;
+    }
   }
 
-  .permission-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100px;
-    color: var(--el-text-color-placeholder);
-    font-size: 13px;
+  .drop-zone {
+    transition: background-color 0.2s, border-color 0.2s;
   }
 
-  .empty-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
-    opacity: 0.5;
-  }
-
-  /* 动画 */
-  .permission-enter-active,
-  .permission-leave-active {
-    transition: all 0.25s ease;
-  }
-
-  .permission-enter-from {
-    opacity: 0;
-    transform: translateX(-16px);
-  }
-
-  .permission-leave-to {
-    opacity: 0;
-    transform: translateX(16px);
+  .drop-zone-active {
+    background-color: var(--el-color-primary-light-9) !important;
+    border: 2px dashed var(--el-color-primary) !important;
   }
 </style>
