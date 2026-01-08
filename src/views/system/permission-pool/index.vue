@@ -1,80 +1,50 @@
 <template>
-  <div class="art-full-height permission-pool-container">
-    <!-- 顶部操作区 -->
-    <ElCard class="art-card-xs operation-card" shadow="never">
-      <div class="operation-wrapper">
-        <div class="add-permission-form">
-          <ElInput
-            v-model="newPermission.permission"
-            placeholder="权限标识，如：system.user.add"
-            clearable
-            class="permission-input"
-            @keyup.enter="handleQuickAdd"
-          >
-            <template #prepend>
-              <ArtSvgIcon icon="ri:key-2-line" />
-            </template>
-          </ElInput>
-          <ElInput
-            v-model="newPermission.description"
-            placeholder="权限描述（可选）"
-            clearable
-            class="description-input"
-            @keyup.enter="handleQuickAdd"
-          >
-            <template #prepend>
-              <ArtSvgIcon icon="ri:file-text-line" />
-            </template>
-          </ElInput>
-          <ElButton type="primary" @click="handleQuickAdd" v-ripple>
-            <ArtSvgIcon icon="ri:add-line" class="mr-1" />
-            快速添加
-          </ElButton>
-        </div>
-        <div class="batch-actions">
-          <ElButton
-            v-if="selectedIds.length > 0"
-            type="danger"
-            @click="handleBatchDelete"
-            v-ripple
-          >
-            <ArtSvgIcon icon="ri:delete-bin-line" class="mr-1" />
-            批量删除 ({{ selectedIds.length }})
-          </ElButton>
-        </div>
-      </div>
-    </ElCard>
-
-    <!-- 搜索栏 -->
-    <ElCard class="art-card-xs search-card" shadow="never">
-      <div class="search-wrapper">
+  <div class="art-full-height permission-pool-page">
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+      <div class="toolbar-section">
         <ElInput
-          v-model="searchForm.permission"
-          placeholder="搜索权限标识"
+          v-model="newPermission.permission"
+          placeholder="权限标识，如：system.user.add"
           clearable
-          class="search-input"
-          @clear="handleSearch"
-          @keyup.enter="handleSearch"
+          class="add-input"
+          @keyup.enter="handleQuickAdd"
         >
           <template #prefix>
-            <ArtSvgIcon icon="ri:search-line" />
+            <ArtSvgIcon icon="ri:key-2-line" />
           </template>
         </ElInput>
         <ElInput
-          v-model="searchForm.description"
-          placeholder="搜索权限描述"
+          v-model="newPermission.description"
+          placeholder="描述（可选）"
+          clearable
+          class="add-input-desc"
+          @keyup.enter="handleQuickAdd"
+        >
+          <template #prefix>
+            <ArtSvgIcon icon="ri:file-text-line" />
+          </template>
+        </ElInput>
+        <ElButton type="primary" @click="handleQuickAdd" v-ripple>
+          <ArtSvgIcon icon="ri:add-line" class="mr-1" />
+          添加
+        </ElButton>
+      </div>
+      <div class="toolbar-section">
+        <ElInput
+          v-model="searchKeyword"
+          placeholder="搜索..."
           clearable
           class="search-input"
-          @clear="handleSearch"
-          @keyup.enter="handleSearch"
+          @input="handleSearchInput"
         >
           <template #prefix>
             <ArtSvgIcon icon="ri:search-line" />
           </template>
         </ElInput>
         <ElSelect
-          v-model="searchForm.status"
-          placeholder="状态筛选"
+          v-model="searchStatus"
+          placeholder="状态"
           clearable
           class="status-filter"
           @change="handleSearch"
@@ -82,55 +52,79 @@
           <ElOption label="启用" :value="1" />
           <ElOption label="禁用" :value="0" />
         </ElSelect>
-        <ElButton type="primary" @click="handleSearch" v-ripple>搜索</ElButton>
-        <ElButton @click="handleReset" v-ripple>重置</ElButton>
+        <ElButton
+          v-if="selectedIds.length > 0"
+          type="danger"
+          @click="handleBatchDelete"
+          v-ripple
+        >
+          删除 ({{ selectedIds.length }})
+        </ElButton>
+        <ElButton circle @click="refreshData" v-ripple>
+          <ArtSvgIcon icon="ri:refresh-line" />
+        </ElButton>
       </div>
-    </ElCard>
+    </div>
 
-    <!-- 权限卡片列表 -->
-    <ElCard class="art-table-card permission-list-card" shadow="never" v-loading="loading">
-      <div class="permission-grid">
+    <!-- 主内容区 -->
+    <div class="content-area" v-loading="loading">
+      <!-- 统计栏 -->
+      <div class="stats-bar">
+        <span class="stats-text">共 {{ pagination.total }} 个权限</span>
+        <span class="stats-text" v-if="selectedIds.length > 0">已选 {{ selectedIds.length }} 个</span>
+        <ElButton
+          text
+          size="small"
+          @click="handleSelectAll"
+          v-if="data.length > 0"
+        >
+          {{ isAllSelected ? '取消全选' : '全选' }}
+        </ElButton>
+      </div>
+
+      <!-- 权限标签云 -->
+      <div class="tags-container" v-if="data.length > 0">
         <div
           v-for="item in data"
           :key="item.id"
-          class="permission-card"
-          :class="{ 'is-selected': selectedIds.includes(item.id), 'is-disabled': item.status === 0 }"
+          class="permission-tag-item"
+          :class="{
+            'is-selected': selectedIds.includes(item.id),
+            'is-disabled': item.status === 0
+          }"
         >
-          <div class="card-header">
-            <ElCheckbox
-              :model-value="selectedIds.includes(item.id)"
-              @change="handleSelectChange(item.id, $event)"
-              class="card-checkbox"
-            />
-            <ElTag :type="item.status === 1 ? 'success' : 'danger'" size="small">
-              {{ item.status === 1 ? '启用' : '禁用' }}
-            </ElTag>
-          </div>
-          <div class="card-body">
-            <div class="permission-key">
-              <ArtSvgIcon icon="ri:key-2-line" class="key-icon" />
-              <span class="key-text">{{ item.permission }}</span>
+          <ElCheckbox
+            :model-value="selectedIds.includes(item.id)"
+            @change="handleSelectChange(item.id, $event)"
+            class="tag-checkbox"
+          />
+          <div class="tag-content" @click="handleSelectChange(item.id, !selectedIds.includes(item.id))">
+            <div class="tag-main">
+              <ArtSvgIcon icon="ri:key-2-line" class="tag-icon" />
+              <span class="tag-text" :title="item.permission">{{ item.permission }}</span>
+              <ElTag
+                :type="item.status === 1 ? 'success' : 'info'"
+                size="small"
+                effect="plain"
+                class="tag-status"
+              >
+                {{ item.status === 1 ? '启用' : '禁用' }}
+              </ElTag>
             </div>
-            <div class="permission-desc" v-if="item.description">
-              <ArtSvgIcon icon="ri:file-text-line" class="desc-icon" />
-              <span class="desc-text">{{ item.description }}</span>
-            </div>
-            <div class="permission-time" v-if="item.createTime">
-              <ArtSvgIcon icon="ri:time-line" class="time-icon" />
-              <span class="time-text">{{ formatTime(item.createTime) }}</span>
+            <div class="tag-desc" v-if="item.description" :title="item.description">
+              {{ item.description }}
             </div>
           </div>
-          <div class="card-footer">
-            <ElButton
-              type="danger"
-              size="small"
-              text
-              @click="handleDelete(item)"
-            >
-              <ArtSvgIcon icon="ri:delete-bin-line" class="mr-1" />
-              删除
-            </ElButton>
-          </div>
+          <ElButton
+            type="danger"
+            size="small"
+            text
+            circle
+            class="tag-delete"
+            @click.stop="handleDelete(item)"
+          >
+            <ArtSvgIcon icon="ri:close-line" />
+          </ElButton>
         </div>
       </div>
 
@@ -138,23 +132,24 @@
       <ElEmpty v-if="!loading && data.length === 0" description="暂无权限数据" />
 
       <!-- 分页 -->
-      <div class="pagination-wrapper" v-if="data.length > 0">
+      <div class="pagination-bar" v-if="data.length > 0">
         <ElPagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
-          :page-sizes="[12, 24, 48, 96]"
+          :page-sizes="[20, 50, 100, 200]"
           :total="pagination.total"
+          background
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
       </div>
-    </ElCard>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ElMessageBox, ElMessage } from 'element-plus'
+  import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import {
     fetchGetPermissionPoolList,
@@ -177,18 +172,20 @@
     description: ''
   })
 
-  // 搜索表单
-  const searchForm = ref({
-    permission: '',
-    description: '',
-    status: undefined as number | undefined
-  })
+  // 搜索
+  const searchKeyword = ref('')
+  const searchStatus = ref<number | undefined>(undefined)
 
   // 分页
   const pagination = ref({
     current: 1,
-    size: 12,
+    size: 50,
     total: 0
+  })
+
+  // 全选状态
+  const isAllSelected = computed(() => {
+    return data.value.length > 0 && selectedIds.value.length === data.value.length
   })
 
   /**
@@ -197,19 +194,38 @@
   const getData = async () => {
     loading.value = true
     try {
-      const params = {
-        ...searchForm.value,
+      const params: any = {
         current: pagination.value.current,
         size: pagination.value.size
       }
+
+      if (searchKeyword.value) {
+        params.permission = searchKeyword.value
+        params.description = searchKeyword.value
+      }
+
+      if (searchStatus.value !== undefined) {
+        params.status = searchStatus.value
+      }
+
       const result = await fetchGetPermissionPoolList(params)
-      data.value = result.records || []
+      console.log('权限池数据返回:', result)
+      
+      data.value = result.list || result.records || []
       pagination.value.total = result.total || 0
     } catch (error) {
       console.error('获取权限池列表失败:', error)
     } finally {
       loading.value = false
     }
+  }
+
+  /**
+   * 刷新数据
+   */
+  const refreshData = () => {
+    selectedIds.value = []
+    getData()
   }
 
   /**
@@ -222,20 +238,63 @@
     }
 
     try {
-      // 添加时默认状态为启用（1）
       await fetchAddPermissionPool({
         ...newPermission.value,
         status: 1
       })
-      // 重置表单
       newPermission.value = {
         permission: '',
         description: ''
       }
-      // 刷新列表
-      getData()
+      refreshData()
     } catch (error) {
       console.error('添加权限失败:', error)
+    }
+  }
+
+  /**
+   * 搜索输入（防抖）
+   */
+  let searchTimer: NodeJS.Timeout | null = null
+  const handleSearchInput = () => {
+    if (searchTimer) clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => {
+      handleSearch()
+    }, 500)
+  }
+
+  /**
+   * 搜索
+   */
+  const handleSearch = () => {
+    pagination.value.current = 1
+    getData()
+  }
+
+  /**
+   * 全选/取消全选
+   */
+  const handleSelectAll = () => {
+    if (isAllSelected.value) {
+      selectedIds.value = []
+    } else {
+      selectedIds.value = data.value.map(item => item.id)
+    }
+  }
+
+  /**
+   * 选择变化
+   */
+  const handleSelectChange = (id: number, checked: boolean) => {
+    if (checked) {
+      if (!selectedIds.value.includes(id)) {
+        selectedIds.value.push(id)
+      }
+    } else {
+      const index = selectedIds.value.indexOf(id)
+      if (index > -1) {
+        selectedIds.value.splice(index, 1)
+      }
     }
   }
 
@@ -245,7 +304,7 @@
   const handleDelete = async (item: PermissionPoolVO) => {
     try {
       await ElMessageBox.confirm(
-        `确定删除权限「${item.permission}」吗？此操作不可恢复！`,
+        `确定删除权限「${item.permission}」吗？`,
         '删除确认',
         {
           confirmButtonText: '确定',
@@ -254,7 +313,7 @@
         }
       )
       await fetchDeletePermissionPool(item.id)
-      getData()
+      refreshData()
     } catch {
       // 用户取消
     }
@@ -271,8 +330,8 @@
 
     try {
       await ElMessageBox.confirm(
-        `确定删除选中的 ${selectedIds.value.length} 个权限吗？此操作不可恢复！`,
-        '批量删除确认',
+        `确定删除选中的 ${selectedIds.value.length} 个权限吗？`,
+        '批量删除',
         {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -281,45 +340,10 @@
       )
       await fetchDeletePermissionPoolBatch(selectedIds.value)
       selectedIds.value = []
-      getData()
+      refreshData()
     } catch {
       // 用户取消
     }
-  }
-
-  /**
-   * 选择变化
-   */
-  const handleSelectChange = (id: number, checked: boolean) => {
-    if (checked) {
-      selectedIds.value.push(id)
-    } else {
-      const index = selectedIds.value.indexOf(id)
-      if (index > -1) {
-        selectedIds.value.splice(index, 1)
-      }
-    }
-  }
-
-  /**
-   * 搜索
-   */
-  const handleSearch = () => {
-    pagination.value.current = 1
-    getData()
-  }
-
-  /**
-   * 重置
-   */
-  const handleReset = () => {
-    searchForm.value = {
-      permission: '',
-      description: '',
-      status: undefined
-    }
-    pagination.value.current = 1
-    getData()
   }
 
   /**
@@ -338,239 +362,241 @@
     getData()
   }
 
-  /**
-   * 格式化时间
-   */
-  const formatTime = (time: string | undefined): string => {
-    if (!time) return '-'
-    const date = new Date(time)
-    if (isNaN(date.getTime())) return '-'
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    return `${year}-${month}-${day} ${hours}:${minutes}`
-  }
-
   onMounted(() => {
     getData()
   })
 </script>
 
 <style lang="scss" scoped>
-  .permission-pool-container {
+  .permission-pool-page {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    background: var(--el-bg-color-page);
+    padding: 16px;
+    gap: 16px;
   }
 
-  .operation-card {
-    .operation-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    background: var(--el-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
-      .add-permission-form {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-        min-width: 0;
-
-        .permission-input {
-          flex: 2;
-          min-width: 200px;
-        }
-
-        .description-input {
-          flex: 2;
-          min-width: 200px;
-        }
-      }
-
-      .batch-actions {
-        display: flex;
-        gap: 8px;
-      }
-    }
-  }
-
-  .search-card {
-    .search-wrapper {
+    .toolbar-section {
       display: flex;
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
+    }
 
-      .search-input {
-        flex: 1;
-        min-width: 200px;
-      }
+    .add-input {
+      width: 280px;
+    }
 
-      .status-filter {
-        width: 150px;
-      }
+    .add-input-desc {
+      width: 200px;
+    }
+
+    .search-input {
+      width: 200px;
+    }
+
+    .status-filter {
+      width: 120px;
     }
   }
 
-  .permission-list-card {
+  .content-area {
     flex: 1;
     display: flex;
     flex-direction: column;
+    background: var(--el-bg-color);
+    border-radius: 8px;
+    padding: 20px;
     min-height: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
-    :deep(.el-card__body) {
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+      margin-bottom: 20px;
+
+      .stats-text {
+        font-size: 14px;
+        color: var(--el-text-color-secondary);
+
+        &:nth-child(2) {
+          color: var(--el-color-primary);
+          font-weight: 500;
+        }
+      }
+
+      .el-button {
+        margin-left: auto;
+      }
+    }
+
+    .tags-container {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
+      flex-wrap: wrap;
+      gap: 10px;
+      align-content: flex-start;
+      overflow-y: auto;
+      padding: 4px;
 
-    .permission-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .permission-card {
-      border: 1px solid var(--el-border-color-light);
-      border-radius: 8px;
-      padding: 16px;
-      background: var(--el-bg-color);
-      transition: all 0.3s ease;
-      cursor: pointer;
-
-      &:hover {
-        border-color: var(--el-color-primary);
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-      }
-
-      &.is-selected {
-        border-color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-      }
-
-      &.is-disabled {
-        opacity: 0.6;
-      }
-
-      .card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 12px;
-      }
-
-      .card-body {
-        display: flex;
-        flex-direction: column;
+      .permission-tag-item {
+        display: inline-flex;
+        align-items: flex-start;
         gap: 8px;
-        margin-bottom: 12px;
+        padding: 10px 12px;
+        background: var(--el-fill-color-blank);
+        border: 1px solid var(--el-border-color-light);
+        border-radius: 6px;
+        transition: all 0.2s;
+        cursor: pointer;
+        max-width: 100%;
 
-        .permission-key {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 600;
-          font-size: 14px;
-          color: var(--el-text-color-primary);
+        &:hover {
+          border-color: var(--el-color-primary);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+          transform: translateY(-1px);
 
-          .key-icon {
-            color: var(--el-color-primary);
-            font-size: 16px;
-          }
-
-          .key-text {
-            word-break: break-all;
+          .tag-delete {
+            opacity: 1;
           }
         }
 
-        .permission-desc {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          font-size: 13px;
-          color: var(--el-text-color-regular);
+        &.is-selected {
+          border-color: var(--el-color-primary);
+          background: var(--el-color-primary-light-9);
+        }
 
-          .desc-icon {
-            margin-top: 2px;
-            font-size: 14px;
-            flex-shrink: 0;
+        &.is-disabled {
+          opacity: 0.6;
+        }
+
+        .tag-checkbox {
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .tag-content {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          flex: 1;
+          min-width: 0;
+
+          .tag-main {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            .tag-icon {
+              color: var(--el-color-primary);
+              font-size: 14px;
+              flex-shrink: 0;
+            }
+
+            .tag-text {
+              font-size: 13px;
+              font-weight: 500;
+              color: var(--el-text-color-primary);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 300px;
+            }
+
+            .tag-status {
+              flex-shrink: 0;
+            }
           }
 
-          .desc-text {
-            word-break: break-all;
+          .tag-desc {
+            font-size: 12px;
+            color: var(--el-text-color-secondary);
+            line-height: 1.4;
+            padding-left: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
 
-        .permission-time {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          color: var(--el-text-color-secondary);
-
-          .time-icon {
-            font-size: 14px;
-          }
+        .tag-delete {
+          flex-shrink: 0;
+          opacity: 0;
+          transition: opacity 0.2s;
+          margin-top: 2px;
         }
-      }
-
-      .card-footer {
-        display: flex;
-        justify-content: flex-end;
-        padding-top: 8px;
-        border-top: 1px solid var(--el-border-color-lighter);
       }
     }
 
-    .pagination-wrapper {
+    .pagination-bar {
       display: flex;
       justify-content: center;
-      padding-top: 16px;
+      padding-top: 20px;
       margin-top: auto;
+      border-top: 1px solid var(--el-border-color-lighter);
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .toolbar {
+      flex-direction: column;
+      align-items: stretch;
+
+      .toolbar-section {
+        width: 100%;
+      }
+
+      .add-input,
+      .add-input-desc,
+      .search-input {
+        flex: 1;
+        min-width: 150px;
+      }
     }
   }
 
   @media (max-width: 768px) {
-    .operation-card {
-      .operation-wrapper {
-        flex-direction: column;
-        align-items: stretch;
+    .permission-pool-page {
+      padding: 12px;
+    }
 
-        .add-permission-form {
-          flex-direction: column;
+    .toolbar {
+      .add-input,
+      .add-input-desc,
+      .search-input,
+      .status-filter {
+        width: 100%;
+      }
+    }
 
-          .permission-input,
-          .description-input {
-            width: 100%;
+    .content-area {
+      .tags-container {
+        .permission-tag-item {
+          width: 100%;
+
+          .tag-content {
+            .tag-text {
+              max-width: 150px;
+            }
+
+            .tag-desc {
+              max-width: 100px;
+            }
           }
         }
-      }
-    }
-
-    .search-card {
-      .search-wrapper {
-        flex-direction: column;
-
-        .search-input {
-          width: 100%;
-        }
-
-        .status-filter {
-          width: 100%;
-        }
-      }
-    }
-
-    .permission-list-card {
-      .permission-grid {
-        grid-template-columns: 1fr;
       }
     }
   }
