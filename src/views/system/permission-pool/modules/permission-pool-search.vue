@@ -48,6 +48,7 @@
     { label: 'UI权限', value: 'ui' },
     { label: 'API权限', value: 'api' },
     { label: 'DATA权限', value: 'data' },
+    { label: '通配符', value: 'wildcard' },
     { label: '其他', value: 'other' }
   ]
 

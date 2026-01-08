@@ -74,10 +74,7 @@
                 size="small"
                 effect="plain"
                 class="tag-type"
-                :style="{ 
-                  color: getPermissionType(item.permission).color,
-                  borderColor: getPermissionType(item.permission).color
-                }"
+                :type="getPermissionType(item.permission).tagType as any"
               >
                 <ArtSvgIcon :icon="getPermissionType(item.permission).icon" class="mr-1" />
                 {{ getPermissionType(item.permission).type }}
@@ -205,11 +202,13 @@
       
       let list = result.list || result.records || []
       
-      // 前端根据类型筛选（如果后端不支持）
+      // 前端根据类型筛选
       if (searchParams.type) {
         list = list.filter((item: PermissionPoolVO) => {
           const lowerPermission = item.permission.toLowerCase()
           switch (searchParams.type) {
+            case 'wildcard':
+              return item.permission.includes('*')
             case 'ui':
               return lowerPermission.includes('.ui.')
             case 'api':
@@ -217,7 +216,8 @@
             case 'data':
               return lowerPermission.includes('.data.')
             case 'other':
-              return !lowerPermission.includes('.ui.') && 
+              return !item.permission.includes('*') &&
+                     !lowerPermission.includes('.ui.') && 
                      !lowerPermission.includes('.api.') && 
                      !lowerPermission.includes('.data.')
             default:
@@ -380,18 +380,27 @@
   /**
    * 获取权限类型
    */
-  const getPermissionType = (permission: string): { type: string; color: string; icon: string } => {
+  const getPermissionType = (permission: string): { type: string; tagType: string; icon: string } => {
     const lowerPermission = permission.toLowerCase()
     
-    if (lowerPermission.includes('.ui.')) {
-      return { type: 'UI', color: '#409eff', icon: 'ri:window-line' }
-    } else if (lowerPermission.includes('.api.')) {
-      return { type: 'API', color: '#67c23a', icon: 'ri:code-s-slash-line' }
-    } else if (lowerPermission.includes('.data.')) {
-      return { type: 'DATA', color: '#e6a23c', icon: 'ri:database-2-line' }
-    } else {
-      return { type: 'OTHER', color: '#909399', icon: 'ri:question-line' }
+    // 通配符权限（包含 * 号）
+    if (permission.includes('*')) {
+      return { type: '通配符', tagType: 'warning', icon: 'ri:asterisk' }
     }
+    // UI权限
+    if (lowerPermission.includes('.ui.')) {
+      return { type: 'UI', tagType: 'primary', icon: 'ri:layout-line' }
+    }
+    // API权限
+    if (lowerPermission.includes('.api.')) {
+      return { type: 'API', tagType: 'success', icon: 'ri:code-box-line' }
+    }
+    // DATA权限
+    if (lowerPermission.includes('.data.')) {
+      return { type: 'DATA', tagType: 'danger', icon: 'ri:database-2-line' }
+    }
+    // 其他
+    return { type: '其他', tagType: 'info', icon: 'ri:more-line' }
   }
 
   onMounted(() => {
