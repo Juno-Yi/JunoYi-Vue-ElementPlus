@@ -42,17 +42,6 @@
   ]
 
   /**
-   * 权限类型选项
-   */
-  const typeOptions = [
-    { label: 'UI权限', value: 'ui' },
-    { label: 'API权限', value: 'api' },
-    { label: 'DATA权限', value: 'data' },
-    { label: '通配符', value: 'wildcard' },
-    { label: '其他', value: 'other' }
-  ]
-
-  /**
    * 搜索表单配置项
    */
   const formItems = computed(() => [
@@ -71,16 +60,6 @@
       type: 'input',
       props: {
         placeholder: '请输入权限描述',
-        clearable: true
-      }
-    },
-    {
-      label: '权限类型',
-      key: 'type',
-      type: 'select',
-      props: {
-        placeholder: '请选择',
-        options: typeOptions,
         clearable: true
       }
     },

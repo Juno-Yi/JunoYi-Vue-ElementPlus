@@ -151,7 +151,6 @@
   const searchForm = ref({
     permission: undefined,
     description: undefined,
-    type: undefined,
     status: undefined
   })
 
@@ -159,7 +158,6 @@
   const searchParams = reactive({
     permission: undefined,
     description: undefined,
-    type: undefined,
     status: undefined
   })
 
@@ -200,34 +198,8 @@
       const result = await fetchGetPermissionPoolList(params)
       console.log('权限池数据返回:', result)
       
-      let list = result.list || result.records || []
-      
-      // 前端根据类型筛选
-      if (searchParams.type) {
-        list = list.filter((item: PermissionPoolVO) => {
-          const lowerPermission = item.permission.toLowerCase()
-          switch (searchParams.type) {
-            case 'wildcard':
-              return item.permission.includes('*')
-            case 'ui':
-              return lowerPermission.includes('.ui.')
-            case 'api':
-              return lowerPermission.includes('.api.')
-            case 'data':
-              return lowerPermission.includes('.data.')
-            case 'other':
-              return !item.permission.includes('*') &&
-                     !lowerPermission.includes('.ui.') && 
-                     !lowerPermission.includes('.api.') && 
-                     !lowerPermission.includes('.data.')
-            default:
-              return true
-          }
-        })
-      }
-      
-      data.value = list
-      pagination.value.total = searchParams.type ? list.length : (result.total || 0)
+      data.value = result.list || result.records || []
+      pagination.value.total = result.total || 0
     } catch (error) {
       console.error('获取权限池列表失败:', error)
     } finally {
@@ -279,7 +251,6 @@
     Object.assign(searchParams, {
       permission: undefined,
       description: undefined,
-      type: undefined,
       status: undefined
     })
     pagination.value.current = 1
