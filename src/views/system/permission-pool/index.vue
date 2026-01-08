@@ -1,5 +1,5 @@
 <template>
-  <div class="art-full-height">
+  <div class="art-full-height permission-pool-page">
     <!-- 快速添加区域 -->
     <PermissionPoolAdd @add="handleQuickAdd" />
 
@@ -39,10 +39,13 @@
       <!-- 统计信息 -->
       <div class="stats-bar">
         <span class="stats-text">共 {{ pagination.total }} 个权限</span>
-        <span class="stats-text" v-if="selectedIds.length > 0">已选 {{ selectedIds.length }} 个</span>
+        <span class="stats-text stats-selected" v-if="selectedIds.length > 0">
+          已选 {{ selectedIds.length }} 个
+        </span>
         <ElButton
           text
           size="small"
+          class="stats-action"
           @click="handleSelectAll"
           v-if="data.length > 0"
         >
@@ -60,15 +63,20 @@
             'is-selected': selectedIds.includes(item.id),
             'is-disabled': item.status === 0
           }"
+          @click="handleSelectChange(item.id, !selectedIds.includes(item.id))"
         >
+          <!-- 复选框 -->
           <ElCheckbox
             :model-value="selectedIds.includes(item.id)"
             @change="handleSelectChange(item.id, $event)"
+            @click.stop
             class="tag-checkbox"
           />
-          <div class="tag-content" @click="handleSelectChange(item.id, !selectedIds.includes(item.id))">
-            <div class="tag-main">
-              <span class="tag-text" :title="item.permission">{{ item.permission }}</span>
+
+          <!-- 标签信息 -->
+          <div class="tag-info">
+            <div class="tag-header">
+              <span class="tag-key" :title="item.permission">{{ item.permission }}</span>
               <ElTag
                 size="small"
                 effect="plain"
@@ -82,10 +90,13 @@
               {{ item.description }}
             </div>
           </div>
+
+          <!-- 操作区域 -->
           <div class="tag-actions" @click.stop>
             <ElSwitch
               :model-value="item.status === 1"
               size="small"
+              class="tag-switch"
               @change="handleToggleStatus(item)"
             />
             <ElButton
@@ -96,7 +107,7 @@
               class="tag-delete"
               @click="handleDelete(item)"
             >
-              <ArtSvgIcon icon="ri:close-line" />
+              <ArtSvgIcon icon="ri:close-line" :size="14" />
             </ElButton>
           </div>
         </div>
@@ -182,7 +193,6 @@
         size: pagination.value.size
       }
 
-      // 添加搜索参数
       if (searchParams.permission) {
         params.permission = searchParams.permission
       }
@@ -194,8 +204,6 @@
       }
 
       const result = await fetchGetPermissionPoolList(params)
-      console.log('权限池数据返回:', result)
-      
       data.value = result.list || result.records || []
       pagination.value.total = result.total || 0
     } catch (error) {
@@ -216,15 +224,15 @@
   /**
    * 快速添加权限
    */
-  const handleQuickAdd = async (data: { permission: string; description: string }) => {
-    if (!data.permission.trim()) {
+  const handleQuickAdd = async (formData: { permission: string; description: string }) => {
+    if (!formData.permission.trim()) {
       ElMessage.warning('请输入权限标识')
       return
     }
 
     try {
       await fetchAddPermissionPool({
-        ...data,
+        ...formData,
         status: 1
       })
       refreshData()
@@ -269,8 +277,9 @@
   /**
    * 选择变化
    */
-  const handleSelectChange = (id: number, checked: boolean) => {
-    if (checked) {
+  const handleSelectChange = (id: number, checked: boolean | string | number) => {
+    const isChecked = Boolean(checked)
+    if (isChecked) {
       if (!selectedIds.value.includes(id)) {
         selectedIds.value.push(id)
       }
@@ -362,27 +371,22 @@
   /**
    * 获取权限类型
    */
-  const getPermissionType = (permission: string): { type: string; tagType: string; icon: string } => {
+  const getPermissionType = (permission: string): { type: string; tagType: string } => {
     const lowerPermission = permission.toLowerCase()
-    
-    // 通配符权限（包含 * 号）
+
     if (permission.includes('*')) {
-      return { type: '通配符', tagType: 'warning', icon: 'ri:asterisk' }
+      return { type: '通配符', tagType: 'warning' }
     }
-    // UI权限
     if (lowerPermission.includes('.ui.')) {
-      return { type: 'UI', tagType: 'primary', icon: 'ri:layout-line' }
+      return { type: 'UI', tagType: 'primary' }
     }
-    // API权限
     if (lowerPermission.includes('.api.')) {
-      return { type: 'API', tagType: 'success', icon: 'ri:code-box-line' }
+      return { type: 'API', tagType: 'success' }
     }
-    // DATA权限
     if (lowerPermission.includes('.data.')) {
-      return { type: 'DATA', tagType: 'danger', icon: 'ri:database-2-line' }
+      return { type: 'DATA', tagType: 'danger' }
     }
-    // 其他
-    return { type: '其他', tagType: 'info', icon: 'ri:more-line' }
+    return { type: '其他', tagType: 'info' }
   }
 
   onMounted(() => {
@@ -391,169 +395,5 @@
 </script>
 
 <style lang="scss" scoped>
-  .art-table-card {
-    :deep(.el-card__body) {
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .stats-bar {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 0 16px;
-      border-bottom: 1px solid var(--el-border-color-lighter);
-      margin-bottom: 16px;
-
-      .stats-text {
-        font-size: 14px;
-        color: var(--el-text-color-secondary);
-
-        &:nth-child(2) {
-          color: var(--el-color-primary);
-          font-weight: 500;
-        }
-      }
-
-      .el-button {
-        margin-left: auto;
-      }
-    }
-
-    .tags-container {
-      flex: 1;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-content: flex-start;
-      overflow-y: auto;
-      padding: 4px;
-      min-height: 200px;
-
-      .permission-tag-item {
-        display: inline-flex;
-        align-items: flex-start;
-        gap: 8px;
-        padding: 10px 12px;
-        background: var(--el-fill-color-blank);
-        border: 1px solid var(--el-border-color-light);
-        border-radius: 6px;
-        transition: all 0.2s;
-        cursor: pointer;
-        max-width: 100%;
-
-        &:hover {
-          border-color: var(--el-color-primary);
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-          transform: translateY(-1px);
-
-          .tag-delete {
-            opacity: 1;
-          }
-        }
-
-        &.is-selected {
-          border-color: var(--el-color-primary);
-          background: var(--el-color-primary-light-9);
-        }
-
-        &.is-disabled {
-          opacity: 0.6;
-        }
-
-        .tag-checkbox {
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .tag-content {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          flex: 1;
-          min-width: 0;
-
-          .tag-main {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-
-            .tag-icon {
-              color: var(--el-color-primary);
-              font-size: 14px;
-              flex-shrink: 0;
-            }
-
-            .tag-text {
-              font-size: 13px;
-              font-weight: 500;
-              color: var(--el-text-color-primary);
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 250px;
-            }
-
-            .tag-type {
-              flex-shrink: 0;
-              font-weight: 500;
-            }
-
-            .tag-status {
-              flex-shrink: 0;
-            }
-          }
-
-          .tag-desc {
-            font-size: 12px;
-            color: var(--el-text-color-secondary);
-            line-height: 1.4;
-            padding-left: 20px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-        }
-
-        .tag-actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-          margin-left: 8px;
-
-          .tag-delete {
-            opacity: 0;
-            transition: opacity 0.2s;
-          }
-        }
-      }
-    }
-
-    .pagination-wrapper {
-      display: flex;
-      justify-content: center;
-      padding-top: 16px;
-      margin-top: auto;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .art-table-card {
-      .tags-container {
-        .permission-tag-item {
-          width: 100%;
-
-          .tag-content {
-            .tag-main {
-              .tag-text {
-                max-width: 150px;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  @import './styles/index.scss';
 </style>
