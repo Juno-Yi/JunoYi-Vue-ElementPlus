@@ -72,6 +72,18 @@
               <ArtSvgIcon icon="ri:key-2-line" class="tag-icon" />
               <span class="tag-text" :title="item.permission">{{ item.permission }}</span>
               <ElTag
+                size="small"
+                effect="plain"
+                class="tag-type"
+                :style="{ 
+                  color: getPermissionType(item.permission).color,
+                  borderColor: getPermissionType(item.permission).color
+                }"
+              >
+                <ArtSvgIcon :icon="getPermissionType(item.permission).icon" class="mr-1" />
+                {{ getPermissionType(item.permission).type }}
+              </ElTag>
+              <ElTag
                 :type="item.status === 1 ? 'success' : 'info'"
                 size="small"
                 effect="plain"
@@ -143,6 +155,7 @@
   const searchForm = ref({
     permission: undefined,
     description: undefined,
+    type: undefined,
     status: undefined
   })
 
@@ -150,6 +163,7 @@
   const searchParams = reactive({
     permission: undefined,
     description: undefined,
+    type: undefined,
     status: undefined
   })
 
@@ -172,16 +186,49 @@
     loading.value = true
     try {
       const params: any = {
-        ...searchParams,
         current: pagination.value.current,
         size: pagination.value.size
+      }
+
+      // 添加搜索参数
+      if (searchParams.permission) {
+        params.permission = searchParams.permission
+      }
+      if (searchParams.description) {
+        params.description = searchParams.description
+      }
+      if (searchParams.status !== undefined) {
+        params.status = searchParams.status
       }
 
       const result = await fetchGetPermissionPoolList(params)
       console.log('权限池数据返回:', result)
       
-      data.value = result.list || result.records || []
-      pagination.value.total = result.total || 0
+      let list = result.list || result.records || []
+      
+      // 前端根据类型筛选（如果后端不支持）
+      if (searchParams.type) {
+        list = list.filter((item: PermissionPoolVO) => {
+          const lowerPermission = item.permission.toLowerCase()
+          switch (searchParams.type) {
+            case 'ui':
+              return lowerPermission.includes('.ui.')
+            case 'api':
+              return lowerPermission.includes('.api.')
+            case 'data':
+              return lowerPermission.includes('.data.')
+            case 'other':
+              return !lowerPermission.includes('.ui.') && 
+                     !lowerPermission.includes('.api.') && 
+                     !lowerPermission.includes('.data.')
+            default:
+              return true
+          }
+        })
+      }
+      
+      data.value = list
+      pagination.value.total = searchParams.type ? list.length : (result.total || 0)
     } catch (error) {
       console.error('获取权限池列表失败:', error)
     } finally {
@@ -233,6 +280,7 @@
     Object.assign(searchParams, {
       permission: undefined,
       description: undefined,
+      type: undefined,
       status: undefined
     })
     pagination.value.current = 1
@@ -328,6 +376,23 @@
   const handleCurrentChange = (current: number) => {
     pagination.value.current = current
     getData()
+  }
+
+  /**
+   * 获取权限类型
+   */
+  const getPermissionType = (permission: string): { type: string; color: string; icon: string } => {
+    const lowerPermission = permission.toLowerCase()
+    
+    if (lowerPermission.includes('.ui.')) {
+      return { type: 'UI', color: '#409eff', icon: 'ri:window-line' }
+    } else if (lowerPermission.includes('.api.')) {
+      return { type: 'API', color: '#67c23a', icon: 'ri:code-s-slash-line' }
+    } else if (lowerPermission.includes('.data.')) {
+      return { type: 'DATA', color: '#e6a23c', icon: 'ri:database-2-line' }
+    } else {
+      return { type: 'OTHER', color: '#909399', icon: 'ri:question-line' }
+    }
   }
 
   onMounted(() => {
@@ -437,7 +502,12 @@
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
-              max-width: 300px;
+              max-width: 250px;
+            }
+
+            .tag-type {
+              flex-shrink: 0;
+              font-weight: 500;
             }
 
             .tag-status {
