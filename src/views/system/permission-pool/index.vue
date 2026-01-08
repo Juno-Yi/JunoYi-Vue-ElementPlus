@@ -1,36 +1,7 @@
 <template>
   <div class="art-full-height">
     <!-- 快速添加区域 -->
-    <ElCard class="art-card-xs" shadow="never">
-      <div class="add-form">
-        <ElInput
-          v-model="newPermission.permission"
-          placeholder="权限标识，如：system.user.add"
-          clearable
-          class="add-input"
-          @keyup.enter="handleQuickAdd"
-        >
-          <template #prefix>
-            <ArtSvgIcon icon="ri:key-2-line" />
-          </template>
-        </ElInput>
-        <ElInput
-          v-model="newPermission.description"
-          placeholder="权限描述（可选）"
-          clearable
-          class="add-input-desc"
-          @keyup.enter="handleQuickAdd"
-        >
-          <template #prefix>
-            <ArtSvgIcon icon="ri:file-text-line" />
-          </template>
-        </ElInput>
-        <ElButton type="primary" @click="handleQuickAdd" v-ripple>
-          <ArtSvgIcon icon="ri:add-line" class="mr-1" />
-          添加权限
-        </ElButton>
-      </div>
-    </ElCard>
+    <PermissionPoolAdd @add="handleQuickAdd" />
 
     <!-- 搜索栏 -->
     <PermissionPoolSearch
@@ -150,6 +121,7 @@
   import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import PermissionPoolAdd from './modules/permission-pool-add.vue'
   import PermissionPoolSearch from './modules/permission-pool-search.vue'
   import {
     fetchGetPermissionPoolList,
@@ -166,12 +138,6 @@
   const data = ref<PermissionPoolVO[]>([])
   const selectedIds = ref<number[]>([])
   const showSearchBar = ref(true)
-
-  // 新增权限表单
-  const newPermission = ref({
-    permission: '',
-    description: ''
-  })
 
   // 搜索表单
   const searchForm = ref({
@@ -234,21 +200,17 @@
   /**
    * 快速添加权限
    */
-  const handleQuickAdd = async () => {
-    if (!newPermission.value.permission.trim()) {
+  const handleQuickAdd = async (data: { permission: string; description: string }) => {
+    if (!data.permission.trim()) {
       ElMessage.warning('请输入权限标识')
       return
     }
 
     try {
       await fetchAddPermissionPool({
-        ...newPermission.value,
+        ...data,
         status: 1
       })
-      newPermission.value = {
-        permission: '',
-        description: ''
-      }
       refreshData()
     } catch (error) {
       console.error('添加权限失败:', error)
@@ -374,22 +336,6 @@
 </script>
 
 <style lang="scss" scoped>
-  .add-form {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .add-input {
-      flex: 2;
-      min-width: 200px;
-    }
-
-    .add-input-desc {
-      flex: 2;
-      min-width: 200px;
-    }
-  }
-
   .art-table-card {
     :deep(.el-card__body) {
       display: flex;
@@ -528,15 +474,6 @@
   }
 
   @media (max-width: 768px) {
-    .add-form {
-      flex-direction: column;
-
-      .add-input,
-      .add-input-desc {
-        width: 100%;
-      }
-    }
-
     .art-table-card {
       .tags-container {
         .permission-tag-item {
