@@ -26,12 +26,11 @@
         <template #left>
           <ElSpace wrap>
             <ElButton
-              v-if="selectedIds.length > 0"
-              type="danger"
+              :disabled="selectedIds.length === 0"
               @click="handleBatchDelete"
               v-ripple
             >
-              批量删除 ({{ selectedIds.length }})
+              批量删除
             </ElButton>
           </ElSpace>
         </template>
