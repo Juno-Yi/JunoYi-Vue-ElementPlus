@@ -26,6 +26,13 @@
             新增权限组
           </ElButton>
           <ElButton 
+            @click="goToPermissionPool" 
+            v-permission="'system.ui.permission-pool.view'"
+            v-ripple
+          >
+            权限池
+          </ElButton>
+          <ElButton 
             v-permission="'system.ui.permission.button.delete'"
             :disabled="selectedRows.length === 0"
             @click="handleBatchDelete" 
@@ -33,6 +40,7 @@
           >
             批量删除
           </ElButton>
+
         </template>
       </ArtTableHeader>
 
@@ -66,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router'
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { usePermission } from '@/hooks/core/usePermission'
@@ -79,6 +88,8 @@
   import PermissionPreviewDialog from './modules/permission-preview-dialog.vue'
 
   defineOptions({ name: 'PermissionGroup' })
+
+  const router = useRouter()
 
   type PermissionGroupVO = Api.System.PermissionGroupVO
 
@@ -352,6 +363,13 @@
   const handleAdd = () => {
     editData.value = null
     dialogVisible.value = true
+  }
+
+  /**
+   * 跳转到权限池
+   */
+  const goToPermissionPool = () => {
+    router.push('/system/permission-pool')
   }
 
   /**
