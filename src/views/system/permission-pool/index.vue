@@ -1,8 +1,8 @@
 <template>
-  <div class="art-full-height permission-pool-page">
-    <!-- 顶部工具栏 -->
-    <div class="toolbar">
-      <div class="toolbar-section">
+  <div class="art-full-height">
+    <!-- 快速添加区域 -->
+    <ElCard class="art-card-xs" shadow="never">
+      <div class="add-form">
         <ElInput
           v-model="newPermission.permission"
           placeholder="权限标识，如：system.user.add"
@@ -16,7 +16,7 @@
         </ElInput>
         <ElInput
           v-model="newPermission.description"
-          placeholder="描述（可选）"
+          placeholder="权限描述（可选）"
           clearable
           class="add-input-desc"
           @keyup.enter="handleQuickAdd"
@@ -27,48 +27,46 @@
         </ElInput>
         <ElButton type="primary" @click="handleQuickAdd" v-ripple>
           <ArtSvgIcon icon="ri:add-line" class="mr-1" />
-          添加
+          添加权限
         </ElButton>
       </div>
-      <div class="toolbar-section">
-        <ElInput
-          v-model="searchKeyword"
-          placeholder="搜索..."
-          clearable
-          class="search-input"
-          @input="handleSearchInput"
-        >
-          <template #prefix>
-            <ArtSvgIcon icon="ri:search-line" />
-          </template>
-        </ElInput>
-        <ElSelect
-          v-model="searchStatus"
-          placeholder="状态"
-          clearable
-          class="status-filter"
-          @change="handleSearch"
-        >
-          <ElOption label="启用" :value="1" />
-          <ElOption label="禁用" :value="0" />
-        </ElSelect>
-        <ElButton
-          v-if="selectedIds.length > 0"
-          type="danger"
-          @click="handleBatchDelete"
-          v-ripple
-        >
-          删除 ({{ selectedIds.length }})
-        </ElButton>
-        <ElButton circle @click="refreshData" v-ripple>
-          <ArtSvgIcon icon="ri:refresh-line" />
-        </ElButton>
-      </div>
-    </div>
+    </ElCard>
 
-    <!-- 主内容区 -->
-    <div class="content-area" v-loading="loading">
-      <!-- 统计栏 -->
+    <!-- 搜索栏 -->
+    <PermissionPoolSearch
+      v-show="showSearchBar"
+      v-model="searchForm"
+      @search="handleSearch"
+      @reset="resetSearchParams"
+    />
+
+    <!-- 主内容卡片 -->
+    <ElCard
+      class="art-table-card"
+      shadow="never"
+      :style="{ 'margin-top': showSearchBar ? '12px' : '0' }"
+    >
+      <!-- 表格头部 -->
+      <ArtTableHeader
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="refreshData"
+      >
+        <template #left>
+          <ElSpace wrap>
+            <ElButton
+              v-if="selectedIds.length > 0"
+              type="danger"
+              @click="handleBatchDelete"
+              v-ripple
+            >
+              批量删除 ({{ selectedIds.length }})
+            </ElButton>
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
+
+      <!-- 统计信息 -->
       <div class="stats-bar">
         <span class="stats-text">共 {{ pagination.total }} 个权限</span>
         <span class="stats-text" v-if="selectedIds.length > 0">已选 {{ selectedIds.length }} 个</span>
@@ -83,7 +81,7 @@
       </div>
 
       <!-- 权限标签云 -->
-      <div class="tags-container" v-if="data.length > 0">
+      <div class="tags-container" v-loading="loading" v-if="data.length > 0">
         <div
           v-for="item in data"
           :key="item.id"
@@ -132,7 +130,7 @@
       <ElEmpty v-if="!loading && data.length === 0" description="暂无权限数据" />
 
       <!-- 分页 -->
-      <div class="pagination-bar" v-if="data.length > 0">
+      <div class="pagination-wrapper" v-if="data.length > 0">
         <ElPagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -144,13 +142,15 @@
           @current-change="handleCurrentChange"
         />
       </div>
-    </div>
+    </ElCard>
   </div>
 </template>
 
 <script setup lang="ts">
   import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
+  import PermissionPoolSearch from './modules/permission-pool-search.vue'
   import {
     fetchGetPermissionPoolList,
     fetchAddPermissionPool,
@@ -165,6 +165,7 @@
   const loading = ref(false)
   const data = ref<PermissionPoolVO[]>([])
   const selectedIds = ref<number[]>([])
+  const showSearchBar = ref(true)
 
   // 新增权限表单
   const newPermission = ref({
@@ -172,9 +173,19 @@
     description: ''
   })
 
-  // 搜索
-  const searchKeyword = ref('')
-  const searchStatus = ref<number | undefined>(undefined)
+  // 搜索表单
+  const searchForm = ref({
+    permission: undefined,
+    description: undefined,
+    status: undefined
+  })
+
+  // 搜索参数
+  const searchParams = reactive({
+    permission: undefined,
+    description: undefined,
+    status: undefined
+  })
 
   // 分页
   const pagination = ref({
@@ -195,17 +206,9 @@
     loading.value = true
     try {
       const params: any = {
+        ...searchParams,
         current: pagination.value.current,
         size: pagination.value.size
-      }
-
-      if (searchKeyword.value) {
-        params.permission = searchKeyword.value
-        params.description = searchKeyword.value
-      }
-
-      if (searchStatus.value !== undefined) {
-        params.status = searchStatus.value
       }
 
       const result = await fetchGetPermissionPoolList(params)
@@ -253,20 +256,23 @@
   }
 
   /**
-   * 搜索输入（防抖）
+   * 搜索处理
    */
-  let searchTimer: NodeJS.Timeout | null = null
-  const handleSearchInput = () => {
-    if (searchTimer) clearTimeout(searchTimer)
-    searchTimer = setTimeout(() => {
-      handleSearch()
-    }, 500)
+  const handleSearch = (params: Record<string, any>) => {
+    Object.assign(searchParams, params)
+    pagination.value.current = 1
+    getData()
   }
 
   /**
-   * 搜索
+   * 重置搜索参数
    */
-  const handleSearch = () => {
+  const resetSearchParams = () => {
+    Object.assign(searchParams, {
+      permission: undefined,
+      description: undefined,
+      status: undefined
+    })
     pagination.value.current = 1
     getData()
   }
@@ -368,65 +374,36 @@
 </script>
 
 <style lang="scss" scoped>
-  .permission-pool-page {
-    display: flex;
-    flex-direction: column;
-    background: var(--el-bg-color-page);
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .toolbar {
+  .add-form {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px;
-    background: var(--el-bg-color);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-
-    .toolbar-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    gap: 12px;
 
     .add-input {
-      width: 280px;
+      flex: 2;
+      min-width: 200px;
     }
 
     .add-input-desc {
-      width: 200px;
-    }
-
-    .search-input {
-      width: 200px;
-    }
-
-    .status-filter {
-      width: 120px;
+      flex: 2;
+      min-width: 200px;
     }
   }
 
-  .content-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: var(--el-bg-color);
-    border-radius: 8px;
-    padding: 20px;
-    min-height: 0;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  .art-table-card {
+    :deep(.el-card__body) {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
 
     .stats-bar {
       display: flex;
       align-items: center;
       gap: 16px;
-      padding-bottom: 16px;
+      padding: 12px 0 16px;
       border-bottom: 1px solid var(--el-border-color-lighter);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
 
       .stats-text {
         font-size: 14px;
@@ -451,6 +428,7 @@
       align-content: flex-start;
       overflow-y: auto;
       padding: 4px;
+      min-height: 200px;
 
       .permission-tag-item {
         display: inline-flex;
@@ -541,59 +519,34 @@
       }
     }
 
-    .pagination-bar {
+    .pagination-wrapper {
       display: flex;
       justify-content: center;
-      padding-top: 20px;
+      padding-top: 16px;
       margin-top: auto;
-      border-top: 1px solid var(--el-border-color-lighter);
-    }
-  }
-
-  @media (max-width: 1200px) {
-    .toolbar {
-      flex-direction: column;
-      align-items: stretch;
-
-      .toolbar-section {
-        width: 100%;
-      }
-
-      .add-input,
-      .add-input-desc,
-      .search-input {
-        flex: 1;
-        min-width: 150px;
-      }
     }
   }
 
   @media (max-width: 768px) {
-    .permission-pool-page {
-      padding: 12px;
-    }
+    .add-form {
+      flex-direction: column;
 
-    .toolbar {
       .add-input,
-      .add-input-desc,
-      .search-input,
-      .status-filter {
+      .add-input-desc {
         width: 100%;
       }
     }
 
-    .content-area {
+    .art-table-card {
       .tags-container {
         .permission-tag-item {
           width: 100%;
 
           .tag-content {
-            .tag-text {
-              max-width: 150px;
-            }
-
-            .tag-desc {
-              max-width: 100px;
+            .tag-main {
+              .tag-text {
+                max-width: 150px;
+              }
             }
           }
         }
