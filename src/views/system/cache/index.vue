@@ -229,7 +229,7 @@
   } = useTable<typeof fetchGetCacheKeys>({
     core: {
       apiFn: fetchGetCacheKeys,
-      apiParams: { pageNum: 1, pageSize: 20 },
+      apiParams: { current: 1, size: 20 },
       columnsFactory: () => [
         { type: 'selection', width: 50, align: 'center' },
         {
@@ -351,9 +351,9 @@
   /**
    * 获取类型标签类型
    */
-  const getTypeTagType = (type: string): '' | 'success' | 'warning' | 'info' | 'danger' => {
-    const map: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
-      string: '',
+  const getTypeTagType = (type: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
+    const map: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
+      string: 'primary',
       list: 'success',
       set: 'warning',
       zset: 'danger',

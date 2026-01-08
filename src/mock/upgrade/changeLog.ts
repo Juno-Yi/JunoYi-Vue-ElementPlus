@@ -45,6 +45,7 @@ export const upgradeLogList = ref<UpgradeLog[]>([
             ],
             fixed: [
                 '修复权限池相关权限标识符错误',
+                '修复类型问题打包编译bug'
             ]
         },
         remark: '权限池只是用于开发者在开发阶段添加所使用到的权限，这里的权限可以分配给权限组进行使用, 跟这里权限机制无直接钩挂'

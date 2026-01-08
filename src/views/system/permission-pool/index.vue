@@ -204,7 +204,7 @@
       }
 
       const result = await fetchGetPermissionPoolList(params)
-      data.value = result.list || result.records || []
+      data.value = result.list || (result as any).records || []
       pagination.value.total = result.total || 0
     } catch (error) {
       console.error('获取权限池列表失败:', error)
