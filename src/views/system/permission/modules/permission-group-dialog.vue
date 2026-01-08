@@ -69,7 +69,7 @@
         <!-- 提示信息 -->
         <div class="tip-box mb-4" :style="tipBoxStyle">
           <ArtSvgIcon icon="ri:information-line" class="mr-2 flex-shrink-0" :style="{ color: primaryColor }" />
-          <span>操作方式：拖拽左侧权限到右侧完成添加，点击右侧权限的 × 按钮或拖回左侧完成移除</span>
+          <span>操作方式：拖拽或双击左侧权限完成添加，点击右侧 × 按钮或双击/拖回左侧完成移除</span>
         </div>
 
         <!-- 穿梭框 -->
@@ -110,6 +110,9 @@
                   draggable="true"
                   @dragstart="handleDragStart($event, item.permission, 'pool')"
                   @dragend="handleDragEnd"
+                  @touchstart="onTouchStart($event, item.permission, 'pool')"
+                  @touchmove="onTouchMove"
+                  @touchend="onTouchEnd"
                   @dblclick="addToSelected(item.permission)"
                 >
                   <ArtSvgIcon :icon="getPermIcon(item.permission)" class="mr-2" :style="{ color: getPermColor(item.permission) }" />
@@ -160,6 +163,9 @@
                   draggable="true"
                   @dragstart="handleDragStart($event, perm, 'selected')"
                   @dragend="handleDragEnd"
+                  @touchstart="onTouchStart($event, perm, 'selected')"
+                  @touchmove="onTouchMove"
+                  @touchend="onTouchEnd"
                   @dblclick="removeFromSelected(perm)"
                 >
                   <ArtSvgIcon :icon="getPermIcon(perm)" class="mr-2" :style="{ color: getPermColor(perm) }" />
@@ -255,6 +261,7 @@
   // 拖拽相关
   let draggedPermission: string | null = null
   let dragSource: 'pool' | 'selected' | null = null
+  let dragClone: HTMLElement | null = null
 
   const formData = reactive({
     id: undefined as number | undefined,
@@ -388,6 +395,104 @@
   const handleDragEnd = () => {
     draggedPermission = null
     dragSource = null
+  }
+
+  /**
+   * 移动端触摸开始
+   */
+  const onTouchStart = (event: TouchEvent, permission: string, source: 'pool' | 'selected') => {
+    if (event.touches.length !== 1) return
+    
+    const touch = event.touches[0]
+    draggedPermission = permission
+    dragSource = source
+    
+    const target = event.currentTarget as HTMLElement
+    
+    // 创建拖拽克隆
+    dragClone = target.cloneNode(true) as HTMLElement
+    dragClone.style.position = 'fixed'
+    dragClone.style.zIndex = '9999'
+    dragClone.style.pointerEvents = 'none'
+    dragClone.style.opacity = '0.9'
+    dragClone.style.transform = 'scale(1.02)'
+    dragClone.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+    dragClone.style.width = `${target.offsetWidth}px`
+    dragClone.style.left = `${touch.clientX - target.offsetWidth / 2}px`
+    dragClone.style.top = `${touch.clientY - 20}px`
+    document.body.appendChild(dragClone)
+    
+    target.style.opacity = '0.4'
+    
+    event.preventDefault()
+  }
+
+  /**
+   * 移动端触摸移动
+   */
+  const onTouchMove = (event: TouchEvent) => {
+    if (!draggedPermission || event.touches.length !== 1) return
+    
+    const touch = event.touches[0]
+    
+    if (dragClone) {
+      dragClone.style.left = `${touch.clientX - dragClone.offsetWidth / 2}px`
+      dragClone.style.top = `${touch.clientY - 20}px`
+    }
+    
+    // 高亮放置区域
+    const isOverPool = isPointInElement(touch.clientX, touch.clientY, poolListRef.value)
+    const isOverSelected = isPointInElement(touch.clientX, touch.clientY, selectedListRef.value)
+    
+    poolListRef.value?.classList.toggle('drop-zone-active', isOverPool && dragSource === 'selected')
+    selectedListRef.value?.classList.toggle('drop-zone-active', isOverSelected && dragSource === 'pool')
+    
+    event.preventDefault()
+  }
+
+  /**
+   * 移动端触摸结束
+   */
+  const onTouchEnd = (event: TouchEvent) => {
+    if (!draggedPermission) return
+    
+    const target = event.currentTarget as HTMLElement
+    target.style.opacity = ''
+    
+    // 移除克隆
+    if (dragClone) {
+      dragClone.remove()
+      dragClone = null
+    }
+    
+    // 移除高亮
+    poolListRef.value?.classList.remove('drop-zone-active')
+    selectedListRef.value?.classList.remove('drop-zone-active')
+    
+    // 检查放置位置
+    const touch = event.changedTouches[0]
+    if (touch) {
+      const isOverPool = isPointInElement(touch.clientX, touch.clientY, poolListRef.value)
+      const isOverSelected = isPointInElement(touch.clientX, touch.clientY, selectedListRef.value)
+      
+      if (isOverSelected && dragSource === 'pool') {
+        addToSelected(draggedPermission)
+      } else if (isOverPool && dragSource === 'selected') {
+        removeFromSelected(draggedPermission)
+      }
+    }
+    
+    draggedPermission = null
+    dragSource = null
+  }
+
+  /**
+   * 判断点是否在元素内
+   */
+  const isPointInElement = (x: number, y: number, element?: HTMLElement): boolean => {
+    if (!element) return false
+    const rect = element.getBoundingClientRect()
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
   }
 
   /**
@@ -563,6 +668,7 @@
     cursor: grab;
     transition: all 0.2s;
     user-select: none;
+    touch-action: none;
   }
 
   .perm-item:last-child {

@@ -27,7 +27,7 @@
           </ElButton>
           <ElButton 
             @click="goToPermissionPool" 
-            v-permission="'system.ui.permission-pool.view'"
+            v-permission="'system.ui.permission.pool.view'"
             v-ripple
           >
             权限池
