@@ -9,7 +9,7 @@
   >
     <div class="tip-box mb-5" :style="tipBoxStyle">
       <ArtSvgIcon icon="ri:information-line" class="mr-2 flex-shrink-0" :style="{ color: primaryColor }" />
-      <span>操作方式：拖拽左侧权限组到右侧完成绑定，点击右侧权限组的 × 按钮或拖回左侧完成解绑</span>
+      <span>操作方式：拖拽或双击左侧权限组完成绑定，点击右侧 × 按钮或双击/拖回左侧完成解绑</span>
     </div>
     <div class="flex gap-4 h-80">
       <div class="flex-1 flex flex-col border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
@@ -20,7 +20,8 @@
         <div ref="availableListRef" class="flex-1 overflow-auto p-2 drop-zone" @dragover.prevent @drop="handleDropToAvailable">
           <div v-for="group in availableGroups" :key="group.id" class="perm-item" draggable="true"
             @dragstart="handleDragStart($event, group, 'available')" @dragend="handleDragEnd"
-            @touchstart="onTouchStart($event, group, 'available')" @touchmove="onTouchMove" @touchend="onTouchEnd">
+            @touchstart="onTouchStart($event, group, 'available')" @touchmove="onTouchMove" @touchend="onTouchEnd"
+            @dblclick="addGroup(group)">
             <ArtSvgIcon icon="ri:folder-shield-line" class="mr-2 text-gray-500" />
             <span class="flex-1 truncate">{{ group.groupName }}</span>
             <ElTag v-if="isSuperGroup(group)" type="warning" size="small" effect="light">超级</ElTag>
@@ -37,7 +38,8 @@
         <div ref="boundListRef" class="flex-1 overflow-auto p-2 drop-zone" @dragover.prevent @drop="handleDropToBound">
           <div v-for="group in boundGroups" :key="group.id" class="perm-item perm-item-bound" draggable="true"
             @dragstart="handleDragStart($event, group, 'bound')" @dragend="handleDragEnd"
-            @touchstart="onTouchStart($event, group, 'bound')" @touchmove="onTouchMove" @touchend="onTouchEnd">
+            @touchstart="onTouchStart($event, group, 'bound')" @touchmove="onTouchMove" @touchend="onTouchEnd"
+            @dblclick="removeGroup(group)">
             <ArtSvgIcon icon="ri:folder-shield-2-line" class="mr-2" :style="{ color: primaryColor }" />
             <span class="flex-1 truncate">{{ group.groupName }}</span>
             <ElTag v-if="isSuperGroup(group)" type="warning" size="small" effect="light" class="mr-2">超级</ElTag>
@@ -185,6 +187,12 @@ const isPointInElement = (x: number, y: number, element?: HTMLElement): boolean 
   if (!element) return false
   const rect = element.getBoundingClientRect()
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+}
+
+const addGroup = (group: PermissionGroupVO) => {
+  if (!boundGroupIds.value.includes(group.id)) {
+    boundGroupIds.value.push(group.id)
+  }
 }
 
 const removeGroup = (group: PermissionGroupVO) => {

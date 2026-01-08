@@ -10,7 +10,7 @@
     <!-- 提示信息 -->
     <div class="tip-box mb-5" :style="tipBoxStyle">
       <ArtSvgIcon icon="ri:information-line" class="mr-2 flex-shrink-0" :style="{ color: primaryColor }" />
-      <span>操作方式：拖拽左侧权限组到右侧完成绑定，点击右侧权限组的 × 按钮或拖回左侧完成解绑</span>
+      <span>操作方式：拖拽或双击左侧权限组完成绑定，点击右侧 × 按钮或双击/拖回左侧完成解绑</span>
     </div>
 
     <div class="flex gap-4 h-80">
@@ -36,6 +36,7 @@
             @touchstart="onTouchStart($event, group, 'available')"
             @touchmove="onTouchMove"
             @touchend="onTouchEnd"
+            @dblclick="addGroup(group)"
           >
             <ArtSvgIcon icon="ri:folder-shield-line" class="mr-2 text-gray-500" />
             <span class="flex-1 truncate">{{ group.groupName }}</span>
@@ -70,6 +71,7 @@
             @touchstart="onTouchStart($event, group, 'bound')"
             @touchmove="onTouchMove"
             @touchend="onTouchEnd"
+            @dblclick="removeGroup(group)"
           >
             <ArtSvgIcon icon="ri:folder-shield-2-line" class="mr-2" :style="{ color: primaryColor }" />
             <span class="flex-1 truncate">{{ group.groupName }}</span>
@@ -297,7 +299,14 @@
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
   }
 
-  // 移除权限组（点击删除按钮）
+  // 添加权限组（双击）
+  const addGroup = (group: PermissionGroupVO) => {
+    if (!boundGroupIds.value.includes(group.id)) {
+      boundGroupIds.value.push(group.id)
+    }
+  }
+
+  // 移除权限组（点击删除按钮或双击）
   const removeGroup = (group: PermissionGroupVO) => {
     boundGroupIds.value = boundGroupIds.value.filter(id => id !== group.id)
   }
