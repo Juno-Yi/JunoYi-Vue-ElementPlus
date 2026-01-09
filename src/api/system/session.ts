@@ -6,7 +6,7 @@ import type { PageResult } from '@/types/common/response'
  */
 export function fetchGetSessionList(params?: Api.System.SessionQueryDTO) {
   return request.get<PageResult<Api.System.SessionVO>>({
-    url: '/system/session',
+    url: '/system/session/list',
     params
   })
 }

@@ -31,7 +31,7 @@
             <div class="flex items-center gap-3 text-sm">
               <span class="inline-flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-gray-600 dark:text-gray-300">在线 <b class="text-green-600">{{ onlineCount }}</b></span>
+                <span class="text-gray-600 dark:text-gray-300">在线 <b class="text-green-600">{{ pagination.total }}</b></span>
               </span>
             </div>
           </ElSpace>
@@ -68,19 +68,20 @@
   // 搜索表单
   const initialSearchState = {
     userName: undefined as string | undefined,
+    nickName: undefined as string | undefined,
     loginIp: undefined as string | undefined,
-    platform: undefined as string | undefined
+    platformType: undefined as string | undefined
   }
 
   const formFilters = reactive({ ...initialSearchState })
 
-  // 平台选项
+  // 平台选项 (对应后端 PlatformType 枚举名称)
   const platformOptions = [
-    { label: '管理后台', value: 'admin' },
-    { label: '前台', value: 'web' },
-    { label: '小程序', value: 'miniapp' },
-    { label: 'APP', value: 'app' },
-    { label: '桌面端', value: 'desktop' }
+    { label: '后台网站', value: 'ADMIN_WEB' },
+    { label: '前台网站', value: 'FRONT_DESK_WEB' },
+    { label: '小程序', value: 'MINI_PROGRAM' },
+    { label: 'APP', value: 'APP' },
+    { label: '桌面应用', value: 'DESKTOP_APP' }
   ]
 
   const formItems = computed(() => [
@@ -91,14 +92,20 @@
       props: { clearable: true, placeholder: '请输入用户名' }
     },
     {
+      label: '昵称',
+      key: 'nickName',
+      type: 'input',
+      props: { clearable: true, placeholder: '请输入昵称' }
+    },
+    {
       label: '登录IP',
       key: 'loginIp',
       type: 'input',
       props: { clearable: true, placeholder: '请输入IP地址' }
     },
     {
-      label: '登录平台',
-      key: 'platform',
+      label: '平台类型',
+      key: 'platformType',
       type: 'select',
       props: { clearable: true, options: platformOptions }
     }
@@ -107,32 +114,29 @@
   // 选中行
   const selectedRows = ref<SessionVO[]>([])
 
-  // 在线数量
-  const onlineCount = computed(() => data.value.length)
-
-  // 平台配置
+  // 平台配置 (对应后端 PlatformType 枚举名称)
   const platformConfig: Record<string, { icon: string; color: string; label: string }> = {
-    admin: { icon: 'ri:dashboard-line', color: '#409eff', label: '管理后台' },
-    web: { icon: 'ri:global-line', color: '#67c23a', label: '前台' },
-    miniapp: { icon: 'ri:wechat-line', color: '#07c160', label: '小程序' },
-    app: { icon: 'ri:smartphone-line', color: '#e6a23c', label: 'APP' },
-    desktop: { icon: 'ri:computer-line', color: '#909399', label: '桌面端' }
+    ADMIN_WEB: { icon: 'ri:dashboard-line', color: '#409eff', label: '后台网站' },
+    FRONT_DESK_WEB: { icon: 'ri:global-line', color: '#67c23a', label: '前台网站' },
+    MINI_PROGRAM: { icon: 'ri:wechat-line', color: '#07c160', label: '小程序' },
+    APP: { icon: 'ri:smartphone-line', color: '#e6a23c', label: 'APP' },
+    DESKTOP_APP: { icon: 'ri:computer-line', color: '#909399', label: '桌面应用' }
   }
 
   /**
    * 获取平台配置
    */
-  const getPlatformConfig = (platform: string) => {
-    return platformConfig[platform] || { icon: 'ri:question-line', color: '#909399', label: '未知' }
+  const getPlatformConfig = (platformType: string) => {
+    return platformConfig[platformType] || { icon: 'ri:question-line', color: '#909399', label: '未知' }
   }
 
   /**
-   * 计算会话剩余时间百分比
+   * 计算会话剩余时间百分比 (基于 accessExpireTime)
    */
-  const getSessionProgress = (loginTime: string, expireTime: string): number => {
+  const getSessionProgress = (loginTime: string, accessExpireTime: number): number => {
     const now = Date.now()
     const login = new Date(loginTime).getTime()
-    const expire = new Date(expireTime).getTime()
+    const expire = accessExpireTime
     const total = expire - login
     const remaining = expire - now
     if (remaining <= 0) return 0
@@ -142,10 +146,9 @@
   /**
    * 格式化剩余时间
    */
-  const formatRemainingTime = (expireTime: string): string => {
+  const formatRemainingTime = (expireTime: number): string => {
     const now = Date.now()
-    const expire = new Date(expireTime).getTime()
-    const diff = expire - now
+    const diff = expireTime - now
     if (diff <= 0) return '已过期'
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
@@ -169,6 +172,14 @@
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   }
 
+  /**
+   * 格式化时间戳
+   */
+  const formatTimestamp = (timestamp: number | undefined): string => {
+    if (!timestamp) return '-'
+    return formatTime(new Date(timestamp).toISOString())
+  }
+
   const {
     columns,
     columnChecks,
@@ -184,7 +195,7 @@
   } = useTable({
     core: {
       apiFn: fetchGetSessionList,
-      apiParams: { pageNum: 1, pageSize: 20 },
+      apiParams: { current: 1, size: 20 },
       columnsFactory: () => [
         { type: 'selection', width: 50, align: 'center' },
         {
@@ -205,13 +216,13 @@
           }
         },
         {
-          prop: 'platform',
-          label: '登录平台',
+          prop: 'platformType',
+          label: '平台类型',
           width: 120,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SessionVO) => {
-            const config = getPlatformConfig(row.platform)
+            const config = getPlatformConfig(row.platformType)
             return h('div', { class: 'flex items-center justify-center gap-1' }, [
               h(ArtSvgIcon, { icon: config.icon, style: { color: config.color } }),
               h('span', {}, config.label)
@@ -221,26 +232,13 @@
         {
           prop: 'loginIp',
           label: '登录IP',
-          width: 140,
+          width: 150,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SessionVO) => {
             return h('div', {}, [
-              h('div', { class: 'font-mono text-sm' }, row.loginIp),
-              row.loginLocation ? h('div', { class: 'text-xs text-gray-400' }, row.loginLocation) : null
-            ])
-          }
-        },
-        {
-          prop: 'browser',
-          label: '浏览器/设备',
-          width: 140,
-          align: 'center',
-          headerAlign: 'center',
-          formatter: (row: SessionVO) => {
-            return h('div', { class: 'text-sm' }, [
-              h('div', {}, row.browser || '-'),
-              h('div', { class: 'text-xs text-gray-400' }, row.os || '-')
+              h('div', { class: 'font-mono text-sm' }, row.loginIp || '-'),
+              row.ipRegion ? h('div', { class: 'text-xs text-gray-400' }, row.ipRegion) : null
             ])
           }
         },
@@ -261,14 +259,14 @@
           formatter: (row: SessionVO) => formatTime(row.lastAccessTime)
         },
         {
-          prop: 'expireTime',
+          prop: 'accessExpireTime',
           label: '会话有效期',
           width: 180,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SessionVO) => {
-            const progress = getSessionProgress(row.loginTime, row.expireTime)
-            const remaining = formatRemainingTime(row.expireTime)
+            const progress = getSessionProgress(row.loginTime, row.accessExpireTime)
+            const remaining = formatRemainingTime(row.accessExpireTime)
             const color = progress > 50 ? '#67c23a' : progress > 20 ? '#e6a23c' : '#f56c6c'
             return h('div', { class: 'w-full px-2' }, [
               h(ElProgress, {
@@ -287,12 +285,13 @@
           width: 80,
           align: 'center',
           headerAlign: 'center',
-          formatter: (row: SessionVO) => {
+          formatter: () => {
+            // 能获取到的都是在线的
             return h(ElTag, {
-              type: row.status === 1 ? 'success' : 'info',
+              type: 'success',
               size: 'small',
               effect: 'light'
-            }, () => row.status === 1 ? '在线' : '离线')
+            }, () => '在线')
           }
         },
         {
