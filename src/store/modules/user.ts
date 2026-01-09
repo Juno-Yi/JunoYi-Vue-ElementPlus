@@ -142,11 +142,14 @@ export const useUserStore = defineStore(
      * 如果是同一账号重新登录，保留工作台标签页
      */
     const logOut = async () => {
-      // 调用后端退出接口
-      try {
-        await fetchLogout()
-      } catch (error) {
-        console.warn('[User] 退出登录接口调用失败:', error)
+      // 只有当用户已登录（有 token）时才调用后端退出接口
+      // 避免未登录状态下触发无效的 logout 请求
+      if (accessToken.value) {
+        try {
+          await fetchLogout()
+        } catch (error) {
+          console.warn('[User] 退出登录接口调用失败:', error)
+        }
       }
 
       // 保存当前用户 ID，用于下次登录时判断是否为同一用户
