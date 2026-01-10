@@ -123,11 +123,26 @@
     DESKTOP_APP: { icon: 'ri:computer-line', color: '#909399', label: '桌面应用' }
   }
 
+  // 设备类型配置
+  const deviceConfig: Record<string, { icon: string; label: string }> = {
+    Mobile: { icon: 'ri:smartphone-line', label: '手机' },
+    Tablet: { icon: 'ri:tablet-line', label: '平板' },
+    Desktop: { icon: 'ri:computer-line', label: '电脑' },
+    Unknown: { icon: 'ri:device-line', label: '未知' }
+  }
+
   /**
    * 获取平台配置
    */
   const getPlatformConfig = (platformType: string) => {
     return platformConfig[platformType] || { icon: 'ri:question-line', color: '#909399', label: '未知' }
+  }
+
+  /**
+   * 获取设备配置
+   */
+  const getDeviceConfig = (deviceType: string | null) => {
+    return deviceConfig[deviceType || 'Unknown'] || deviceConfig.Unknown
   }
 
   /**
@@ -247,6 +262,31 @@
               row.ipRegion ? h('div', { class: 'text-xs text-gray-400' }, row.ipRegion) : null
             ])
           }
+        },
+        {
+          prop: 'deviceType',
+          label: '设备信息',
+          width: 140,
+          align: 'center',
+          headerAlign: 'center',
+          formatter: (row: SessionVO) => {
+            const config = getDeviceConfig(row.deviceType)
+            return h('div', { class: 'flex flex-col items-center' }, [
+              h('div', { class: 'flex items-center gap-1' }, [
+                h(ArtSvgIcon, { icon: config.icon, class: 'text-gray-500' }),
+                h('span', {}, config.label)
+              ]),
+              h('div', { class: 'text-xs text-gray-400' }, row.os || '-')
+            ])
+          }
+        },
+        {
+          prop: 'browser',
+          label: '浏览器',
+          width: 120,
+          align: 'center',
+          headerAlign: 'center',
+          formatter: (row: SessionVO) => row.browser || '-'
         },
         {
           prop: 'loginTime',

@@ -113,6 +113,7 @@ declare module 'vue' {
     ElTimeline: typeof import('element-plus/es')['ElTimeline']
     ElTimelineItem: typeof import('element-plus/es')['ElTimelineItem']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ElTree: typeof import('element-plus/es')['ElTree']
     ElWatermark: typeof import('element-plus/es')['ElWatermark']
     Exception403: typeof import('./../../components/core/exception/Exception403.vue')['default']
     Exception404: typeof import('./../../components/core/exception/Exception404.vue')['default']

@@ -5,6 +5,9 @@ declare namespace Api.System {
   /** 平台类型枚举 */
   type PlatformType = 'ADMIN_WEB' | 'FRONT_DESK_WEB' | 'MINI_PROGRAM' | 'APP' | 'DESKTOP_APP'
 
+  /** 设备类型 */
+  type DeviceType = 'Mobile' | 'Tablet' | 'Desktop' | 'Unknown'
+
   /** 会话信息 */
   interface SessionVO {
     /** 会话ID */
@@ -17,14 +20,6 @@ declare namespace Api.System {
     nickName: string
     /** 平台类型 */
     platformType: PlatformType
-    /** 用户角色集合 */
-    roles: number[]
-    /** 权限集合 */
-    permissions: string[]
-    /** 用户组集合 */
-    groups: string[]
-    /** 部门集合 */
-    depts: number[]
     /** 登录IP */
     loginIp: string
     /** IP所在地区 */
@@ -33,6 +28,14 @@ declare namespace Api.System {
     loginTime: string
     /** 最后访问时间 */
     lastAccessTime: string
+    /** 用户代理（浏览器信息） */
+    userAgent: string | null
+    /** 设备类型 */
+    deviceType: DeviceType | null
+    /** 操作系统 */
+    os: string | null
+    /** 浏览器 */
+    browser: string | null
     /** AccessToken 过期时间（时间戳） */
     accessExpireTime: number
     /** RefreshToken 过期时间（时间戳） */
