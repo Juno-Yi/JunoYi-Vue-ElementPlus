@@ -52,5 +52,9 @@ declare namespace Api.System {
     loginIp?: string
     /** 平台类型 */
     platformType?: PlatformType
+    /** 当前页 */
+    current?: number
+    /** 每页条数 */
+    size?: number
   }
 }

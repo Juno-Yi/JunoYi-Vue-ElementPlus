@@ -103,10 +103,10 @@ axiosInstance.interceptors.request.use(
     // 获取扩展配置
     const extConfig = request as InternalAxiosRequestConfig & ExtendedAxiosRequestConfig
 
-    // POST/PUT/PATCH 请求：如果 params 有数据但 data 为空，自动转换到 data
+    // POST/PUT/PATCH/DELETE 请求：如果 params 有数据但 data 为空，自动转换到 data
     // 这个转换必须在加密之前执行
     if (
-      ['POST', 'PUT', 'PATCH'].includes(request.method?.toUpperCase() || '') &&
+      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method?.toUpperCase() || '') &&
       extConfig.params &&
       !request.data
     ) {
