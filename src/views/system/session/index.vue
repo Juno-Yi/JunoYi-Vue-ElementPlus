@@ -253,7 +253,7 @@
         {
           prop: 'loginIp',
           label: '登录IP',
-          width: 150,
+          width: 160,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SessionVO) => {
