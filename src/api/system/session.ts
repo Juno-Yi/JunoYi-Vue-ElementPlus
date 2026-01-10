@@ -12,7 +12,7 @@ export function fetchGetSessionList(params?: Api.System.SessionQueryDTO) {
 }
 
 /**
- * 强制下线
+ * 强制下线（单个）
  */
 export function fetchForceLogout(sessionId: string) {
   return request.del<void>({
@@ -22,9 +22,9 @@ export function fetchForceLogout(sessionId: string) {
 }
 
 /**
- * 批量强制下线
+ * 批量踢出会话
  */
-export function fetchBatchForceLogout(sessionIds: string[]) {
+export function fetchBatchKickOut(sessionIds: string[]) {
   return request.del<void>({
     url: '/system/session/batch',
     data: sessionIds,

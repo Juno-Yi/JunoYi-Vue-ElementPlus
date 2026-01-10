@@ -55,7 +55,7 @@
 <script setup lang="ts">
   import { useTable } from '@/hooks/core/useTable'
   import { usePermission } from '@/hooks/core/usePermission'
-  import { fetchGetSessionList, fetchForceLogout, fetchBatchForceLogout } from '@/api/system/session'
+  import { fetchGetSessionList, fetchForceLogout, fetchBatchKickOut } from '@/api/system/session'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { ElTag, ElMessageBox, ElProgress } from 'element-plus'
 
@@ -360,21 +360,21 @@
   }
 
   /**
-   * 批量强制下线
+   * 批量踢出会话
    */
   const handleBatchLogout = async () => {
     if (selectedRows.value.length === 0) {
-      ElMessage.warning('请选择要下线的会话')
+      ElMessage.warning('请选择要踢出的会话')
       return
     }
     try {
       await ElMessageBox.confirm(
-        `确定要强制下线选中的 ${selectedRows.value.length} 个会话吗？`,
-        '批量强制下线',
+        `确定要踢出选中的 ${selectedRows.value.length} 个会话吗？`,
+        '批量踢出',
         { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
       )
       const ids = selectedRows.value.map(item => item.sessionId)
-      await fetchBatchForceLogout(ids)
+      await fetchBatchKickOut(ids)
       selectedRows.value = []
       refreshData()
     } catch {
