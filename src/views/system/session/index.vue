@@ -57,7 +57,7 @@
   import { usePermission } from '@/hooks/core/usePermission'
   import { fetchGetSessionList, fetchForceLogout, fetchBatchKickOut } from '@/api/system/session'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import { ElTag, ElMessageBox, ElProgress } from 'element-plus'
+  import { ElTag, ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'Session' })
 
@@ -131,29 +131,35 @@
   }
 
   /**
-   * 计算会话剩余时间百分比 (基于 accessExpireTime)
-   */
-  const getSessionProgress = (loginTime: string, accessExpireTime: number): number => {
-    const now = Date.now()
-    const login = new Date(loginTime).getTime()
-    const expire = accessExpireTime
-    const total = expire - login
-    const remaining = expire - now
-    if (remaining <= 0) return 0
-    return Math.round((remaining / total) * 100)
-  }
-
-  /**
    * 格式化剩余时间
    */
-  const formatRemainingTime = (expireTime: number): string => {
+  const formatRemainingTime = (expireTime: number): { text: string; type: 'success' | 'warning' | 'danger' } => {
     const now = Date.now()
     const diff = expireTime - now
-    if (diff <= 0) return '已过期'
-    const hours = Math.floor(diff / (1000 * 60 * 60))
+    if (diff <= 0) return { text: '已过期', type: 'danger' }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-    if (hours > 0) return `${hours}小时${minutes}分钟`
-    return `${minutes}分钟`
+    
+    let text = ''
+    if (days > 0) {
+      text = `${days}天${hours}小时${minutes}分钟`
+    } else if (hours > 0) {
+      text = `${hours}小时${minutes}分钟`
+    } else {
+      text = `${minutes}分钟`
+    }
+    
+    // 根据剩余时间返回不同状态
+    let type: 'success' | 'warning' | 'danger' = 'success'
+    if (days === 0 && hours === 0 && minutes < 10) {
+      type = 'danger'
+    } else if (days === 0 && hours < 1) {
+      type = 'warning'
+    }
+    
+    return { text, type }
   }
 
   /**
@@ -260,38 +266,13 @@
         },
         {
           prop: 'accessExpireTime',
-          label: '会话有效期',
-          width: 180,
+          label: '剩余时间',
+          width: 160,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SessionVO) => {
-            const progress = getSessionProgress(row.loginTime, row.accessExpireTime)
-            const remaining = formatRemainingTime(row.accessExpireTime)
-            const color = progress > 50 ? '#67c23a' : progress > 20 ? '#e6a23c' : '#f56c6c'
-            return h('div', { class: 'w-full px-2' }, [
-              h(ElProgress, {
-                percentage: progress,
-                color: color,
-                strokeWidth: 6,
-                showText: false
-              }),
-              h('div', { class: 'text-xs text-gray-500 mt-1' }, `剩余 ${remaining}`)
-            ])
-          }
-        },
-        {
-          prop: 'status',
-          label: '状态',
-          width: 80,
-          align: 'center',
-          headerAlign: 'center',
-          formatter: () => {
-            // 能获取到的都是在线的
-            return h(ElTag, {
-              type: 'success',
-              size: 'small',
-              effect: 'light'
-            }, () => '在线')
+            const { text, type } = formatRemainingTime(row.accessExpireTime)
+            return h(ElTag, { type, size: 'small' }, () => text)
           }
         },
         {
