@@ -16,6 +16,37 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.2.1-alpha',
+        title: '会话监控',
+        date: '2026-1-10',
+        detail: {
+            added: [
+                'sessionHelper接口添加获取所有活跃会话功能',
+                '添加查询会话列表分页接口',
+                '添加踢出指定会话接口',
+                '前端对接查询会话列表分页接口',
+                '前端对接踢出指定会话接口',
+                '添加批量踢出会话接口',
+                '前端对接批量踢出会话接口',
+                '集成ip2region实现IP地址地理位置解析功能',
+                '添加IP地区信息到用户会话',
+                '添加User-Agent解析工具类',
+                '前端会话管理页面增加设备信息和浏览器显示功能'
+            ],
+            changed: [
+                '重构系统会话实体和实现类',
+                '扩展会话信息以支持操作系统和浏览器识别',
+            ],
+            fixed: [
+                '修复未登录状态下触发logout请求出现无效请求bug',
+
+            ],
+            demo: [
+
+            ]
+        }
+    },
+    {
         version: 'v0.2.0-alpha',
         title: '权限池',
         date: '2026-1-8',
