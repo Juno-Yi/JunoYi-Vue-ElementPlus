@@ -152,13 +152,13 @@
 
   const formFilters = reactive({ ...initialSearchState })
 
-  // 类型选项
+  // 类型选项 (对应后端 RType 枚举)
   const typeOptions = [
-    { label: 'String', value: 'string' },
-    { label: 'List', value: 'list' },
-    { label: 'Set', value: 'set' },
-    { label: 'ZSet', value: 'zset' },
-    { label: 'Hash', value: 'hash' }
+    { label: 'OBJECT', value: 'OBJECT' },
+    { label: 'MAP', value: 'MAP' },
+    { label: 'LIST', value: 'LIST' },
+    { label: 'SET', value: 'SET' },
+    { label: 'ZSET', value: 'ZSET' }
   ]
 
   const formItems = computed(() => [
@@ -311,11 +311,11 @@
    */
   const getTypeTagType = (type: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
     const map: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
-      string: 'primary',
-      list: 'success',
-      set: 'warning',
-      zset: 'danger',
-      hash: 'info'
+      OBJECT: 'primary',
+      MAP: 'info',
+      LIST: 'success',
+      SET: 'warning',
+      ZSET: 'danger'
     }
     return map[type] || 'info'
   }
