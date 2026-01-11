@@ -2,22 +2,7 @@
 <template>
   <div class="art-full-height">
     <!-- Redis 信息卡片 -->
-    <ElCard class="mb-4" shadow="never">
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div v-for="item in infoCards" :key="item.label" class="flex-c gap-3">
-          <div
-            class="w-10 h-10 rounded-lg flex-cc flex-shrink-0"
-            :style="{ backgroundColor: `color-mix(in srgb, ${primaryColor} 15%, transparent)` }"
-          >
-            <ArtSvgIcon :icon="item.icon" :style="{ color: primaryColor }" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-lg font-semibold text-g-900 truncate">{{ item.value }}</div>
-            <div class="text-xs text-g-500">{{ item.label }}</div>
-          </div>
-        </div>
-      </div>
-    </ElCard>
+    <RedisInfoCard :info="redisInfo" />
 
     <!-- 搜索栏 -->
     <ArtSearchBar
@@ -40,7 +25,6 @@
             <ElButton
               v-permission="'system.ui.cache.button.delete'"
               :disabled="selectedRows.length === 0"
-              type="danger"
               @click="handleBatchDelete"
               v-ripple
             >
@@ -49,7 +33,6 @@
             </ElButton>
             <ElButton
               v-permission="'system.ui.cache.button.clear'"
-              type="danger"
               plain
               @click="handleClearAll"
               v-ripple
@@ -140,6 +123,7 @@
     fetchClearAllCache
   } from '@/api/system/cache'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import RedisInfoCard from './modules/redis-info-card.vue'
   import { ElTag, ElMessageBox, ElDrawer, ElIcon, ElButton, ElCard } from 'element-plus'
   import { Loading } from '@element-plus/icons-vue'
   import { useClipboard } from '@vueuse/core'
@@ -159,20 +143,6 @@
 
   // Redis 信息
   const redisInfo = ref<RedisInfo | null>(null)
-
-  // 信息卡片
-  const infoCards = computed(() => {
-    const info = redisInfo.value
-    if (!info) return []
-    return [
-      { label: 'Redis版本', value: info.version, icon: 'ri:server-line' },
-      { label: '运行时间', value: formatUptime(info.uptimeInSeconds), icon: 'ri:time-line' },
-      { label: '已用内存', value: info.usedMemoryHuman, icon: 'ri:database-2-line' },
-      { label: '键数量', value: String(info.dbSize), icon: 'ri:key-2-line' },
-      { label: '命中率', value: info.hitRate, icon: 'ri:focus-3-line' },
-      { label: '连接数', value: String(info.connectedClients), icon: 'ri:links-line' }
-    ]
-  })
 
   // 搜索表单
   const initialSearchState = {
@@ -313,18 +283,6 @@
   const handleRefreshAll = () => {
     loadRedisInfo()
     refreshData()
-  }
-
-  /**
-   * 格式化运行时间
-   */
-  const formatUptime = (seconds: number): string => {
-    const days = Math.floor(seconds / 86400)
-    const hours = Math.floor((seconds % 86400) / 3600)
-    if (days > 0) return `${days}天${hours}小时`
-    const minutes = Math.floor((seconds % 3600) / 60)
-    if (hours > 0) return `${hours}小时${minutes}分钟`
-    return `${minutes}分钟`
   }
 
   /**
