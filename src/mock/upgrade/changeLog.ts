@@ -16,6 +16,33 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.2.2-alpha',
+        title: '优化会话机制',
+        date: '2026-1-11',
+        detail: {
+            changed: [
+                '扩展API加密过滤器支持DELETE请求解密',
+                '重构会话机制',
+                '优化accessToken机制',
+                '优化refreshToken机制',
+                '引入滑动会话机制，Session TTL 等于 AccessToken 有效期，每次刷新 Token 时自动续期',
+                '修改 Redis 存储结构，会话详情使用 AccessToken 有效期作为 TTL，RefreshToken 白名单存储完整 UserSession',
+                '实现 Session 过期后自动从 RefreshToken 白名单恢复功能',
+                '优化令牌刷新逻辑，支持滑动续期并保持 RefreshToken 不变',
+                '计算滑动续期时长，确保 Session TTL 不超过 RefreshToken 剩余有效期',
+            ],
+            fixed: [
+                '修复会话监控bug',
+                '修复登录IP列宽度显示问题',
+
+            ],
+            demo: [
+
+            ]
+        },
+        remark: '会话时长不再是refreshToken时长，会话时长使用refreshToken时长会导致出现很多“僵尸会话”占用不必要的内存'
+    },
+    {
         version: 'v0.2.1-alpha',
         title: '会话监控',
         date: '2026-1-10',
