@@ -63,50 +63,11 @@
     </ElCard>
 
     <!-- 键值详情抽屉 -->
-    <ElDrawer
+    <CacheDetailDrawer
       v-model="detailDrawerVisible"
-      title="缓存详情"
-      size="500px"
-      :destroy-on-close="true"
-    >
-      <div v-if="detailLoading" class="flex-cc py-10">
-        <ElIcon class="is-loading" :size="24"><Loading /></ElIcon>
-      </div>
-      <div v-else-if="currentDetail" class="space-y-4">
-        <!-- 基本信息 -->
-        <div class="bg-g-100 rounded-lg p-4">
-          <div class="text-sm font-medium text-g-700 mb-3 pb-2 border-b-d">基本信息</div>
-          <div class="flex items-start gap-3 py-2">
-            <span class="text-sm text-g-500 w-20 flex-shrink-0">键名</span>
-            <span class="text-sm text-g-800 flex-1 font-mono break-all">{{ currentDetail.key }}</span>
-          </div>
-          <div class="flex items-start gap-3 py-2">
-            <span class="text-sm text-g-500 w-20 flex-shrink-0">类型</span>
-            <ElTag :type="getTypeTagType(currentDetail.type)" size="small">{{ currentDetail.type }}</ElTag>
-          </div>
-          <div class="flex items-start gap-3 py-2">
-            <span class="text-sm text-g-500 w-20 flex-shrink-0">TTL</span>
-            <span class="text-sm text-g-800">{{ formatTTL(currentDetail.ttl) }}</span>
-          </div>
-          <div v-if="currentDetail.memoryUsage" class="flex items-start gap-3 py-2">
-            <span class="text-sm text-g-500 w-20 flex-shrink-0">内存占用</span>
-            <span class="text-sm text-g-800">{{ formatBytes(currentDetail.memoryUsage) }}</span>
-          </div>
-        </div>
-        <!-- 值内容 -->
-        <div class="bg-g-100 rounded-lg p-4">
-          <div class="text-sm font-medium text-g-700 mb-3 pb-2 border-b-d flex-cb">
-            <span>值内容</span>
-            <ElButton size="small" text @click="copyValue">
-              <ArtSvgIcon icon="ri:file-copy-line" class="mr-1" />复制
-            </ElButton>
-          </div>
-          <div class="bg-g-200 rounded-lg p-3 max-h-96 overflow-auto">
-            <pre class="text-sm font-mono text-g-800 whitespace-pre-wrap break-all m-0">{{ formatValue(currentDetail.value) }}</pre>
-          </div>
-        </div>
-      </div>
-    </ElDrawer>
+      :detail="currentDetail"
+      :loading="detailLoading"
+    />
   </div>
 </template>
 
@@ -124,15 +85,13 @@
   } from '@/api/system/cache'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import RedisInfoCard from './modules/redis-info-card.vue'
-  import { ElTag, ElMessageBox, ElDrawer, ElIcon, ElButton, ElCard } from 'element-plus'
-  import { Loading } from '@element-plus/icons-vue'
-  import { useClipboard } from '@vueuse/core'
+  import CacheDetailDrawer from './modules/cache-detail-drawer.vue'
+  import { ElTag, ElMessageBox, ElButton, ElCard } from 'element-plus'
 
   defineOptions({ name: 'Cache' })
 
   const { hasPermission } = usePermission()
   const settingStore = useSettingStore()
-  const { copy } = useClipboard()
 
   type CacheKeyVO = Api.System.CacheKeyVO
   type CacheKeyDetailVO = Api.System.CacheKeyDetailVO
@@ -321,20 +280,6 @@
   }
 
   /**
-   * 格式化值
-   */
-  const formatValue = (value: string | string[] | Record<string, string>): string => {
-    if (typeof value === 'string') {
-      try {
-        return JSON.stringify(JSON.parse(value), null, 2)
-      } catch {
-        return value
-      }
-    }
-    return JSON.stringify(value, null, 2)
-  }
-
-  /**
    * 搜索
    */
   const handleSearch = () => {
@@ -368,17 +313,6 @@
       currentDetail.value = await fetchGetCacheKeyDetail(row.key)
     } finally {
       detailLoading.value = false
-    }
-  }
-
-  /**
-   * 复制值
-   */
-  const copyValue = () => {
-    if (currentDetail.value) {
-      const text = formatValue(currentDetail.value.value)
-      copy(text)
-      ElMessage.success('已复制到剪贴板')
     }
   }
 
