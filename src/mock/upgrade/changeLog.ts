@@ -16,6 +16,87 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.2.5-alpha',
+        title: '重构异常机制',
+        date: '2026-1-12',
+        detail: {
+            added: [
+                '添加Token过期异常'
+            ],
+            changed: [
+                '优化全局异常处理',
+                '移出旧异常机制',
+                '重构异常机制',
+                '优化异常机制'
+            ],
+            fixed: [
+            ],
+            demo: [
+            ]
+        },
+        breakingChange: true,
+        remark: '重构后的异常机制遵循"谁抛出谁定义"原则'
+    },
+    {
+        version: 'v0.2.4-alpha',
+        title: '前后端统一分页优化',
+        date: '2026-1-12',
+        detail: {
+            added: [
+
+            ],
+            changed: [
+                '后端优化将分页参数统一从pageNum/pageSize 替换为 current/size',
+                '后端统一分页请求响应格式',
+                '前端优化将分页参数从pageNum/pageSize改为current/size',
+                '前端统一API分页参数命名规范',
+                '修复角色列表接口路径问题'
+            ],
+            fixed: [
+                '后端修复分页参数出现混乱bug',
+                '前端修复分页参数出现混乱bug',
+
+            ]
+        }
+    },
+    {
+        version: 'v0.2.3-alpha',
+        title: '缓存监控',
+        date: '2026-1-12',
+        detail: {
+            added: [
+                '新增RedisInfoVO类等相关数据体用于封装Redis服务器信息数据',
+                '在RedisUtils工具类中相关操作方法',
+                '添加系统缓存监控接口',
+                '前端对接系统缓存监控接口',
+                '添加 Redis 键信息查询功能',
+                '添加缓存键列表查询接口',
+                '前端对接缓存键列表查询接口',
+                '前端更新缓存类型枚举',
+                '添加缓存键详情查询接口',
+                '前端对接缓存键详情查询',
+                '添加系统缓存删除接口',
+                '前端对接系统缓存删除接口',
+                '添加批量删除缓存接口',
+                '前端对接批量删除缓存接口',
+                '添加清理所有缓存接口',
+                '前端对接清理所有缓存接口'
+            ],
+            changed: [
+                '前端将Redis信息展示部分提取到独立的RedisInfoCard组件',
+                '优化Redis缓存服务实现',
+                '前端将缓存详情抽屉逻辑从主页面提取到 CacheDetailDrawer 组件',
+
+            ],
+            fixed: [
+
+            ],
+            demo: [
+
+            ]
+        }
+    },
+    {
         version: 'v0.2.2-alpha',
         title: '优化会话机制',
         date: '2026-1-11',
