@@ -121,8 +121,8 @@
     core: {
       apiFn: fetchGetRoleList,
       apiParams: {
-        pageNum: 1,
-        pageSize: 20
+        current: 1,
+        size: 20
       },
       columnsFactory: () => [
         {

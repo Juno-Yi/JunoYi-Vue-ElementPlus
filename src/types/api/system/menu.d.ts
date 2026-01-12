@@ -10,10 +10,10 @@ declare namespace Api.System {
     name?: string
     /** 状态 */
     status?: number
-    /** 页码 */
-    pageNum?: number
-    /** 每页数量 */
-    pageSize?: number
+    /** 当前页 */
+    current?: number
+    /** 每页条数 */
+    size?: number
   }
 
   /**

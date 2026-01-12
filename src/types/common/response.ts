@@ -37,7 +37,9 @@ export interface PageResult<T = unknown> {
   /** 总数 */
   total: number
   /** 当前页码 */
-  pageNum?: number
+  current?: number
   /** 每页数量 */
-  pageSize?: number
+  size?: number
+  /** 总页数 */
+  pages?: number
 }
