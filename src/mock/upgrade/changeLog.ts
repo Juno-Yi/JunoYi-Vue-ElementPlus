@@ -16,6 +16,40 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.2.6-alpha',
+        title: '接口文档',
+        date: '2026-1-12',
+        detail: {
+            added: [
+                '新增 junoyi-framework-api-doc 模块，统一管理 API 文档配置',
+                '新增 ApiDocProperties 配置类，支持 junoyi.api-doc.* 前缀配置',
+                '新增 ApiDocConfiguration 自动配置类，支持自定义文档信息和 API 分组',
+                '新增 API 文档使用指南文档 docs/JunoYi API文档使用指南.md',
+                '集成 springdoc-openapi-starter-webmvc-ui 2.8.4（Spring Boot 3.x 官方推荐方案）',
+                '集成 knife4j-openapi3-ui 4.5.0（仅 UI 界面，提供更友好的文档展示',
+                '新增 API 文档相关路径到安全白名单（/doc.html、/swagger-ui/**、/v3/api-docs/**）'
+
+            ],
+            changed: [
+                '移除 knife4j-openapi3-jakarta-spring-boot-starter 依赖（与 Spring Boot 3.5.0 存在兼容性问题）',
+                '移除 springfox-boot-starter 依赖（已废弃，不兼容 Spring Boot 3.x）',
+                '支持通过配置文件自定义文档标题、描述、版本、联系人等信息',
+                '支持按路径或包名配置 API 分组',
+                '支持全局 JWT Bearer Token 认证配置',
+                '采用 SpringDoc + Knife4j UI 分离方案解决兼容性问题',
+
+            ],
+            fixed: [
+                '修复 Knife4j 4.3.0 与 Spring Boot 3.5.0 不兼容导致的 NoSuchMethodError 异常',
+
+            ],
+            demo: [
+                'Knife4j UI：http://localhost:7588/doc.html（推荐）',
+                'Swagger UI：http://localhost:7588/swagger-ui.html'
+            ]
+        }
+    },
+    {
         version: 'v0.2.5-alpha',
         title: '重构异常机制',
         date: '2026-1-12',
