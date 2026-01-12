@@ -34,8 +34,7 @@ export function fetchGetCacheKeyDetail(key: string) {
  */
 export function fetchDeleteCacheKey(key: string) {
   return request.del<void>({
-    url: '/system/cache/key',
-    params: { key },
+    url: `/system/cache/key?key=${encodeURIComponent(key)}`,
     showSuccessMessage: true
   })
 }
@@ -45,8 +44,8 @@ export function fetchDeleteCacheKey(key: string) {
  */
 export function fetchBatchDeleteCacheKeys(keys: string[]) {
   return request.del<void>({
-    url: '/system/cache/keys',
-    params: { keys },
+    url: '/system/cache/batch',
+    data: keys,
     showSuccessMessage: true
   })
 }

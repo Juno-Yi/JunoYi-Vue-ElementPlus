@@ -6,7 +6,7 @@ import type { PageResult } from '@/types/common/response'
  */
 export function fetchGetRoleList(params?: Api.System.RoleQueryDTO) {
   return request.get<PageResult<Api.System.RoleVO>>({
-    url: '/system/role',
+    url: '/system/role/list',
     params
   })
 }
