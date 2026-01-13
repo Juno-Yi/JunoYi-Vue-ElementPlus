@@ -102,17 +102,8 @@ pnpm dev
 pnpm build
 ```
 
-启动成功后访问：http://localhost:5180
+启动成功后访问：http://localhost:3006
 
-### 清理脚本
-
-项目内置清理脚本，可快速移除示例数据，获得一个干净的开发基础项目：
-
-```bash
-pnpm clean:dev
-```
-
----
 
 ## 🛠️ 技术栈
 
@@ -126,6 +117,9 @@ pnpm clean:dev
 | HTTP 请求 | Axios |
 | 代码规范 | ESLint、Prettier、Stylelint |
 | Git 规范 | Husky、Lint-staged、Commitlint |
+
+
+完整文档请访问：**https://doc.framework.junoyi.com**
 
 ---
 
