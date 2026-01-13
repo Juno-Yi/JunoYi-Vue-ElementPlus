@@ -27,7 +27,6 @@
           <ElOption label="本部门数据" value="2" />
           <ElOption label="本部门及以下" value="3" />
           <ElOption label="仅本人数据" value="4" />
-          <ElOption label="自定义数据" value="5" />
         </ElSelect>
       </ElFormItem>
       <ElFormItem v-if="dialogType === 'edit'" label="状态" prop="status">

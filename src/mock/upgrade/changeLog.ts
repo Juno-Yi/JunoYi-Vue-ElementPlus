@@ -16,6 +16,40 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.3.0-alpha',
+        title: '数据范围',
+        date: '2026-1-13',
+        detail: {
+            added: [
+                '数据范围（DataScope）行级权限控制 基于 MyBatis-Plus DataPermissionHandler 实现自动 SQL 过滤',
+                '支持四种数据范围类型：全部数据(ALL)、本部门(DEPT)、本部门及下级(DEPT_AND_CHILD)、仅本人(SELF)',
+                '支持两种使用模式：注解模式（@DataScope）和全局模式（自动过滤所有查询）',
+                '新增 @IgnoreDataScope 注解，支持在 Mapper 类或方法上标记忽略数据范围过滤',
+                '新增 DataScopeType 枚举，包含优先级比较方法 max()',
+                '新增 DataScopeContextHolder 管理 ThreadLocal 上下文（userId/userName/deptIds/accessibleDeptIds/superAdmin）',
+                '新增 DataScopeHandler 实现 MyBatis-Plus DataPermissionHandler 接口',
+                '新增 DataScopeConfig 配置类，支持 enabled/globalEnabled/defaultDeptField/defaultUserField',
+                'LoginUser / UserSession 新增 dataScope、accessibleDeptIds 字段',
+                '新增 docs/JunoYi数据范围使用指南.md 完整技术文档'
+            ],
+            changed: [
+                '重构数据权限实现：删除旧的 DataScopeInterceptor，改用 MyBatis-Plus 官方 DataPermissionInterceptor',
+                'MyBatisPlusConfig 集成数据权限插件，确保在分页插件之前执行',
+                'TokenAuthenticationTokenFilter 集成数据范围上下文设置与清理',
+                'SessionHelperImpl 同步传递数据范围属性到 Redis 会话',
+                'SysAuthServiceImpl 实现数据范围计算逻辑',
+                '全局模式自动排除系统管理表（sys_user/sys_role/sys_dept 等），系统管理功能通过菜单权限控制',
+                'SELF 模式使用 userName（用户名）进行过滤，与 create_by 字段存储格式一致',
+                'junoyi-framework-security 模块新增 datasource 依赖'
+            ],
+            demo: [
+                '新增 /demo/data-scope 测试接口，用于查看当前用户的数据范围信息'
+            ]
+        },
+        breakingChange: true,
+        remark: ''
+    },
+    {
         version: 'v0.2.6-alpha',
         title: '接口文档',
         date: '2026-1-12',
