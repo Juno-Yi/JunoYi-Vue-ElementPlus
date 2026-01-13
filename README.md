@@ -17,7 +17,7 @@
 
 [特性](#-核心特性) • [快速开始](#-快速开始) • [项目结构](#-项目结构) • [技术栈](#-技术栈) • [贡献](#-贡献指南) • [联系我们](#-联系我们)
 
-🌐 [官网](https://framework.junoyi.com) • 📖 [文档站](https://doc.framework.junoyi.com) • 🎮 [演示站](https://demo.junoyi.com)
+📖 [文档站](https://doc.framework.junoyi.com) • 🎮 [演示站](https://demo.junoyi.com)
 
 </div>
 
@@ -28,7 +28,6 @@
 > 当前版本为 **0.3.0-alpha**，属于内部测试版本。功能仍在持续开发和完善中，API 可能会有变动。欢迎试用并反馈问题，但暂不建议用于生产环境。
 >
 > 📌 **相关链接**
-> - 🌐 官网：https://framework.junoyi.com
 > - 📖 文档站：https://doc.framework.junoyi.com 
 > - 🎮 演示站：https://demo.junoyi.com
 >
