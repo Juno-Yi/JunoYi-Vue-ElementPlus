@@ -215,6 +215,7 @@
           fixed: 'right',
           formatter: (row: CacheKeyVO) => {
             const buttons = []
+            if (hasPermission('system.ui.cache.button.detail'))
             buttons.push(
               h(ArtButtonTable, {
                 type: 'view',
