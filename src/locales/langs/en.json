@@ -285,31 +285,30 @@
       "title": "System Settings",
       "user": "User Manage",
       "role": "Role Manage",
+      "dept": "Department Manage",
+      "permissionGroup": "Permission Manage",
+      "permissionPool": "Permission Pool",
       "userCenter": "User Center",
       "menu": "Menu Manage",
-      "nested": "Nested Menu",
-      "menu1": "Menu 1",
-      "menu2": "Menu 2",
-      "menu21": "Menu 2-1",
-      "menu3": "Menu 3",
-      "menu31": "Menu 3-1",
-      "menu32": "Menu 3-2",
-      "menu321": "Menu 3-2-1"
+      "task": "Scheduled Tasks"
     },
-    "safeguard": {
-      "title": "Safeguard",
-      "server": "Server"
+    "monitor": {
+      "title": "System Monitor",
+      "session": "Session Monitor",
+      "cache": "Cache Monitor"
+    },
+    "operation": {
+      "title": "System Function",
+      "generate": "Code Generate",
+      "api-doc": "API Doc"
+    },
+    "document": {
+      "title": "Document"
     },
     "plan": {
-      "title": "Version Plan",
       "log": "Change Log"
-    },
-    "help": {
-      "title": "Help Center",
-      "document": "Document",
-      "liteVersion": "Lite Version",
-      "oldVersion": "v2.6.1 Version"
     }
+
   },
   "table": {
     "form": {
