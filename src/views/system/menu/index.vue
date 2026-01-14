@@ -25,8 +25,8 @@
           <ElButton @click="toggleExpand" v-ripple>
             {{ isExpanded ? '收起' : '展开' }}
           </ElButton>
-          <ElButton 
-            v-if="hasPermission('system.ui.menu.button.edit')"
+          <ElButton
+              v-permission="'system.ui.menu.button.edit'"
             :type="isDragMode ? 'primary' : 'default'"
             @click="toggleDragMode" 
             v-ripple
