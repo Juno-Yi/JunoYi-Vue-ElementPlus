@@ -1,5 +1,5 @@
 <template>
-  <div class="art-full-height permission-pool-page">
+  <div class="art-full-height">
     <!-- 快速添加区域 -->
     <PermissionPoolAdd @add="handleQuickAdd" />
 
@@ -19,6 +19,7 @@
     >
       <!-- 表格头部 -->
       <ArtTableHeader
+        v-model:columns="columnChecks"
         v-model:showSearchBar="showSearchBar"
         :loading="loading"
         @refresh="refreshData"
@@ -36,107 +37,26 @@
         </template>
       </ArtTableHeader>
 
-      <!-- 统计信息 -->
-      <div class="stats-bar">
-        <span class="stats-text">共 {{ pagination.total }} 个权限</span>
-        <span class="stats-text stats-selected" v-if="selectedIds.length > 0">
-          已选 {{ selectedIds.length }} 个
-        </span>
-        <ElButton
-          text
-          size="small"
-          class="stats-action"
-          @click="handleSelectAll"
-          v-if="data.length > 0"
-        >
-          {{ isAllSelected ? '取消全选' : '全选' }}
-        </ElButton>
-      </div>
-
-      <!-- 权限标签云 -->
-      <div class="tags-container" v-loading="loading" v-if="data.length > 0">
-        <div
-          v-for="item in data"
-          :key="item.id"
-          class="permission-tag-item"
-          :class="{
-            'is-selected': selectedIds.includes(item.id),
-            'is-disabled': item.status === 0
-          }"
-          @click="handleSelectChange(item.id, !selectedIds.includes(item.id))"
-        >
-          <!-- 复选框 -->
-          <ElCheckbox
-            :model-value="selectedIds.includes(item.id)"
-            @change="handleSelectChange(item.id, $event)"
-            @click.stop
-            class="tag-checkbox"
-          />
-
-          <!-- 标签信息 -->
-          <div class="tag-info">
-            <div class="tag-header">
-              <span class="tag-key" :title="item.permission">{{ item.permission }}</span>
-              <ElTag
-                size="small"
-                effect="plain"
-                class="tag-type"
-                :type="getPermissionType(item.permission).tagType as any"
-              >
-                {{ getPermissionType(item.permission).type }}
-              </ElTag>
-            </div>
-            <div class="tag-desc" v-if="item.description" :title="item.description">
-              {{ item.description }}
-            </div>
-          </div>
-
-          <!-- 操作区域 -->
-          <div class="tag-actions" @click.stop>
-            <ElSwitch
-              :model-value="item.status === 1"
-              size="small"
-              class="tag-switch"
-              @change="handleToggleStatus(item)"
-            />
-            <ElButton
-              type="danger"
-              size="small"
-              text
-              circle
-              class="tag-delete"
-              @click="handleDelete(item)"
-            >
-              <ArtSvgIcon icon="ri:close-line" :size="14" />
-            </ElButton>
-          </div>
-        </div>
-      </div>
-
-      <!-- 空状态 -->
-      <ElEmpty v-if="!loading && data.length === 0" description="暂无权限数据" />
-
-      <!-- 分页 -->
-      <div class="pagination-wrapper" v-if="data.length > 0">
-        <ElPagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :page-sizes="[20, 50, 100, 200]"
-          :total="pagination.total"
-          background
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
+      <!-- 表格 -->
+      <ArtTable
+        ref="tableRef"
+        :loading="loading"
+        :data="data"
+        :columns="columns"
+        :pagination="pagination"
+        row-key="id"
+        @selection-change="handleSelectionChange"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
     </ElCard>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
+  import { ElMessageBox, ElMessage, ElTag, ElSwitch, ElButton as ElBtn } from 'element-plus'
+  import { useTable } from '@/hooks/core/useTable'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
-  import ArtTableHeader from '@/components/core/tables/art-table-header/index.vue'
   import PermissionPoolAdd from './modules/permission-pool-add.vue'
   import PermissionPoolSearch from './modules/permission-pool-search.vue'
   import {
@@ -151,10 +71,9 @@
 
   type PermissionPoolVO = Api.System.PermissionPoolVO
 
-  const loading = ref(false)
-  const data = ref<PermissionPoolVO[]>([])
-  const selectedIds = ref<number[]>([])
+  const tableRef = ref()
   const showSearchBar = ref(true)
+  const selectedIds = ref<number[]>([])
 
   // 搜索表单
   const searchForm = ref({
@@ -163,62 +82,147 @@
     status: undefined
   })
 
-  // 搜索参数
-  const searchParams = reactive({
-    permission: undefined,
-    description: undefined,
-    status: undefined
-  })
-
-  // 分页
-  const pagination = ref({
-    current: 1,
-    size: 50,
-    total: 0
-  })
-
-  // 全选状态
-  const isAllSelected = computed(() => {
-    return data.value.length > 0 && selectedIds.value.length === data.value.length
+  const {
+    columns,
+    columnChecks,
+    data,
+    loading,
+    pagination,
+    getData,
+    searchParams,
+    resetSearchParams,
+    handleSizeChange,
+    handleCurrentChange,
+    refreshData
+  } = useTable({
+    core: {
+      apiFn: fetchGetPermissionPoolList,
+      apiParams: {
+        current: 1,
+        size: 20
+      },
+      columnsFactory: () => [
+        {
+          type: 'selection',
+          width: 50,
+          align: 'center'
+        },
+        {
+          prop: 'id',
+          label: 'ID',
+          align: 'center',
+          headerAlign: 'center',
+          width: 80
+        },
+        {
+          prop: 'permission',
+          label: '权限标识',
+          headerAlign: 'center',
+          minWidth: 200,
+          showOverflowTooltip: true
+        },
+        {
+          prop: 'type',
+          label: '权限类型',
+          align: 'center',
+          headerAlign: 'center',
+          width: 100,
+          formatter: (row: PermissionPoolVO) => {
+            const typeInfo = getPermissionType(row.permission)
+            return h(
+              ElTag,
+              { type: typeInfo.tagType as any, size: 'small' },
+              () => typeInfo.type
+            )
+          }
+        },
+        {
+          prop: 'description',
+          label: '权限描述',
+          headerAlign: 'center',
+          minWidth: 180,
+          showOverflowTooltip: true,
+          formatter: (row: PermissionPoolVO) => row.description || '-'
+        },
+        {
+          prop: 'status',
+          label: '状态',
+          align: 'center',
+          headerAlign: 'center',
+          width: 100,
+          formatter: (row: PermissionPoolVO) => {
+            return h(ElSwitch, {
+              modelValue: row.status === 1,
+              size: 'small',
+              onChange: () => handleToggleStatus(row)
+            })
+          }
+        },
+        {
+          prop: 'createTime',
+          label: '创建时间',
+          headerAlign: 'center',
+          width: 180,
+          formatter: (row: PermissionPoolVO) => formatTime(row.createTime)
+        },
+        {
+          prop: 'operation',
+          label: '操作',
+          width: 80,
+          align: 'center',
+          headerAlign: 'center',
+          fixed: 'right',
+          formatter: (row: PermissionPoolVO) => {
+            return h(ElBtn, {
+              type: 'danger',
+              size: 'small',
+              text: true,
+              onClick: () => handleDelete(row)
+            }, () => [
+              h(ArtSvgIcon, { icon: 'ri:delete-bin-4-line', size: 16, class: 'mr-1' }),
+              '删除'
+            ])
+          }
+        }
+      ]
+    }
   })
 
   /**
-   * 获取权限池列表
+   * 格式化时间
    */
-  const getData = async () => {
-    loading.value = true
-    try {
-      const params: any = {
-        current: pagination.value.current,
-        size: pagination.value.size
-      }
-
-      if (searchParams.permission) {
-        params.permission = searchParams.permission
-      }
-      if (searchParams.description) {
-        params.description = searchParams.description
-      }
-      if (searchParams.status !== undefined) {
-        params.status = searchParams.status
-      }
-
-      const result = await fetchGetPermissionPoolList(params)
-      data.value = result.list || (result as any).records || []
-      pagination.value.total = result.total || 0
-    } catch (error) {
-      console.error('获取权限池列表失败:', error)
-    } finally {
-      loading.value = false
-    }
+  const formatTime = (time: string | undefined): string => {
+    if (!time) return '-'
+    const date = new Date(time)
+    if (isNaN(date.getTime())) return '-'
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   }
 
   /**
-   * 刷新数据
+   * 获取权限类型
    */
-  const refreshData = () => {
-    selectedIds.value = []
-    getData()
+  const getPermissionType = (permission: string): { type: string; tagType: string } => {
+    const lowerPermission = permission.toLowerCase()
+
+    if (permission.includes('*')) {
+      return { type: '通配符', tagType: 'warning' }
+    }
+    if (lowerPermission.includes('.ui.')) {
+      return { type: 'UI', tagType: 'primary' }
+    }
+    if (lowerPermission.includes('.api.')) {
+      return { type: 'API', tagType: 'success' }
+    }
+    if (lowerPermission.includes('.data.')) {
+      return { type: 'DATA', tagType: 'danger' }
+    }
+    return { type: '其他', tagType: 'info' }
   }
 
   /**
@@ -246,49 +250,14 @@
    */
   const handleSearch = (params: Record<string, any>) => {
     Object.assign(searchParams, params)
-    pagination.value.current = 1
     getData()
   }
 
   /**
-   * 重置搜索参数
+   * 表格选择变化
    */
-  const resetSearchParams = () => {
-    Object.assign(searchParams, {
-      permission: undefined,
-      description: undefined,
-      status: undefined
-    })
-    pagination.value.current = 1
-    getData()
-  }
-
-  /**
-   * 全选/取消全选
-   */
-  const handleSelectAll = () => {
-    if (isAllSelected.value) {
-      selectedIds.value = []
-    } else {
-      selectedIds.value = data.value.map(item => item.id)
-    }
-  }
-
-  /**
-   * 选择变化
-   */
-  const handleSelectChange = (id: number, checked: boolean | string | number) => {
-    const isChecked = Boolean(checked)
-    if (isChecked) {
-      if (!selectedIds.value.includes(id)) {
-        selectedIds.value.push(id)
-      }
-    } else {
-      const index = selectedIds.value.indexOf(id)
-      if (index > -1) {
-        selectedIds.value.splice(index, 1)
-      }
-    }
+  const handleSelectionChange = (selection: PermissionPoolVO[]) => {
+    selectedIds.value = selection.map(item => item.id)
   }
 
   /**
@@ -299,6 +268,7 @@
     try {
       await fetchUpdatePermissionPoolStatus(item.id, newStatus)
       item.status = newStatus
+      ElMessage.success('状态更新成功')
     } catch (error) {
       console.error('更新权限状态失败:', error)
     }
@@ -307,10 +277,10 @@
   /**
    * 删除单个权限
    */
-  const handleDelete = async (item: PermissionPoolVO) => {
+  const handleDelete = async (row: PermissionPoolVO) => {
     try {
       await ElMessageBox.confirm(
-        `确定删除权限「${item.permission}」吗？`,
+        `确定删除权限「${row.permission}」吗？此操作不可恢复！`,
         '删除确认',
         {
           confirmButtonText: '确定',
@@ -318,7 +288,7 @@
           type: 'warning'
         }
       )
-      await fetchDeletePermissionPool(item.id)
+      await fetchDeletePermissionPool(row.id)
       refreshData()
     } catch {
       // 用户取消
@@ -336,8 +306,8 @@
 
     try {
       await ElMessageBox.confirm(
-        `确定删除选中的 ${selectedIds.value.length} 个权限吗？`,
-        '批量删除',
+        `确定删除选中的 ${selectedIds.value.length} 个权限吗？此操作不可恢复！`,
+        '批量删除确认',
         {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -351,49 +321,4 @@
       // 用户取消
     }
   }
-
-  /**
-   * 分页大小变化
-   */
-  const handleSizeChange = (size: number) => {
-    pagination.value.size = size
-    getData()
-  }
-
-  /**
-   * 当前页变化
-   */
-  const handleCurrentChange = (current: number) => {
-    pagination.value.current = current
-    getData()
-  }
-
-  /**
-   * 获取权限类型
-   */
-  const getPermissionType = (permission: string): { type: string; tagType: string } => {
-    const lowerPermission = permission.toLowerCase()
-
-    if (permission.includes('*')) {
-      return { type: '通配符', tagType: 'warning' }
-    }
-    if (lowerPermission.includes('.ui.')) {
-      return { type: 'UI', tagType: 'primary' }
-    }
-    if (lowerPermission.includes('.api.')) {
-      return { type: 'API', tagType: 'success' }
-    }
-    if (lowerPermission.includes('.data.')) {
-      return { type: 'DATA', tagType: 'danger' }
-    }
-    return { type: '其他', tagType: 'info' }
-  }
-
-  onMounted(() => {
-    getData()
-  })
 </script>
-
-<style lang="scss" scoped>
-  @use './styles/index.scss' as *;
-</style>
