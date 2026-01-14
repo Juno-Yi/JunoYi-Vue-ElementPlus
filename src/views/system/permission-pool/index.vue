@@ -158,6 +158,7 @@
             return h(ElSwitch, {
               modelValue: row.status === 1,
               size: 'small',
+              disabled: !hasPermission('system.ui.permission-pool.button.status'),
               onChange: () => handleToggleStatus(row)
             })
           }
