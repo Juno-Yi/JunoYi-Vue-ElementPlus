@@ -84,6 +84,7 @@
     fetchClearAllCache
   } from '@/api/system/cache'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import RedisInfoCard from './modules/redis-info-card.vue'
   import CacheDetailDrawer from './modules/cache-detail-drawer.vue'
   import { ElTag, ElMessageBox, ElButton, ElCard } from 'element-plus'
@@ -208,17 +209,27 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 140,
+          width: 120,
           align: 'center',
           headerAlign: 'center',
           fixed: 'right',
           formatter: (row: CacheKeyVO) => {
-            return h('div', { class: 'flex-cc gap-2' }, [
-              h(ElButton, { type: 'primary', size: 'small', link: true, onClick: () => showDetail(row) }, () => '查看'),
-              hasPermission('system.ui.cache.button.delete')
-                ? h(ElButton, { type: 'danger', size: 'small', link: true, onClick: () => handleDelete(row) }, () => '删除')
-                : null
-            ])
+            const buttons = []
+            buttons.push(
+              h(ArtButtonTable, {
+                type: 'view',
+                onClick: () => showDetail(row)
+              })
+            )
+            if (hasPermission('system.ui.cache.button.delete')) {
+              buttons.push(
+                h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => handleDelete(row)
+                })
+              )
+            }
+            return buttons.length ? h('div', { style: 'text-align: center' }, buttons) : '-'
           }
         }
       ]
