@@ -1,7 +1,7 @@
 <template>
   <div class="art-full-height">
     <!-- 快速添加区域 -->
-    <PermissionPoolAdd @add="handleQuickAdd" />
+    <PermissionPoolAdd v-permission="'system.ui.permission-pool.button.add'" @add="handleQuickAdd" />
 
     <!-- 搜索栏 -->
     <PermissionPoolSearch
@@ -28,6 +28,7 @@
           <ElSpace wrap>
             <ElButton
               :disabled="selectedIds.length === 0"
+              v-permission="'system.ui.permission-pool.button.delete'"
               @click="handleBatchDelete"
               v-ripple
             >
@@ -56,6 +57,7 @@
 <script setup lang="ts">
   import { ElMessageBox, ElMessage, ElTag, ElSwitch, ElButton as ElBtn } from 'element-plus'
   import { useTable } from '@/hooks/core/useTable'
+  import { usePermission } from '@/hooks/core/usePermission'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import PermissionPoolAdd from './modules/permission-pool-add.vue'
   import PermissionPoolSearch from './modules/permission-pool-search.vue'
@@ -70,6 +72,8 @@
   defineOptions({ name: 'PermissionPool' })
 
   type PermissionPoolVO = Api.System.PermissionPoolVO
+
+  const { hasPermission } = usePermission()
 
   const tableRef = ref()
   const showSearchBar = ref(true)
@@ -173,6 +177,9 @@
           headerAlign: 'center',
           fixed: 'right',
           formatter: (row: PermissionPoolVO) => {
+            if (!hasPermission('system.ui.permission-pool.button.delete')) {
+              return '-'
+            }
             return h(ElBtn, {
               type: 'danger',
               size: 'small',

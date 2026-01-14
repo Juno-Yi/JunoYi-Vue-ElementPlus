@@ -111,6 +111,7 @@ declare module 'vue' {
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ElTree: typeof import('element-plus/es')['ElTree']
     ElWatermark: typeof import('element-plus/es')['ElWatermark']
     Exception403: typeof import('./../../components/core/exception/Exception403.vue')['default']
     Exception404: typeof import('./../../components/core/exception/Exception404.vue')['default']
