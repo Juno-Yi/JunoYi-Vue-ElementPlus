@@ -117,6 +117,10 @@ export const useSettingStore = defineStore(
     /** 节日日期 */
     const festivalDate = ref('')
 
+    // 授权页布局
+    /** 授权页布局类型 */
+    const authLayout = ref('left-right')
+
     /**
      * 获取菜单主题
      * 根据当前主题类型和暗色模式返回对应的主题配置
@@ -375,6 +379,14 @@ export const useSettingStore = defineStore(
       dualMenuShowText.value = show
     }
 
+    /**
+     * 设置授权页布局
+     * @param layout 布局类型
+     */
+    const setAuthLayout = (layout: string) => {
+      authLayout.value = layout
+    }
+
     return {
       menuType,
       menuOpenWidth,
@@ -405,6 +417,7 @@ export const useSettingStore = defineStore(
       festivalDate,
       dualMenuShowText,
       containerWidth,
+      authLayout,
       getMenuTheme,
       isDark,
       getMenuOpenWidth,
@@ -438,7 +451,8 @@ export const useSettingStore = defineStore(
       setholidayFireworksLoaded,
       setShowFestivalText,
       setFestivalDate,
-      setDualMenuShowText
+      setDualMenuShowText,
+      setAuthLayout
     }
   },
   {
