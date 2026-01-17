@@ -227,7 +227,7 @@
   import { useSettingStore } from '@/store/modules/setting'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchLogin, fetchGetCaptcha } from '@/api/auth'
+  import { fetchLogin, fetchGetCaptcha, fetchGetUserInfo } from '@/api/auth'
   import { fetchGetSystemInfo, type SystemInfo } from '@/api/system/info'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
 
@@ -335,11 +335,15 @@
       userStore.setToken(accessToken, refreshToken)
       userStore.setLoginStatus(true)
 
+      // 获取用户信息
+      const userInfo = await fetchGetUserInfo()
+      userStore.setUserInfo(userInfo)
+
       // 等待 Vue 响应式系统更新完成
       await nextTick()
 
       // 登录成功处理
-      showLoginSuccessNotice()
+      showLoginSuccessNotice(userInfo.nickName)
 
       // 获取 redirect 参数，如果存在则跳转到指定页面，否则跳转到首页
       const redirect = route.query.redirect as string
@@ -360,14 +364,14 @@
   }
 
   // 登录成功提示
-  const showLoginSuccessNotice = () => {
+  const showLoginSuccessNotice = (nickName: string) => {
     setTimeout(() => {
       ElNotification({
         title: t('login.success.title'),
         type: 'success',
         duration: 2500,
         zIndex: 10000,
-        message: `${t('login.success.message')}, ${systemName.value}!`
+        message: `${t('login.success.message')}, ${nickName}!`
       })
     }, 1000)
   }
