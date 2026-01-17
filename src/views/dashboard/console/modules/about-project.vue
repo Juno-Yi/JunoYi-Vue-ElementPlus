@@ -24,8 +24,13 @@
 <script setup lang="ts">
   import AppConfig from '@/config'
   import { WEB_LINKS } from '@/utils/constants'
+  import { useSettingStore } from '@/store/modules/setting'
 
-  const systemName = AppConfig.systemInfo.name
+  const settingStore = useSettingStore()
+  const { systemInfo } = storeToRefs(settingStore)
+
+  // 优先使用接口返回的系统名称，如果没有则使用配置文件的
+  const systemName = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
 
   const linkList = [
     { label: '项目官网', url: WEB_LINKS.DOCS },

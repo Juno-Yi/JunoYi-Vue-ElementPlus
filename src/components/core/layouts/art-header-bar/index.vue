@@ -18,7 +18,7 @@
         <!-- 系统信息  -->
         <div class="flex-c c-p" @click="toHome" v-if="isTopMenu">
           <ArtLogo class="pl-4.5" />
-          <p v-if="width >= 1400" class="my-0 mx-2 ml-2 text-lg">{{ AppConfig.systemInfo.name }}</p>
+          <p v-if="width >= 1400" class="my-0 mx-2 ml-2 text-lg">{{ systemName }}</p>
         </div>
 
         <ArtLogo
@@ -213,7 +213,7 @@
     fastEnterMinWidth: headerBarFastEnterMinWidth
   } = useHeaderBar()
 
-  const { menuOpen, systemThemeColor, showSettingGuide, menuType, isDark, tabStyle } =
+  const { menuOpen, systemThemeColor, showSettingGuide, menuType, isDark, tabStyle, systemInfo } =
     storeToRefs(settingStore)
 
   const { language } = storeToRefs(userStore)
@@ -221,6 +221,9 @@
 
   const showNotice = ref(false)
   const notice = ref(null)
+  
+  // 优先使用接口返回的系统名称，如果没有则使用配置文件的
+  const systemName = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
 
   // 菜单类型判断
   const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT)

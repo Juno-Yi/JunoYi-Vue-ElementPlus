@@ -243,13 +243,13 @@
 
   const userStore = useUserStore()
   const settingStore = useSettingStore()
+  const { authLayout, systemInfo: storeSystemInfo } = storeToRefs(settingStore)
+
+  const systemName = computed(() => storeSystemInfo.value?.name || AppConfig.systemInfo.name)
+  const formRef = ref<FormInstance>()
+
   const router = useRouter()
   const route = useRoute()
-
-  const { authLayout } = storeToRefs(settingStore)
-
-  const systemName = AppConfig.systemInfo.name
-  const formRef = ref<FormInstance>()
 
   // 验证码相关
   const captchaImage = ref('')
@@ -367,7 +367,7 @@
         type: 'success',
         duration: 2500,
         zIndex: 10000,
-        message: `${t('login.success.message')}, ${systemName}!`
+        message: `${t('login.success.message')}, ${systemName.value}!`
       })
     }, 1000)
   }

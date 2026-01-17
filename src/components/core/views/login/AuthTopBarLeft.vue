@@ -3,7 +3,7 @@
   <div class="absolute w-full flex-cb top-4.5 z-10 flex-c !justify-end max-[1180px]:!justify-between">
     <div class="flex-cc !hidden max-[1180px]:!flex ml-2 max-sm:ml-6">
       <ArtLogo class="icon" size="46" />
-      <h1 class="text-xl font-medium ml-2">{{ AppConfig.systemInfo.name }}</h1>
+      <h1 class="text-xl font-medium ml-2">{{ systemName }}</h1>
     </div>
 
     <div class="flex-cc gap-1.5 mr-2 max-sm:mr-5">
@@ -111,9 +111,12 @@
 
   const settingStore = useSettingStore()
   const userStore = useUserStore()
-  const { isDark, systemThemeColor, authLayout } = storeToRefs(settingStore)
+  const { isDark, systemThemeColor, authLayout, systemInfo } = storeToRefs(settingStore)
   const { shouldShowThemeToggle, shouldShowLanguage } = useHeaderBar()
   const { locale } = useI18n()
+
+  // 优先使用接口返回的系统名称，如果没有则使用配置文件的
+  const systemName = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
 
   const mainColors = AppConfig.systemMainColor
   const color = systemThemeColor // css v-bind 使用

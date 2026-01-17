@@ -3,7 +3,7 @@
   <div class="login-left-view">
     <div class="logo">
       <ArtLogo class="icon" size="46" />
-      <h1 class="title">{{ AppConfig.systemInfo.name }}</h1>
+      <h1 class="title">{{ systemName }}</h1>
     </div>
 
     <div class="left-img">
@@ -73,11 +73,18 @@
   import AppConfig from '@/config'
   import loginIcon from '@imgs/svg/login_icon.svg'
   import { themeAnimation } from '@/utils/ui/animation'
+  import { useSettingStore } from '@/store/modules/setting'
 
   // 定义 props
   defineProps<{
     hideContent?: boolean // 是否隐藏内容，只显示 logo
   }>()
+
+  const settingStore = useSettingStore()
+  const { systemInfo } = storeToRefs(settingStore)
+  
+  // 优先使用接口返回的系统名称，如果没有则使用配置文件的
+  const systemName = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
 </script>
 
 <style lang="scss" scoped>

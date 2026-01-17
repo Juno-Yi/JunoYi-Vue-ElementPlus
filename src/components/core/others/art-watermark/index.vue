@@ -24,7 +24,10 @@
   defineOptions({ name: 'ArtWatermark' })
 
   const settingStore = useSettingStore()
-  const { watermarkVisible } = storeToRefs(settingStore)
+  const { watermarkVisible, systemInfo } = storeToRefs(settingStore)
+
+  // 优先使用接口返回的系统名称，如果没有则使用配置文件的
+  const defaultContent = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
 
   interface WatermarkProps {
     /** 水印内容 */
@@ -49,8 +52,7 @@
     zIndex?: number
   }
 
-  withDefaults(defineProps<WatermarkProps>(), {
-    content: AppConfig.systemInfo.name,
+  const props = withDefaults(defineProps<WatermarkProps>(), {
     visible: false,
     fontSize: 16,
     fontColor: 'rgba(128, 128, 128, 0.2)',
@@ -61,4 +63,7 @@
     offsetY: 50,
     zIndex: 3100
   })
+
+  // 使用计算属性来处理content的默认值
+  const content = computed(() => props.content || defaultContent.value)
 </script>

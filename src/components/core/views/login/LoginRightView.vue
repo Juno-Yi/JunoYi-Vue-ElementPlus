@@ -3,7 +3,7 @@
   <div class="login-right-view">
     <div class="logo">
       <ArtLogo class="icon" size="46" />
-      <h1 class="title">{{ AppConfig.systemInfo.name }}</h1>
+      <h1 class="title">{{ systemName }}</h1>
     </div>
 
     <div class="right-img">
@@ -47,8 +47,15 @@
 <script setup lang="ts">
   import AppConfig from '@/config'
   import loginIcon from '@imgs/svg/login_icon.svg'
+  import { useSettingStore } from '@/store/modules/setting'
 
   defineOptions({ name: 'LoginRightView' })
+
+  const settingStore = useSettingStore()
+  const { systemInfo } = storeToRefs(settingStore)
+  
+  // 优先使用接口返回的系统名称，如果没有则使用配置文件的
+  const systemName = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
 </script>
 
 <style lang="scss" scoped>

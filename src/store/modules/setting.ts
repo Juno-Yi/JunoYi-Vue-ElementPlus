@@ -39,6 +39,7 @@ import { setElementThemeColor } from '@/utils/ui'
 import { useCeremony } from '@/hooks/core/useCeremony'
 import { StorageConfig } from '@/utils'
 import { SETTING_DEFAULT_CONFIG } from '@/config/setting'
+import type { SystemInfo } from '@/api/system/info'
 
 /**
  * 系统设置状态管理
@@ -47,6 +48,10 @@ import { SETTING_DEFAULT_CONFIG } from '@/config/setting'
 export const useSettingStore = defineStore(
   'settingStore',
   () => {
+    // 系统信息
+    /** 系统信息（从接口获取） */
+    const systemInfo = ref<SystemInfo | null>(null)
+
     // 菜单相关设置
     /** 菜单类型 */
     const menuType = ref(SETTING_DEFAULT_CONFIG.menuType)
@@ -387,7 +392,16 @@ export const useSettingStore = defineStore(
       authLayout.value = layout
     }
 
+    /**
+     * 设置系统信息
+     * @param info 系统信息
+     */
+    const setSystemInfo = (info: SystemInfo) => {
+      systemInfo.value = info
+    }
+
     return {
+      systemInfo,
       menuType,
       menuOpenWidth,
       systemThemeType,
@@ -452,7 +466,8 @@ export const useSettingStore = defineStore(
       setShowFestivalText,
       setFestivalDate,
       setDualMenuShowText,
-      setAuthLayout
+      setAuthLayout,
+      setSystemInfo
     }
   },
   {
