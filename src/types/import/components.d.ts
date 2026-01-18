@@ -46,6 +46,7 @@ declare module 'vue' {
     ArtMixedMenu: typeof import('./../../components/core/layouts/art-menus/art-mixed-menu/index.vue')['default']
     ArtNotification: typeof import('./../../components/core/layouts/art-notification/index.vue')['default']
     ArtPageContent: typeof import('./../../components/core/layouts/art-page-content/index.vue')['default']
+    ArtPagePath: typeof import('./../../components/core/layouts/art-page-path/index.vue')['default']
     ArtProgressCard: typeof import('./../../components/core/cards/art-progress-card/index.vue')['default']
     ArtRadarChart: typeof import('./../../components/core/charts/art-radar-chart/index.vue')['default']
     ArtResultPage: typeof import('./../../components/core/views/result/ArtResultPage.vue')['default']

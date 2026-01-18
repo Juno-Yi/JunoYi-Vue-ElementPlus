@@ -43,6 +43,9 @@
           @click="reload"
         />
 
+        <!-- 页面路径 -->
+        <ArtPagePath />
+
         <!-- 面包屑 -->
         <ArtBreadcrumb
           v-if="(shouldShowBreadcrumb && isLeftMenu) || (shouldShowBreadcrumb && isDualMenu)"
@@ -178,6 +181,7 @@
   import { useCommon } from '@/hooks/core/useCommon'
   import { useHeaderBar } from '@/hooks/core/useHeaderBar'
   import ArtUserMenu from './widget/ArtUserMenu.vue'
+  import ArtPagePath from '@/components/core/layouts/art-page-path/index.vue'
 
   defineOptions({ name: 'ArtHeaderBar' })
 
