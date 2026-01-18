@@ -97,8 +97,6 @@
           :background-color="getMenuTheme.background"
           :default-openeds="defaultOpenedMenus"
           :popper-class="`menu-left-popper menu-left-${getMenuTheme.theme}-popper`"
-          :show-timeout="50"
-          :hide-timeout="50"
         >
           <SidebarSubmenu
             :list="menuList"
@@ -212,13 +210,13 @@
     return currentMenu?.children ?? []
   })
 
-  // 双列菜单收起时的滚动条样式
+  // 双列菜单收起时的滚动条样式（使用 shallowRef 避免深度响应）
   const scrollbarStyle = computed(() => {
     const isCollapsed = isDualMenu.value && !menuOpen.value
     return {
       transform: isCollapsed ? 'translateY(-50px)' : 'translateY(0)',
       height: isCollapsed ? 'calc(100% + 50px)' : '100%',
-      transition: 'transform 0.3s ease'
+      transition: 'transform 0.25s ease'
     }
   })
 

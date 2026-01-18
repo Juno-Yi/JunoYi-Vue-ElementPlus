@@ -90,6 +90,9 @@
     position: relative;
     box-sizing: border-box;
     height: 100vh;
+    // 使用 GPU 加速
+    will-change: width;
+    transform: translateZ(0);
 
     @media only screen and (width <= 640px) {
       height: 100dvh;
@@ -97,6 +100,8 @@
 
     .el-menu {
       height: 100%;
+      // 禁用菜单项的过渡动画，提升性能
+      transition: none !important;
     }
 
     &:hover {
@@ -177,6 +182,10 @@
     border-right: 0;
     scrollbar-width: none;
     -ms-scroll-chaining: contain;
+    // 使用 GPU 加速滚动
+    transform: translateZ(0);
+    // 优化滚动性能
+    -webkit-overflow-scrolling: touch;
 
     &::-webkit-scrollbar {
       width: 0 !important;

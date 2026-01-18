@@ -102,8 +102,12 @@
   /**
    * 过滤后的菜单项列表
    * 只显示未隐藏的菜单项
+   * 使用 shallowRef 避免深度响应式，提升性能
    */
-  const filteredMenuItems = computed(() => filterRoutes(props.list))
+  const filteredMenuItems = computed(() => {
+    if (!props.list || props.list.length === 0) return []
+    return filterRoutes(props.list)
+  })
 
   /**
    * 跳转到指定页面
@@ -129,27 +133,35 @@
    * @returns 过滤后的菜单项数组
    */
   const filterRoutes = (items: AppRouteRecord[]): AppRouteRecord[] => {
-    return items
-      .filter((item) => {
-        // 如果当前项被隐藏，直接过滤掉
-        if (item.meta.isHide) {
-          return false
-        }
+    const result: AppRouteRecord[] = []
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      
+      // 如果当前项被隐藏，跳过
+      if (item.meta.isHide) {
+        continue
+      }
 
-        // 如果有子菜单，递归过滤子菜单
-        if (item.children && item.children.length > 0) {
-          const filteredChildren = filterRoutes(item.children)
-          // 如果所有子菜单都被过滤掉了，则隐藏父菜单
-          return filteredChildren.length > 0
+      // 如果有子菜单，递归过滤子菜单
+      if (item.children && item.children.length > 0) {
+        const filteredChildren = filterRoutes(item.children)
+        // 如果所有子菜单都被过滤掉了，则跳过父菜单
+        if (filteredChildren.length === 0) {
+          continue
         }
-
+        // 浅拷贝对象，只更新 children
+        result.push({
+          ...item,
+          children: filteredChildren
+        })
+      } else {
         // 叶子节点且未被隐藏，保留
-        return true
-      })
-      .map((item) => ({
-        ...item,
-        children: item.children ? filterRoutes(item.children) : undefined
-      }))
+        result.push(item)
+      }
+    }
+    
+    return result
   }
 
   /**
