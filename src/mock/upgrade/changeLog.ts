@@ -16,6 +16,41 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.4.0-alpha',
+        title: '文件存储模块',
+        date: '2026-1-20',
+        detail: {
+            added: [
+                '添加 junoyi-framework-file 模块依赖',
+                '创建文件助手 FileHelper 提供简化的文件操作接口',
+                '设计存储工厂 FileStorageFactory 支持动态创建存储实例',
+                '添加文件信息实体类 FileInfo 包含完整的文件元数据',
+                '创建文件存储配置属性类 FileStorageProperties 支持多平台配置',
+                '添加详细的错误处理和友好的错误提示信息',
+                '添加带分类和参数的日志记录功能',
+                '添加本地文件静态资源配置'
+            ],
+            changed: [
+                '实现文件存储统一接口 FileStorage 支持本地和OSS存储',
+                '实现本地文件存储 LocalFileStorage 支持按日期分目录存储',
+                '实现阿里云OSS存储 OssFileStorage 支持临时URL功能',
+                '定义存储类型枚举 StorageType 支持本地、OSS、MinIO等多种方式',
+                '重构文件存储模块日志实现和依赖管理',
+                '实现阿里云OSS配置验证，确保必要参数不为空',
+                '重构FileHelper移除日志注解，优化存储实例获取方式',
+                '重写FileStorageConfiguration配置类，使用Bean注解管理组件',
+                '初始化阿里云OSS客户端时添加连接测试和异常处理',
+                '更新阿里云OSS文件存储实现',
+                '改进OSS连接测试机制，使用getBucketInfo替代doesBucketExist',
+                '实现OSS客户端关闭功能，防止资源泄露',
+            ],
+            demo: [
+                '添加文件上传测试接口',
+                '添加文件下载测试接口',
+            ]
+        }
+    },
+    {
         version: 'v0.3.4-alpha',
         title: '优化',
         date: '2026-1-18',
