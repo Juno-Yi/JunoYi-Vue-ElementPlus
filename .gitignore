@@ -44,3 +44,7 @@ temp/
 node_modules/
 
 dist/
+
+# Vite 自动生成的文件
+.auto-import.json
+src/types/import/components.d.ts
