@@ -6,7 +6,7 @@ import type { PageResult } from '@/types/common/response'
  */
 export function fetchGetLoginLogList(params?: Api.System.AuthLogQueryDTO) {
     return request.get<PageResult<Api.System.AuthLogVO>>({
-        url: '/system/loginLog/list',
+        url: '/system/auth-log/list',
         params
     })
 }
@@ -16,7 +16,7 @@ export function fetchGetLoginLogList(params?: Api.System.AuthLogQueryDTO) {
  */
 export function fetchDeleteLoginLog(ids: number[]) {
     return request.del<void>({
-        url: `/system/loginLog/${ids.join(',')}`,
+        url: `/system/auth-log/${ids.join(',')}`,
         showSuccessMessage: true
     })
 }
@@ -26,7 +26,7 @@ export function fetchDeleteLoginLog(ids: number[]) {
  */
 export function fetchClearLoginLog() {
     return request.del<void>({
-        url: '/system/loginLog/clear',
+        url: '/system/auth-log/clear',
         showSuccessMessage: true
     })
 }
