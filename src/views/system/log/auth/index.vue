@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { useTable } from '@/hooks/core/useTable'
-import { fetchGetLoginLogList, fetchDeleteLoginLog, fetchClearLoginLog } from '@/api/system/authLog'
+import { fetchGetAuthLogList, fetchDeleteAuthLog, fetchClearAuthLog } from '@/api/system/authLog'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import { ElTag, ElMessageBox } from 'element-plus'
 import AuthLogVO = Api.System.AuthLogVO;
@@ -145,7 +145,7 @@ const {
   refreshData
 } = useTable({
   core: {
-    apiFn: fetchGetLoginLogList,
+    apiFn: fetchGetAuthLogList,
     apiParams: { current: 1, size: 20 },
     columnsFactory: () => [
       { type: 'selection' as const, width: 50, align: 'center' },
@@ -274,7 +274,7 @@ const handleReset = () => {
 /**
  * 选择变化
  */
-const handleSelectionChange = (rows: LoginLogVO[]) => {
+const handleSelectionChange = (rows: AuthLogVO[]) => {
   selectedRows.value = rows
 }
 
@@ -291,7 +291,7 @@ const handleBatchDelete = async () => {
   )
 
   const ids = selectedRows.value.map(row => row.id)
-  await fetchDeleteLoginLog(ids)
+  await fetchDeleteAuthLog(ids)
   selectedRows.value = []
   getData()
 }
@@ -306,7 +306,7 @@ const handleClear = async () => {
       { type: 'warning' }
   )
 
-  await fetchClearLoginLog()
+  await fetchClearAuthLog()
   getData()
 }
 </script>
