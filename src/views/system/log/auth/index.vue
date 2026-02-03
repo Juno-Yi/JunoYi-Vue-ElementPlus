@@ -20,7 +20,7 @@
         <template #left>
           <ElSpace wrap>
             <ElButton
-                v-permission="'system.ui.loginLog.button.delete'"
+                v-permission="'system.ui.auth-log.button.delete'"
                 :disabled="selectedRows.length === 0"
                 @click="handleBatchDelete"
                 v-ripple
@@ -28,7 +28,7 @@
               批量删除
             </ElButton>
             <ElButton
-                v-permission="'system.ui.loginLog.button.clear'"
+                v-permission="'system.ui.auth-log.button.clear'"
                 @click="handleClear"
                 v-ripple
             >
@@ -57,6 +57,7 @@ import { useTable } from '@/hooks/core/useTable'
 import { fetchGetLoginLogList, fetchDeleteLoginLog, fetchClearLoginLog } from '@/api/system/authLog'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import { ElTag, ElMessageBox } from 'element-plus'
+import AuthLogVO = Api.System.AuthLogVO;
 
 defineOptions({ name: 'LoginLog' })
 
@@ -112,7 +113,7 @@ const formItems = computed(() => [
 ])
 
 // 选中行
-const selectedRows = ref<LoginLogVO[]>([])
+const selectedRows = ref<AuthLogVO[]>([])
 
 /**
  * 格式化时间
@@ -153,7 +154,7 @@ const {
         label: '用户信息',
         minWidth: 140,
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => {
+        formatter: (row: AuthLogVO) => {
           return h('div', { class: 'flex items-center gap-2' }, [
             h('div', { class: 'w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center' }, [
               h(ArtSvgIcon, { icon: 'ri:user-line', class: 'text-primary' })
@@ -171,7 +172,7 @@ const {
         width: 160,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => {
+        formatter: (row: AuthLogVO) => {
           return h('div', {}, [
             h('div', { class: 'font-mono text-sm' }, row.loginIp || '-'),
             row.ipRegion ? h('div', { class: 'text-xs text-gray-400' }, row.ipRegion) : null
@@ -185,7 +186,7 @@ const {
         align: 'center',
         headerAlign: 'center',
         showOverflowTooltip: true,
-        formatter: (row: LoginLogVO) => row.sessionId || '-'
+        formatter: (row: AuthLogVO) => row.sessionId || '-'
       },
       {
         prop: 'identity',
@@ -193,7 +194,7 @@ const {
         width: 100,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => row.identity || '-'
+        formatter: (row: AuthLogVO) => row.identity || '-'
       },
       {
         prop: 'loginType',
@@ -201,7 +202,7 @@ const {
         width: 120,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => row.loginTypeName || row.loginType || '-'
+        formatter: (row: AuthLogVO) => row.loginTypeName || row.loginType || '-'
       },
       {
         prop: 'browser',
@@ -209,7 +210,7 @@ const {
         width: 120,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => row.browser || '-'
+        formatter: (row: AuthLogVO) => row.browser || '-'
       },
       {
         prop: 'os',
@@ -217,7 +218,7 @@ const {
         width: 120,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => row.os || '-'
+        formatter: (row: AuthLogVO) => row.os || '-'
       },
       {
         prop: 'status',
@@ -225,7 +226,7 @@ const {
         width: 80,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => {
+        formatter: (row: AuthLogVO) => {
           return h(ElTag, {
             type: row.status === 1 ? 'success' : 'danger',
             size: 'small'
@@ -239,7 +240,7 @@ const {
         align: 'center',
         headerAlign: 'center',
         showOverflowTooltip: true,
-        formatter: (row: LoginLogVO) => row.msg || '-'
+        formatter: (row: AuthLogVO) => row.msg || '-'
       },
       {
         prop: 'loginTime',
@@ -247,7 +248,7 @@ const {
         width: 170,
         align: 'center',
         headerAlign: 'center',
-        formatter: (row: LoginLogVO) => formatTime(row.loginTime)
+        formatter: (row: AuthLogVO) => formatTime(row.loginTime)
       }
     ]
   }
