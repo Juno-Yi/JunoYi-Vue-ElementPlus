@@ -20,7 +20,7 @@
         <template #left>
           <ElSpace wrap>
             <ElButton
-                v-permission="'system.ui.operationLog.button.delete'"
+                v-permission="'system.ui.oper-log.button.delete'"
                 :disabled="selectedRows.length === 0"
                 @click="handleBatchDelete"
                 v-ripple
@@ -28,7 +28,7 @@
               批量删除
             </ElButton>
             <ElButton
-                v-permission="'system.ui.operationLog.button.clear'"
+                v-permission="'system.ui.oper-log.button.clear'"
                 @click="handleClear"
                 v-ripple
             >
