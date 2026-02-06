@@ -66,26 +66,16 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import ConfigSearch from './modules/config-search.vue'
   import ConfigDialog from './modules/config-dialog.vue'
-  // import { fetchGetConfigList, fetchDeleteConfig, fetchDeleteConfigBatch } from '@/api/system/config'
+  import { fetchGetConfigList, fetchDeleteConfig, fetchDeleteConfigBatch } from '@/api/system/config'
 
   defineOptions({ name: 'SystemConfig' })
 
   const { hasPermission } = usePermission()
 
-  // 临时类型定义，等待后端 API
-  type ConfigVO = {
-    id: number
-    configName: string
-    configKey: string
-    configValue: string
-    configType: string
-    remark?: string
-    createTime?: string
-    updateTime?: string
-  }
+  type ConfigVO = Api.System.ConfigVO
 
   // 搜索表单
-  const searchForm = ref({
+  const searchForm = ref<Api.System.ConfigQueryDTO>({
     configName: undefined,
     configKey: undefined,
     configType: undefined
@@ -112,8 +102,7 @@
   } = useTable({
     // 核心配置
     core: {
-      // apiFn: fetchGetConfigList, // 等待后端 API
-      apiFn: async () => ({ data: { records: [], total: 0 } }), // 临时模拟
+      apiFn: fetchGetConfigList,
       apiParams: {
         current: 1,
         size: 20
@@ -272,8 +261,7 @@
         }
       )
 
-      // await fetchDeleteConfig(row.id) // 等待后端 API
-      ElMessage.success('删除成功')
+      await fetchDeleteConfig(row.id)
       refreshData()
     } catch {
       // 用户取消
@@ -300,8 +288,7 @@
         }
       )
 
-      // await fetchDeleteConfigBatch(selectedIds.value) // 等待后端 API
-      ElMessage.success('批量删除成功')
+      await fetchDeleteConfigBatch(selectedIds.value)
       selectedIds.value = []
       refreshData()
     } catch {

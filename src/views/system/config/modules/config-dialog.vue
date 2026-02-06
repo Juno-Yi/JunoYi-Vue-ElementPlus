@@ -66,21 +66,12 @@
 
 <script setup lang="ts">
   import type { FormInstance, FormRules } from 'element-plus'
-  // import { fetchAddConfig, fetchUpdateConfig } from '@/api/system/config'
+  import { fetchAddConfig, fetchUpdateConfig } from '@/api/system/config'
 
   defineOptions({ name: 'ConfigDialog' })
 
-  // 临时类型定义，等待后端 API
-  type ConfigVO = {
-    id?: number
-    configName: string
-    configKey: string
-    configValue: string
-    configType: string
-    remark?: string
-    createTime?: string
-    updateTime?: string
-  }
+  type ConfigVO = Api.System.ConfigVO
+  type ConfigDTO = Api.System.ConfigDTO
 
   interface Props {
     modelValue: boolean
@@ -115,7 +106,7 @@
   const submitting = ref(false)
 
   // 表单数据
-  const form = ref<ConfigVO>({
+  const form = ref<ConfigDTO>({
     id: undefined,
     configName: '',
     configKey: '',
@@ -193,11 +184,9 @@
 
       // 根据类型调用不同的 API
       if (props.dialogType === 'add') {
-        // await fetchAddConfig(form.value)
-        ElMessage.success('新增成功')
+        await fetchAddConfig(form.value)
       } else {
-        // await fetchUpdateConfig(form.value)
-        ElMessage.success('编辑成功')
+        await fetchUpdateConfig(form.value)
       }
 
       emit('success')
