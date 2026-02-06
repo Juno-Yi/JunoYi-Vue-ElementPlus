@@ -170,11 +170,11 @@ import {
   fetchChangePassword,
   fetchUploadAvatar
 } from '@/api/system/user-center'
+import { getAvatarUrl } from '@/utils/avatar'
 
 defineOptions({ name: 'UserCenter' })
 
 const userStore = useUserStore()
-const defaultAvatar = new URL('@imgs/user/avatar.webp', import.meta.url).href
 
 // 用户信息
 const profile = ref<Api.System.SysUserVO | null>(null)
@@ -183,7 +183,7 @@ const loading = ref(false)
 // 头像相关
 const avatarInputRef = ref<HTMLInputElement>()
 const avatarUploading = ref(false)
-const avatarUrl = computed(() => profile.value?.avatar || defaultAvatar)
+const avatarUrl = computed(() => getAvatarUrl(profile.value?.avatar))
 
 // 基本信息编辑
 const isEditProfile = ref(false)
@@ -316,8 +316,11 @@ const handleAvatarChange = async (event: Event) => {
   try {
     // 上传头像文件
     const fileInfo = await fetchUploadAvatar(file)
-    // 更新用户头像
+    
+    // 直接使用后端返回的 fileUrl（已经是相对路径）
+    // 例如：/files/avatar/2026/02/07/xxx.jpg
     await fetchUpdateAvatar(fileInfo.fileUrl)
+    
     // 刷新用户信息
     await loadProfile()
     // 更新store中的用户信息
