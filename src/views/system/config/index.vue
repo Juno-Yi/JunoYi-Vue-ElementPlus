@@ -76,9 +76,11 @@
 
   // 搜索表单
   const searchForm = ref<Api.System.ConfigQueryDTO>({
-    configName: undefined,
-    configKey: undefined,
-    configType: undefined
+    settingName: undefined,
+    settingKey: undefined,
+    settingType: undefined,
+    settingGroup: undefined,
+    isSystem: undefined
   })
 
   const showSearchBar = ref(true)
@@ -114,43 +116,88 @@
           align: 'center'
         },
         {
-          prop: 'id',
+          prop: 'settingId',
           label: 'ID',
           align: 'center',
           headerAlign: 'center',
           width: 80
         },
         {
-          prop: 'configName',
+          prop: 'settingName',
           label: '参数名称',
           headerAlign: 'center',
           minWidth: 150
         },
         {
-          prop: 'configKey',
+          prop: 'settingKey',
           label: '参数键名',
           headerAlign: 'center',
           minWidth: 180
         },
         {
-          prop: 'configValue',
+          prop: 'settingValue',
           label: '参数键值',
           headerAlign: 'center',
           minWidth: 150,
           showOverflowTooltip: true
         },
         {
-          prop: 'configType',
+          prop: 'settingType',
+          label: '参数类型',
+          align: 'center',
+          headerAlign: 'center',
+          width: 100,
+          formatter: (row: ConfigVO) => {
+            const typeMap: Record<string, string> = {
+              text: '文本',
+              number: '数字',
+              boolean: '布尔',
+              json: 'JSON'
+            }
+            return typeMap[row.settingType] || row.settingType
+          }
+        },
+        {
+          prop: 'settingGroup',
+          label: '参数分组',
+          align: 'center',
+          headerAlign: 'center',
+          width: 120
+        },
+        {
+          prop: 'sort',
+          label: '排序',
+          align: 'center',
+          headerAlign: 'center',
+          width: 80
+        },
+        {
+          prop: 'isSystem',
           label: '系统内置',
           align: 'center',
           headerAlign: 'center',
           width: 100,
           formatter: (row: ConfigVO) => {
-            const isBuiltIn = row.configType === 'Y'
+            const isBuiltIn = row.isSystem === 1
             return h(
               ElTag,
               { type: isBuiltIn ? 'danger' : 'success', size: 'small' },
               () => isBuiltIn ? '是' : '否'
+            )
+          }
+        },
+        {
+          prop: 'status',
+          label: '状态',
+          align: 'center',
+          headerAlign: 'center',
+          width: 80,
+          formatter: (row: ConfigVO) => {
+            const isNormal = row.status === 0
+            return h(
+              ElTag,
+              { type: isNormal ? 'success' : 'info', size: 'small' },
+              () => isNormal ? '正常' : '停用'
             )
           }
         },
@@ -188,7 +235,8 @@
               })
             }
 
-            if (hasPermission('system.ui.config.button.delete')) {
+            // 系统内置参数不允许删除
+            if (hasPermission('system.ui.config.button.delete') && row.isSystem !== 1) {
               buttons.push({
                 text: '删除',
                 type: 'danger',
@@ -243,16 +291,22 @@
    * 表格选择变化
    */
   const handleSelectionChange = (selection: ConfigVO[]) => {
-    selectedIds.value = selection.map(item => item.id)
+    selectedIds.value = selection.map(item => item.settingId)
   }
 
   /**
    * 删除单个参数
    */
   const handleDeleteConfig = async (row: ConfigVO) => {
+    // 系统内置参数不允许删除
+    if (row.isSystem === 1) {
+      ElMessage.warning('系统内置参数不允许删除')
+      return
+    }
+
     try {
       await ElMessageBox.confirm(
-        `确定删除参数「${row.configName}」吗？此操作不可恢复！`,
+        `确定删除参数「${row.settingName}」吗？此操作不可恢复！`,
         '删除确认',
         {
           confirmButtonText: '确定',
@@ -261,7 +315,7 @@
         }
       )
 
-      await fetchDeleteConfig(row.id)
+      await fetchDeleteConfig(row.settingId)
       refreshData()
     } catch {
       // 用户取消
@@ -274,6 +328,15 @@
   const handleBatchDelete = async () => {
     if (selectedIds.value.length === 0) {
       ElMessage.warning('请选择要删除的参数')
+      return
+    }
+
+    // 检查是否包含系统内置参数
+    const selectedRows = data.value.filter(item => selectedIds.value.includes(item.settingId))
+    const hasSystemBuiltIn = selectedRows.some(item => item.isSystem === 1)
+    
+    if (hasSystemBuiltIn) {
+      ElMessage.warning('选中的参数中包含系统内置参数，不允许删除')
       return
     }
 

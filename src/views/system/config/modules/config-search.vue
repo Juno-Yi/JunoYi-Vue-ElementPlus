@@ -36,28 +36,50 @@
   const searchItems = computed(() => [
     {
       label: '参数名称',
-      key: 'configName',
+      key: 'settingName',
       type: 'input',
       placeholder: '请输入参数名称',
       clearable: true
     },
     {
       label: '参数键名',
-      key: 'configKey',
+      key: 'settingKey',
       type: 'input',
       placeholder: '请输入参数键名',
       clearable: true
     },
     {
-      label: '系统内置',
-      key: 'configType',
+      label: '参数类型',
+      key: 'settingType',
       type: 'select',
       props: {
         placeholder: '请选择',
         clearable: true,
         options: [
-          { label: '是', value: 'Y' },
-          { label: '否', value: 'N' }
+          { label: '文本', value: 'text' },
+          { label: '数字', value: 'number' },
+          { label: '布尔', value: 'boolean' },
+          { label: 'JSON', value: 'json' }
+        ]
+      }
+    },
+    {
+      label: '参数分组',
+      key: 'settingGroup',
+      type: 'input',
+      placeholder: '请输入参数分组',
+      clearable: true
+    },
+    {
+      label: '系统内置',
+      key: 'isSystem',
+      type: 'select',
+      props: {
+        placeholder: '请选择',
+        clearable: true,
+        options: [
+          { label: '是', value: 1 },
+          { label: '否', value: 0 }
         ]
       }
     }

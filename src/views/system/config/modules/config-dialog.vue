@@ -7,41 +7,90 @@
     align-center
     @close="handleClose"
   >
+    <!-- 系统内置参数提示 -->
+    <ElAlert
+      v-if="isSystemBuiltIn"
+      title="系统内置参数不允许修改参数键名"
+      type="warning"
+      :closable="false"
+      show-icon
+      class="mb-4"
+    />
+
     <ElForm
       ref="formRef"
       :model="form"
       :rules="formRules"
       label-width="100px"
     >
-      <ElFormItem label="参数名称" prop="configName">
+      <ElFormItem label="参数名称" prop="settingName">
         <ElInput
-          v-model="form.configName"
+          v-model="form.settingName"
           placeholder="请输入参数名称"
           clearable
         />
       </ElFormItem>
 
-      <ElFormItem label="参数键名" prop="configKey">
+      <ElFormItem label="参数键名" prop="settingKey">
         <ElInput
-          v-model="form.configKey"
+          v-model="form.settingKey"
           placeholder="请输入参数键名"
+          :disabled="isSystemBuiltIn"
           clearable
         />
       </ElFormItem>
 
-      <ElFormItem label="参数键值" prop="configValue">
+      <ElFormItem label="参数键值" prop="settingValue">
         <ElInput
-          v-model="form.configValue"
+          v-model="form.settingValue"
           type="textarea"
           :rows="3"
           placeholder="请输入参数键值"
         />
       </ElFormItem>
 
-      <ElFormItem label="系统内置" prop="configType">
-        <ElRadioGroup v-model="form.configType">
-          <ElRadio label="Y">是</ElRadio>
-          <ElRadio label="N">否</ElRadio>
+      <ElFormItem label="参数类型" prop="settingType">
+        <ElSelect
+          v-model="form.settingType"
+          placeholder="请选择参数类型"
+          style="width: 100%"
+        >
+          <ElOption label="文本" value="text" />
+          <ElOption label="数字" value="number" />
+          <ElOption label="布尔" value="boolean" />
+          <ElOption label="JSON" value="json" />
+        </ElSelect>
+      </ElFormItem>
+
+      <ElFormItem label="参数分组" prop="settingGroup">
+        <ElInput
+          v-model="form.settingGroup"
+          placeholder="请输入参数分组"
+          clearable
+        />
+      </ElFormItem>
+
+      <ElFormItem label="排序" prop="sort">
+        <ElInputNumber
+          v-model="form.sort"
+          :min="0"
+          controls-position="right"
+          style="width: 100%"
+        />
+      </ElFormItem>
+
+      <ElFormItem label="状态" prop="status">
+        <ElRadioGroup v-model="form.status">
+          <ElRadio :value="0">正常</ElRadio>
+          <ElRadio :value="1">停用</ElRadio>
+        </ElRadioGroup>
+      </ElFormItem>
+
+      <!-- 系统内置选项仅在编辑模式下显示 -->
+      <ElFormItem v-if="dialogType === 'edit'" label="系统内置" prop="isSystem">
+        <ElRadioGroup v-model="form.isSystem" disabled>
+          <ElRadio :value="1">是</ElRadio>
+          <ElRadio :value="0">否</ElRadio>
         </ElRadioGroup>
       </ElFormItem>
 
@@ -102,32 +151,44 @@
     return props.dialogType === 'add' ? '新增参数' : '编辑参数'
   })
 
+  // 是否为系统内置参数
+  const isSystemBuiltIn = computed(() => {
+    return props.dialogType === 'edit' && form.value.isSystem === 1
+  })
+
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
 
   // 表单数据
   const form = ref<ConfigDTO>({
-    id: undefined,
-    configName: '',
-    configKey: '',
-    configValue: '',
-    configType: 'N',
+    settingId: undefined,
+    settingName: '',
+    settingKey: '',
+    settingValue: '',
+    settingType: 'text',
+    settingGroup: 'default',
+    sort: 0,
+    isSystem: 0,
+    status: 0,
     remark: ''
   })
 
   // 表单验证规则
   const formRules: FormRules = {
-    configName: [
+    settingName: [
       { required: true, message: '请输入参数名称', trigger: 'blur' }
     ],
-    configKey: [
+    settingKey: [
       { required: true, message: '请输入参数键名', trigger: 'blur' }
     ],
-    configValue: [
+    settingValue: [
       { required: true, message: '请输入参数键值', trigger: 'blur' }
     ],
-    configType: [
-      { required: true, message: '请选择是否系统内置', trigger: 'change' }
+    settingType: [
+      { required: true, message: '请选择参数类型', trigger: 'change' }
+    ],
+    settingGroup: [
+      { required: true, message: '请输入参数分组', trigger: 'blur' }
     ]
   }
 
@@ -154,11 +215,15 @@
    */
   const resetForm = () => {
     form.value = {
-      id: undefined,
-      configName: '',
-      configKey: '',
-      configValue: '',
-      configType: 'N',
+      settingId: undefined,
+      settingName: '',
+      settingKey: '',
+      settingValue: '',
+      settingType: 'text',
+      settingGroup: 'default',
+      sort: 0,
+      isSystem: 0, // 默认为非系统内置
+      status: 0, // 默认为正常状态
       remark: ''
     }
     formRef.value?.clearValidate()
