@@ -79,7 +79,6 @@
     configName: undefined,
     configKey: undefined,
     configType: undefined,
-    configGroup: undefined,
     isSystem: undefined
   })
 
@@ -157,19 +156,8 @@
               boolean: '布尔',
               json: 'JSON'
             }
-            // 调试：打印实际的 configType 值
-            if (import.meta.env.DEV) {
-              console.log('ConfigType value:', row.configType, 'Full row:', row)
-            }
             return typeMap[row.configType] || row.configType || '-'
           }
-        },
-        {
-          prop: 'configGroup',
-          label: '参数分组',
-          align: 'center',
-          headerAlign: 'center',
-          width: 120
         },
         {
           prop: 'sort',

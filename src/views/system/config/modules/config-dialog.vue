@@ -52,14 +52,6 @@
         </ElSelect>
       </ElFormItem>
 
-      <ElFormItem label="参数分组" prop="configGroup">
-        <ElInput
-          v-model="form.configGroup"
-          placeholder="请输入参数分组"
-          clearable
-        />
-      </ElFormItem>
-
       <ElFormItem label="排序" prop="sort">
         <ElInputNumber
           v-model="form.sort"
@@ -157,7 +149,6 @@
     configKey: '',
     configValue: '',
     configType: 'text',
-    configGroup: 'default',
     sort: 0,
     isSystem: 'N',
     status: 0,
@@ -177,9 +168,6 @@
     ],
     configType: [
       { required: true, message: '请选择参数类型', trigger: 'change' }
-    ],
-    configGroup: [
-      { required: true, message: '请输入参数分组', trigger: 'blur' }
     ]
   }
 
@@ -211,7 +199,6 @@
       configKey: '',
       configValue: '',
       configType: 'text',
-      configGroup: 'default',
       sort: 0,
       isSystem: 'N', // 默认为非系统内置
       status: 0, // 默认为正常状态

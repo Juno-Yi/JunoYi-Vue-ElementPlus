@@ -12,8 +12,6 @@ declare namespace Api.System {
     configKey?: string
     /** 参数类型（text/number/boolean/json） */
     configType?: string
-    /** 参数分组 */
-    configGroup?: string
     /** 系统内置（Y是 N否） */
     isSystem?: string
     /** 当前页 */
@@ -36,8 +34,6 @@ declare namespace Api.System {
     configName: string
     /** 参数类型（text/number/boolean/json） */
     configType: string
-    /** 参数分组 */
-    configGroup: string
     /** 排序 */
     sort?: number
     /** 系统内置（Y是 N否） */
@@ -66,8 +62,6 @@ declare namespace Api.System {
     configName: string
     /** 参数类型（text/number/boolean/json） */
     configType: string
-    /** 参数分组 */
-    configGroup: string
     /** 排序 */
     sort?: number
     /** 系统内置（Y是 N否） */

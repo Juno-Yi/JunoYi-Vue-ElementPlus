@@ -64,13 +64,6 @@
       }
     },
     {
-      label: '参数分组',
-      key: 'configGroup',
-      type: 'input',
-      placeholder: '请输入参数分组',
-      clearable: true
-    },
-    {
       label: '系统内置',
       key: 'isSystem',
       type: 'select',
