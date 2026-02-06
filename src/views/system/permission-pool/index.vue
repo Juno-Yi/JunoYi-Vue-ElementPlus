@@ -112,13 +112,6 @@
           align: 'center'
         },
         {
-          prop: 'id',
-          label: 'ID',
-          align: 'center',
-          headerAlign: 'center',
-          width: 80
-        },
-        {
           prop: 'permission',
           label: '权限标识',
           headerAlign: 'center',
