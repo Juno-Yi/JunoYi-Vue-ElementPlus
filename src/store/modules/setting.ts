@@ -188,6 +188,29 @@ export const useSettingStore = defineStore(
     })
 
     /**
+     * 是否允许编辑菜单布局
+     * 根据系统配置 sys.menu.layout.editable 判断
+     */
+    const isMenuLayoutEditable = computed((): boolean => {
+      // 如果配置未加载，默认允许编辑
+      if (!systemAppConfigLoaded.value) {
+        return true
+      }
+      
+      // 获取配置值
+      const configValue = getSystemAppConfig('sys.menu.layout.editable')
+      
+      // 如果没有配置，默认允许编辑
+      if (!configValue) {
+        return true
+      }
+      
+      // 检查配置值，只有明确为 false/N/0 等才禁止编辑
+      const disabledValues = ['false', 'FALSE', 'False', 'N', 'n', '0', 'no', 'NO', 'off', 'OFF']
+      return !disabledValues.includes(configValue)
+    })
+
+    /**
      * 切换菜单布局
      * @param type 菜单类型
      */
@@ -533,6 +556,7 @@ export const useSettingStore = defineStore(
       getMenuOpenWidth,
       getCustomRadius,
       isShowFireworks,
+      isMenuLayoutEditable,
       switchMenuLayouts,
       setMenuOpenWidth,
       setGlopTheme,

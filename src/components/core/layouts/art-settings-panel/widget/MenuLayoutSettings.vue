@@ -1,5 +1,5 @@
 <template>
-  <div v-if="width > 1000">
+  <div v-if="width > 1000 && isMenuLayoutEditable">
     <SectionTitle :title="$t('setting.menuType.title')" />
     <div class="setting-box-wrap">
       <div
@@ -25,7 +25,7 @@
 
   const { width } = useWindowSize()
   const settingStore = useSettingStore()
-  const { menuType } = storeToRefs(settingStore)
+  const { menuType, isMenuLayoutEditable } = storeToRefs(settingStore)
   const { configOptions } = useSettingsConfig()
   const { switchMenuLayouts } = useSettingsState()
 </script>
