@@ -58,6 +58,28 @@ declare namespace Api {
 
     /** 启用状态 */
     type EnableStatus = '1' | '2'
+
+    /** 文件信息 */
+    interface FileInfo {
+      /** 文件ID */
+      fileId?: number
+      /** 原始文件名 */
+      originalName: string
+      /** 存储文件名 */
+      storageName?: string
+      /** 文件路径 */
+      filePath?: string
+      /** 文件URL（访问地址） */
+      fileUrl: string
+      /** 文件大小（字节） */
+      fileSize?: number
+      /** 文件类型（MIME类型） */
+      contentType?: string
+      /** 文件扩展名 */
+      extension?: string
+      /** 存储类型 */
+      storageType?: string
+    }
   }
 
   /** 认证类型 */

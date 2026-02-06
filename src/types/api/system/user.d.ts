@@ -91,4 +91,32 @@ declare namespace Api.System {
     /** 创建时间 */
     createTime?: string
   }
+
+  /**
+   * 用户个人信息更新DTO
+   */
+  interface UserProfileDTO {
+    /** 昵称 */
+    nickName?: string
+    /** 手机号 */
+    phonenumber?: string
+    /** 邮箱 */
+    email?: string
+    /** 性别（0-男，1-女） */
+    sex?: string
+    /** 头像URL */
+    avatar?: string
+  }
+
+  /**
+   * 修改密码DTO
+   */
+  interface ChangePasswordDTO {
+    /** 当前密码 */
+    oldPassword: string
+    /** 新密码 */
+    newPassword: string
+    /** 确认新密码 */
+    confirmPassword: string
+  }
 }
