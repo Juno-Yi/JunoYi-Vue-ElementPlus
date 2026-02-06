@@ -36,7 +36,6 @@ export function fetchAddConfig(data: Api.System.ConfigDTO) {
   return request.post<void>({
     url: '/system/config',
     data,
-    showSuccessMessage: true
   })
 }
 
@@ -47,7 +46,6 @@ export function fetchUpdateConfig(data: Api.System.ConfigDTO) {
   return request.put<void>({
     url: '/system/config',
     data,
-    showSuccessMessage: true
   })
 }
 
@@ -57,7 +55,6 @@ export function fetchUpdateConfig(data: Api.System.ConfigDTO) {
 export function fetchDeleteConfig(id: number | string) {
   return request.del<void>({
     url: `/system/config/${id}`,
-    showSuccessMessage: true
   })
 }
 
@@ -68,7 +65,6 @@ export function fetchDeleteConfigBatch(ids: number[]) {
   return request.del<void>({
     url: '/system/config/batch',
     data: ids,
-    showSuccessMessage: true
   })
 }
 
@@ -78,7 +74,6 @@ export function fetchDeleteConfigBatch(ids: number[]) {
 export function fetchRefreshConfigCache() {
   return request.post<void>({
     url: '/system/config/refresh',
-    showSuccessMessage: true
   })
 }
 
