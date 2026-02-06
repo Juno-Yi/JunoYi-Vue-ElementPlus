@@ -36,21 +36,21 @@
   const searchItems = computed(() => [
     {
       label: '参数名称',
-      key: 'settingName',
+      key: 'configName',
       type: 'input',
       placeholder: '请输入参数名称',
       clearable: true
     },
     {
       label: '参数键名',
-      key: 'settingKey',
+      key: 'configKey',
       type: 'input',
       placeholder: '请输入参数键名',
       clearable: true
     },
     {
       label: '参数类型',
-      key: 'settingType',
+      key: 'configType',
       type: 'select',
       props: {
         placeholder: '请选择',
@@ -65,7 +65,7 @@
     },
     {
       label: '参数分组',
-      key: 'settingGroup',
+      key: 'configGroup',
       type: 'input',
       placeholder: '请输入参数分组',
       clearable: true

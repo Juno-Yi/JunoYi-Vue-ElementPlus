@@ -23,35 +23,35 @@
       :rules="formRules"
       label-width="100px"
     >
-      <ElFormItem label="参数名称" prop="settingName">
+      <ElFormItem label="参数名称" prop="configName">
         <ElInput
-          v-model="form.settingName"
+          v-model="form.configName"
           placeholder="请输入参数名称"
           clearable
         />
       </ElFormItem>
 
-      <ElFormItem label="参数键名" prop="settingKey">
+      <ElFormItem label="参数键名" prop="configKey">
         <ElInput
-          v-model="form.settingKey"
+          v-model="form.configKey"
           placeholder="请输入参数键名"
           :disabled="isSystemBuiltIn"
           clearable
         />
       </ElFormItem>
 
-      <ElFormItem label="参数键值" prop="settingValue">
+      <ElFormItem label="参数键值" prop="configValue">
         <ElInput
-          v-model="form.settingValue"
+          v-model="form.configValue"
           type="textarea"
           :rows="3"
           placeholder="请输入参数键值"
         />
       </ElFormItem>
 
-      <ElFormItem label="参数类型" prop="settingType">
+      <ElFormItem label="参数类型" prop="configType">
         <ElSelect
-          v-model="form.settingType"
+          v-model="form.configType"
           placeholder="请选择参数类型"
           style="width: 100%"
         >
@@ -62,9 +62,9 @@
         </ElSelect>
       </ElFormItem>
 
-      <ElFormItem label="参数分组" prop="settingGroup">
+      <ElFormItem label="参数分组" prop="configGroup">
         <ElInput
-          v-model="form.settingGroup"
+          v-model="form.configGroup"
           placeholder="请输入参数分组"
           clearable
         />
@@ -161,12 +161,12 @@
 
   // 表单数据
   const form = ref<ConfigDTO>({
-    settingId: undefined,
-    settingName: '',
-    settingKey: '',
-    settingValue: '',
-    settingType: 'text',
-    settingGroup: 'default',
+    id: undefined,
+    configName: '',
+    configKey: '',
+    configValue: '',
+    configType: 'text',
+    configGroup: 'default',
     sort: 0,
     isSystem: 0,
     status: 0,
@@ -175,19 +175,19 @@
 
   // 表单验证规则
   const formRules: FormRules = {
-    settingName: [
+    configName: [
       { required: true, message: '请输入参数名称', trigger: 'blur' }
     ],
-    settingKey: [
+    configKey: [
       { required: true, message: '请输入参数键名', trigger: 'blur' }
     ],
-    settingValue: [
+    configValue: [
       { required: true, message: '请输入参数键值', trigger: 'blur' }
     ],
-    settingType: [
+    configType: [
       { required: true, message: '请选择参数类型', trigger: 'change' }
     ],
-    settingGroup: [
+    configGroup: [
       { required: true, message: '请输入参数分组', trigger: 'blur' }
     ]
   }
@@ -215,12 +215,12 @@
    */
   const resetForm = () => {
     form.value = {
-      settingId: undefined,
-      settingName: '',
-      settingKey: '',
-      settingValue: '',
-      settingType: 'text',
-      settingGroup: 'default',
+      id: undefined,
+      configName: '',
+      configKey: '',
+      configValue: '',
+      configType: 'text',
+      configGroup: 'default',
       sort: 0,
       isSystem: 0, // 默认为非系统内置
       status: 0, // 默认为正常状态

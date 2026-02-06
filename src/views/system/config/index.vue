@@ -76,10 +76,10 @@
 
   // 搜索表单
   const searchForm = ref<Api.System.ConfigQueryDTO>({
-    settingName: undefined,
-    settingKey: undefined,
-    settingType: undefined,
-    settingGroup: undefined,
+    configName: undefined,
+    configKey: undefined,
+    configType: undefined,
+    configGroup: undefined,
     isSystem: undefined
   })
 
@@ -116,33 +116,33 @@
           align: 'center'
         },
         {
-          prop: 'settingId',
+          prop: 'id',
           label: 'ID',
           align: 'center',
           headerAlign: 'center',
           width: 80
         },
         {
-          prop: 'settingName',
+          prop: 'configName',
           label: '参数名称',
           headerAlign: 'center',
           minWidth: 150
         },
         {
-          prop: 'settingKey',
+          prop: 'configKey',
           label: '参数键名',
           headerAlign: 'center',
           minWidth: 180
         },
         {
-          prop: 'settingValue',
+          prop: 'configValue',
           label: '参数键值',
           headerAlign: 'center',
           minWidth: 150,
           showOverflowTooltip: true
         },
         {
-          prop: 'settingType',
+          prop: 'configType',
           label: '参数类型',
           align: 'center',
           headerAlign: 'center',
@@ -154,11 +154,11 @@
               boolean: '布尔',
               json: 'JSON'
             }
-            return typeMap[row.settingType] || row.settingType
+            return typeMap[row.configType] || row.configType
           }
         },
         {
-          prop: 'settingGroup',
+          prop: 'configGroup',
           label: '参数分组',
           align: 'center',
           headerAlign: 'center',
@@ -291,7 +291,7 @@
    * 表格选择变化
    */
   const handleSelectionChange = (selection: ConfigVO[]) => {
-    selectedIds.value = selection.map(item => item.settingId)
+    selectedIds.value = selection.map(item => item.id)
   }
 
   /**
@@ -306,7 +306,7 @@
 
     try {
       await ElMessageBox.confirm(
-        `确定删除参数「${row.settingName}」吗？此操作不可恢复！`,
+        `确定删除参数「${row.configName}」吗？此操作不可恢复！`,
         '删除确认',
         {
           confirmButtonText: '确定',
@@ -315,7 +315,7 @@
         }
       )
 
-      await fetchDeleteConfig(row.settingId)
+      await fetchDeleteConfig(row.id)
       refreshData()
     } catch {
       // 用户取消
@@ -332,7 +332,7 @@
     }
 
     // 检查是否包含系统内置参数
-    const selectedRows = data.value.filter(item => selectedIds.value.includes(item.settingId))
+    const selectedRows = data.value.filter(item => selectedIds.value.includes(item.id))
     const hasSystemBuiltIn = selectedRows.some(item => item.isSystem === 1)
     
     if (hasSystemBuiltIn) {
