@@ -59,8 +59,6 @@ export const SETTING_DEFAULT_CONFIG = {
   showSettingGuide: true,
   /** 是否显示节日文本 */
   showFestivalText: false,
-  /** 是否显示水印 */
-  watermarkVisible: false,
   /** 是否自动关闭 */
   autoClose: false,
   /** 是否唯一展开 */

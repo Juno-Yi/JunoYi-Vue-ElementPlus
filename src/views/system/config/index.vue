@@ -311,6 +311,7 @@
       )
 
       await fetchDeleteConfig(row.id)
+      ElMessage.success('删除参数成功')
       refreshData()
     } catch {
       // 用户取消
@@ -347,6 +348,7 @@
       )
 
       await fetchDeleteConfigBatch(selectedIds.value)
+      ElMessage.success(`成功删除 ${selectedIds.value.length} 个参数`)
       selectedIds.value = []
       refreshData()
     } catch {

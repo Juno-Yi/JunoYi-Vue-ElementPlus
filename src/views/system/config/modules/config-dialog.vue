@@ -228,8 +228,10 @@
       // 根据类型调用不同的 API
       if (props.dialogType === 'add') {
         await fetchAddConfig(form.value)
+        ElMessage.success('新增参数成功')
       } else {
         await fetchUpdateConfig(form.value)
+        ElMessage.success('更新参数成功')
       }
 
       emit('success')
