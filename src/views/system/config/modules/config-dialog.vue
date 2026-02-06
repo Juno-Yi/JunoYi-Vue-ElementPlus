@@ -232,6 +232,11 @@
       } else {
         await fetchUpdateConfig(form.value)
         ElMessage.success('更新参数成功')
+        
+        // 更新成功后刷新页面，以应用新的系统配置
+        setTimeout(() => {
+          window.location.reload()
+        }, 500)
       }
 
       emit('success')
