@@ -21,12 +21,13 @@
   import AppConfig from '@/config'
   import { useSettingStore } from '@/store/modules/setting'
   import { useUserStore } from '@/store/modules/user'
+  import { replaceWatermarkPlaceholders } from '@/utils/watermark'
 
   defineOptions({ name: 'ArtWatermark' })
 
   const settingStore = useSettingStore()
   const userStore = useUserStore()
-  const { watermarkVisible, systemInfo } = storeToRefs(settingStore)
+  const { systemInfo } = storeToRefs(settingStore)
 
   // 优先使用接口返回的系统名称，如果没有则使用配置文件的
   const defaultContent = computed(() => systemInfo.value?.name || AppConfig.systemInfo.name)
@@ -78,26 +79,12 @@
   /**
    * 最终的水印内容
    * 优先级：props.content > 系统配置 > 默认内容
-   * 支持变量替换：{username}, {date}, {time}
+   * 支持占位符替换：{username}, {nickname}, {date}, {time}, {datetime}, {year}, {month}, {day}
    */
   const finalContent = computed(() => {
-    let text = props.content || settingStore.getSystemAppConfig('sys.watermark.text') || defaultContent.value
-
-    // 变量替换
-    if (text.includes('{username}')) {
-      text = text.replace(/{username}/g, userStore.username || '用户')
-    }
-    if (text.includes('{date}')) {
-      const date = new Date()
-      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-      text = text.replace(/{date}/g, dateStr)
-    }
-    if (text.includes('{time}')) {
-      const date = new Date()
-      const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-      text = text.replace(/{time}/g, timeStr)
-    }
-
-    return text
+    const text = props.content || settingStore.getSystemAppConfig('sys.watermark.text') || defaultContent.value
+    
+    // 使用工具函数替换占位符
+    return replaceWatermarkPlaceholders(text, userStore.info)
   })
 </script>
