@@ -2,140 +2,153 @@
 <template>
   <div class="w-full h-full p-0 bg-transparent border-none shadow-none">
     <div class="relative flex-b mt-2.5 max-md:block max-md:mt-1">
+      <!-- 左侧个人信息卡片 -->
       <div class="w-112 mr-5 max-md:w-full max-md:mr-0">
         <div class="art-card-sm relative p-9 pb-6 overflow-hidden text-center">
           <img class="absolute top-0 left-0 w-full h-50 object-cover" src="@imgs/user/bg.webp" />
-          <img
-            class="relative z-10 w-20 h-20 mt-30 mx-auto object-cover border-2 border-white rounded-full"
-            src="@imgs/user/avatar.webp"
-          />
-          <h2 class="mt-5 text-xl font-normal">{{ userInfo.userName }}</h2>
-          <p class="mt-5 text-sm">专注于用户体验跟视觉设计</p>
+
+          <!-- 头像区域（可点击更换） -->
+          <div class="relative z-10 mt-30 mx-auto w-20 h-20 group cursor-pointer" @click="triggerAvatarUpload">
+            <img
+                class="w-full h-full object-cover border-2 border-white rounded-full"
+                :src="avatarUrl"
+            />
+            <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <ArtSvgIcon icon="ri:camera-line" class="text-white text-xl" />
+            </div>
+            <input
+                ref="avatarInputRef"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleAvatarChange"
+            />
+          </div>
+
+          <h2 class="mt-5 text-xl font-normal">{{ profile?.nickName || profile?.userName || '-' }}</h2>
+          <p class="mt-2 text-sm text-gray-500">@{{ profile?.userName || '-' }}</p>
 
           <div class="w-75 mx-auto mt-7.5 text-left">
-            <div class="mt-2.5">
+            <div class="mt-2.5 flex items-center">
               <ArtSvgIcon icon="ri:mail-line" class="text-g-700" />
-              <span class="ml-2 text-sm">jdkjjfnndf@mall.com</span>
+              <span class="ml-2 text-sm">{{ profile?.email || '未设置' }}</span>
             </div>
-            <div class="mt-2.5">
+            <div class="mt-2.5 flex items-center">
+              <ArtSvgIcon icon="ri:phone-line" class="text-g-700" />
+              <span class="ml-2 text-sm">{{ profile?.phonenumber || '未设置' }}</span>
+            </div>
+            <div class="mt-2.5 flex items-center">
               <ArtSvgIcon icon="ri:user-3-line" class="text-g-700" />
-              <span class="ml-2 text-sm">交互专家</span>
+              <span class="ml-2 text-sm">{{ getSexText(profile?.sex) }}</span>
             </div>
-            <div class="mt-2.5">
-              <ArtSvgIcon icon="ri:map-pin-line" class="text-g-700" />
-              <span class="ml-2 text-sm">广东省深圳市</span>
-            </div>
-            <div class="mt-2.5">
-              <ArtSvgIcon icon="ri:dribbble-fill" class="text-g-700" />
-              <span class="ml-2 text-sm">字节跳动－某某平台部－UED</span>
+            <div class="mt-2.5 flex items-center">
+              <ArtSvgIcon icon="ri:time-line" class="text-g-700" />
+              <span class="ml-2 text-sm">注册于 {{ formatDate(profile?.createTime) }}</span>
             </div>
           </div>
 
-          <div class="mt-10">
-            <h3 class="text-sm font-medium">标签</h3>
-            <div class="flex flex-wrap justify-center mt-3.5">
-              <div
-                v-for="item in lableList"
-                :key="item"
-                class="py-1 px-1.5 mr-2.5 mb-2.5 text-xs border border-g-300 rounded"
-              >
-                {{ item }}
-              </div>
-            </div>
+          <div class="mt-8">
+            <ElButton type="primary" size="small" @click="triggerAvatarUpload" :loading="avatarUploading">
+              <ArtSvgIcon icon="ri:image-edit-line" class="mr-1" />
+              更换头像
+            </ElButton>
           </div>
         </div>
       </div>
+
+      <!-- 右侧设置区域 -->
       <div class="flex-1 overflow-hidden max-md:w-full max-md:mt-3.5">
+        <!-- 基本信息设置 -->
         <div class="art-card-sm">
           <h1 class="p-4 text-xl font-normal border-b border-g-300">基本设置</h1>
 
           <ElForm
-            :model="form"
-            class="box-border p-5 [&>.el-row_.el-form-item]:w-[calc(50%-10px)] [&>.el-row_.el-input]:w-full [&>.el-row_.el-select]:w-full"
-            ref="ruleFormRef"
-            :rules="rules"
-            label-width="86px"
-            label-position="top"
+              :model="profileForm"
+              class="box-border p-5 [&>.el-row_.el-form-item]:w-[calc(50%-10px)] [&>.el-row_.el-input]:w-full [&>.el-row_.el-select]:w-full"
+              ref="profileFormRef"
+              :rules="profileRules"
+              label-width="86px"
+              label-position="top"
           >
             <ElRow>
-              <ElFormItem label="姓名" prop="realName">
-                <ElInput v-model="form.realName" :disabled="!isEdit" />
+              <ElFormItem label="昵称" prop="nickName">
+                <ElInput v-model="profileForm.nickName" placeholder="请输入昵称" :disabled="!isEditProfile" />
               </ElFormItem>
               <ElFormItem label="性别" prop="sex" class="ml-5">
-                <ElSelect v-model="form.sex" placeholder="Select" :disabled="!isEdit">
+                <ElSelect v-model="profileForm.sex" placeholder="请选择性别" :disabled="!isEditProfile">
                   <ElOption
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
+                      v-for="item in sexOptions"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
                   />
                 </ElSelect>
               </ElFormItem>
             </ElRow>
 
             <ElRow>
-              <ElFormItem label="昵称" prop="nikeName">
-                <ElInput v-model="form.nikeName" :disabled="!isEdit" />
+              <ElFormItem label="邮箱" prop="email">
+                <ElInput v-model="profileForm.email" placeholder="请输入邮箱" :disabled="!isEditProfile" />
               </ElFormItem>
-              <ElFormItem label="邮箱" prop="email" class="ml-5">
-                <ElInput v-model="form.email" :disabled="!isEdit" />
-              </ElFormItem>
-            </ElRow>
-
-            <ElRow>
-              <ElFormItem label="手机" prop="mobile">
-                <ElInput v-model="form.mobile" :disabled="!isEdit" />
-              </ElFormItem>
-              <ElFormItem label="地址" prop="address" class="ml-5">
-                <ElInput v-model="form.address" :disabled="!isEdit" />
+              <ElFormItem label="手机号" prop="phonenumber" class="ml-5">
+                <ElInput v-model="profileForm.phonenumber" placeholder="请输入手机号" :disabled="!isEditProfile" />
               </ElFormItem>
             </ElRow>
 
-            <ElFormItem label="个人介绍" prop="des" class="h-32">
-              <ElInput type="textarea" :rows="4" v-model="form.des" :disabled="!isEdit" />
-            </ElFormItem>
-
-            <div class="flex-c justify-end [&_.el-button]:!w-27.5">
-              <ElButton type="primary" class="w-22.5" v-ripple @click="edit">
-                {{ isEdit ? '保存' : '编辑' }}
+            <div class="flex-c justify-end [&_.el-button]:!w-27.5 gap-3">
+              <ElButton v-if="isEditProfile" @click="cancelEditProfile">取消</ElButton>
+              <ElButton type="primary" :loading="profileSaving" @click="handleProfileAction">
+                {{ isEditProfile ? '保存' : '编辑' }}
               </ElButton>
             </div>
           </ElForm>
         </div>
 
+        <!-- 修改密码 -->
         <div class="art-card-sm my-5">
-          <h1 class="p-4 text-xl font-normal border-b border-g-300">更改密码</h1>
+          <h1 class="p-4 text-xl font-normal border-b border-g-300">修改密码</h1>
 
-          <ElForm :model="pwdForm" class="box-border p-5" label-width="86px" label-position="top">
-            <ElFormItem label="当前密码" prop="password">
+          <ElForm
+              :model="pwdForm"
+              class="box-border p-5"
+              ref="pwdFormRef"
+              :rules="pwdRules"
+              label-width="86px"
+              label-position="top"
+          >
+            <ElFormItem label="当前密码" prop="oldPassword">
               <ElInput
-                v-model="pwdForm.password"
-                type="password"
-                :disabled="!isEditPwd"
-                show-password
+                  v-model="pwdForm.oldPassword"
+                  type="password"
+                  placeholder="请输入当前密码"
+                  :disabled="!isEditPwd"
+                  show-password
               />
             </ElFormItem>
 
             <ElFormItem label="新密码" prop="newPassword">
               <ElInput
-                v-model="pwdForm.newPassword"
-                type="password"
-                :disabled="!isEditPwd"
-                show-password
+                  v-model="pwdForm.newPassword"
+                  type="password"
+                  placeholder="请输入新密码（6-20位）"
+                  :disabled="!isEditPwd"
+                  show-password
               />
             </ElFormItem>
 
             <ElFormItem label="确认新密码" prop="confirmPassword">
               <ElInput
-                v-model="pwdForm.confirmPassword"
-                type="password"
-                :disabled="!isEditPwd"
-                show-password
+                  v-model="pwdForm.confirmPassword"
+                  type="password"
+                  placeholder="请再次输入新密码"
+                  :disabled="!isEditPwd"
+                  show-password
               />
             </ElFormItem>
 
-            <div class="flex-c justify-end [&_.el-button]:!w-27.5">
-              <ElButton type="primary" class="w-22.5" v-ripple @click="editPwd">
+            <div class="flex-c justify-end [&_.el-button]:!w-27.5 gap-3">
+              <ElButton v-if="isEditPwd" @click="cancelEditPwd">取消</ElButton>
+              <ElButton type="primary" :loading="pwdSaving" @click="handlePwdAction">
                 {{ isEditPwd ? '保存' : '编辑' }}
               </ElButton>
             </div>
@@ -147,101 +160,278 @@
 </template>
 
 <script setup lang="ts">
-  import { useUserStore } from '@/store/modules/user'
-  import type { FormInstance, FormRules } from 'element-plus'
+import { useUserStore } from '@/store/modules/user'
+import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import {
+  fetchGetProfile,
+  fetchUpdateProfile,
+  fetchUpdateAvatar,
+  fetchChangePassword,
+  fetchUploadAvatar
+} from '@/api/system/user-center'
 
-  defineOptions({ name: 'UserCenter' })
+defineOptions({ name: 'UserCenter' })
 
-  const userStore = useUserStore()
-  const userInfo = computed(() => userStore.getUserInfo)
+const userStore = useUserStore()
+const defaultAvatar = new URL('@imgs/user/avatar.webp', import.meta.url).href
 
-  const isEdit = ref(false)
-  const isEditPwd = ref(false)
-  const date = ref('')
-  const ruleFormRef = ref<FormInstance>()
+// 用户信息
+const profile = ref<Api.System.SysUserVO | null>(null)
+const loading = ref(false)
 
-  /**
-   * 用户信息表单
-   */
-  const form = reactive({
-    realName: 'John Snow',
-    nikeName: '皮卡丘',
-    email: '59301283@mall.com',
-    mobile: '18888888888',
-    address: '广东省深圳市宝安区西乡街道101栋201',
-    sex: '2',
-    des: 'Art Design Pro 是一款兼具设计美学与高效开发的后台系统.'
-  })
+// 头像相关
+const avatarInputRef = ref<HTMLInputElement>()
+const avatarUploading = ref(false)
+const avatarUrl = computed(() => profile.value?.avatar || defaultAvatar)
 
-  /**
-   * 密码修改表单
-   */
-  const pwdForm = reactive({
-    password: '123456',
-    newPassword: '123456',
-    confirmPassword: '123456'
-  })
+// 基本信息编辑
+const isEditProfile = ref(false)
+const profileSaving = ref(false)
+const profileFormRef = ref<FormInstance>()
+const profileForm = reactive({
+  nickName: '',
+  email: '',
+  phonenumber: '',
+  sex: ''
+})
 
-  /**
-   * 表单验证规则
-   */
-  const rules = reactive<FormRules>({
-    realName: [
-      { required: true, message: '请输入姓名', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-    ],
-    nikeName: [
-      { required: true, message: '请输入昵称', trigger: 'blur' },
-      { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-    ],
-    email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
-    mobile: [{ required: true, message: '请输入手机号码', trigger: 'blur' }],
-    address: [{ required: true, message: '请输入地址', trigger: 'blur' }],
-    sex: [{ required: true, message: '请选择性别', trigger: 'blur' }]
-  })
+// 密码修改
+const isEditPwd = ref(false)
+const pwdSaving = ref(false)
+const pwdFormRef = ref<FormInstance>()
+const pwdForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
-  /**
-   * 性别选项
-   */
-  const options = [
-    { value: '1', label: '男' },
-    { value: '2', label: '女' }
+// 性别选项
+const sexOptions = [
+  { value: '1', label: '男' },
+  { value: '2', label: '女' }
+]
+
+// 表单验证规则
+const profileRules = reactive<FormRules>({
+  nickName: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  ],
+  email: [
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  phonenumber: [
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
   ]
+})
 
-  /**
-   * 用户标签列表
-   */
-  const lableList: Array<string> = ['专注设计', '很有想法', '辣~', '大长腿', '川妹子', '海纳百川']
+const pwdRules = reactive<FormRules>({
+  oldPassword: [
+    { required: true, message: '请输入当前密码', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    {
+      validator: (_rule, value, callback) => {
+        if (value !== pwdForm.newPassword) {
+          callback(new Error('两次输入的密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+})
 
-  onMounted(() => {
-    getDate()
-  })
+/**
+ * 获取性别文本
+ */
+const getSexText = (sex?: string) => {
+  if (sex === '1') return '男'
+  if (sex === '2') return '女'
+  return '未设置'
+}
 
-  /**
-   * 根据当前时间获取问候语
-   */
-  const getDate = () => {
-    const h = new Date().getHours()
+/**
+ * 格式化日期
+ */
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleDateString('zh-CN')
+}
 
-    if (h >= 6 && h < 9) date.value = '早上好'
-    else if (h >= 9 && h < 11) date.value = '上午好'
-    else if (h >= 11 && h < 13) date.value = '中午好'
-    else if (h >= 13 && h < 18) date.value = '下午好'
-    else if (h >= 18 && h < 24) date.value = '晚上好'
-    else date.value = '很晚了，早点睡'
+/**
+ * 加载用户信息
+ */
+const loadProfile = async () => {
+  loading.value = true
+  try {
+    profile.value = await fetchGetProfile()
+    // 同步到表单
+    profileForm.nickName = profile.value?.nickName || ''
+    profileForm.email = profile.value?.email || ''
+    profileForm.phonenumber = profile.value?.phonenumber || ''
+    profileForm.sex = profile.value?.sex || ''
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * 触发头像上传
+ */
+const triggerAvatarUpload = () => {
+  avatarInputRef.value?.click()
+}
+
+/**
+ * 处理头像文件选择
+ */
+const handleAvatarChange = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  // 验证文件类型
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('请选择图片文件')
+    return
   }
 
-  /**
-   * 切换用户信息编辑状态
-   */
-  const edit = () => {
-    isEdit.value = !isEdit.value
+  // 验证文件大小（最大2MB）
+  if (file.size > 2 * 1024 * 1024) {
+    ElMessage.error('图片大小不能超过2MB')
+    return
   }
 
-  /**
-   * 切换密码编辑状态
-   */
-  const editPwd = () => {
-    isEditPwd.value = !isEditPwd.value
+  avatarUploading.value = true
+  try {
+    // 上传头像文件
+    const fileInfo = await fetchUploadAvatar(file)
+    // 更新用户头像
+    await fetchUpdateAvatar(fileInfo.fileUrl)
+    // 刷新用户信息
+    await loadProfile()
+    // 更新store中的用户信息
+    if (profile.value?.avatar) {
+      userStore.setUserInfo({
+        ...userStore.getUserInfo,
+        avatar: profile.value.avatar
+      } as Api.Auth.UserInfo)
+    }
+    ElMessage.success('头像更新成功')
+  } catch (error) {
+    console.error('头像上传失败:', error)
+  } finally {
+    avatarUploading.value = false
+    // 清空input
+    input.value = ''
   }
+}
+
+/**
+ * 处理基本信息操作（编辑/保存）
+ */
+const handleProfileAction = async () => {
+  if (!isEditProfile.value) {
+    isEditProfile.value = true
+    return
+  }
+
+  // 验证表单
+  const valid = await profileFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  profileSaving.value = true
+  try {
+    await fetchUpdateProfile({
+      nickName: profileForm.nickName,
+      email: profileForm.email,
+      phonenumber: profileForm.phonenumber,
+      sex: profileForm.sex
+    })
+    // 刷新用户信息
+    await loadProfile()
+    // 更新store
+    userStore.setUserInfo({
+      ...userStore.getUserInfo,
+      nickName: profileForm.nickName,
+      email: profileForm.email
+    } as Api.Auth.UserInfo)
+    isEditProfile.value = false
+  } catch (error) {
+    console.error('更新个人信息失败:', error)
+  } finally {
+    profileSaving.value = false
+  }
+}
+
+/**
+ * 取消编辑基本信息
+ */
+const cancelEditProfile = () => {
+  isEditProfile.value = false
+  // 恢复原始数据
+  profileForm.nickName = profile.value?.nickName || ''
+  profileForm.email = profile.value?.email || ''
+  profileForm.phonenumber = profile.value?.phonenumber || ''
+  profileForm.sex = profile.value?.sex || ''
+  profileFormRef.value?.clearValidate()
+}
+
+/**
+ * 处理密码操作（编辑/保存）
+ */
+const handlePwdAction = async () => {
+  if (!isEditPwd.value) {
+    isEditPwd.value = true
+    return
+  }
+
+  // 验证表单
+  const valid = await pwdFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  pwdSaving.value = true
+  try {
+    await fetchChangePassword({
+      oldPassword: pwdForm.oldPassword,
+      newPassword: pwdForm.newPassword,
+      confirmPassword: pwdForm.confirmPassword
+    })
+    isEditPwd.value = false
+    // 清空密码表单
+    pwdForm.oldPassword = ''
+    pwdForm.newPassword = ''
+    pwdForm.confirmPassword = ''
+    pwdFormRef.value?.clearValidate()
+  } catch (error) {
+    console.error('修改密码失败:', error)
+  } finally {
+    pwdSaving.value = false
+  }
+}
+
+/**
+ * 取消修改密码
+ */
+const cancelEditPwd = () => {
+  isEditPwd.value = false
+  pwdForm.oldPassword = ''
+  pwdForm.newPassword = ''
+  pwdForm.confirmPassword = ''
+  pwdFormRef.value?.clearValidate()
+}
+
+onMounted(() => {
+  loadProfile()
+})
 </script>
