@@ -9,7 +9,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6.0-purple.svg)](https://vitejs.dev/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.9-409eff.svg)](https://element-plus.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.4.6--alpha-yellow.svg)](https://github.com/Juno-Yi/JunoYi-Vue-ElementPlus)
+[![Version](https://img.shields.io/badge/Version-0.4.6--beta-yellow.svg)](https://github.com/Juno-Yi/JunoYi-Vue-ElementPlus)
 
 ## JunoYi 企业级开发框架 前端
 
@@ -23,9 +23,9 @@
 
 ---
 
-> ⚠️ **Alpha 内测版本声明**
+> **Beta 测试版本声明**
 >
-> 当前版本为 **0.4.6-alpha**，属于内部测试版本。功能仍在持续开发和完善中，API 可能会有变动。欢迎试用并反馈问题，但暂不建议用于生产环境。
+> 当前版本为 **0.4.6-beta**，已完成核心功能开发并通过内部测试，可以用于项目开发。我们会持续优化和完善功能，欢迎试用并反馈问题。
 >
 > 📌 **相关链接**
 > - 📖 文档站：https://doc.framework.junoyi.com 
