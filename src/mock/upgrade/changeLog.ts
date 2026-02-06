@@ -16,6 +16,29 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.4.6-beta',
+        title: '',
+        date: '2026-2-7',
+        detail: {
+            added: [
+                '添加用户中心相关API接口和类型定义',
+                '添加用户个人中心功能模块',
+                '添加用户个人中心API接口',
+                '前端对接用户个人中心接口',
+                '实现头像上传',
+                '顶部支持动态用户头像',
+                '屏幕锁定组件支持动态用户头像',
+            ],
+            changed: [
+                '简化本地文件存储的URL生成逻辑',
+                '优化头像处理逻辑',
+            ],
+            fixed: [
+                '修复头像URL处理和ResizeObserver循环错误'
+            ]
+        }
+    },
+    {
         version: 'v0.4.5-alpha',
         title: '系统参数',
         date: '2026-2-6',
