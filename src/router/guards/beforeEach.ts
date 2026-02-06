@@ -52,6 +52,7 @@ import { fetchGetUserInfo } from '@/api/auth'
 import { ApiStatus } from '@/utils/http/status'
 import { isHttpError } from '@/utils/http/error'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
+import { fetchGetSystemAppConfig } from '@/api/system/config'
 
 // 路由注册器实例
 let routeRegistry: RouteRegistry | null = null
@@ -151,12 +152,12 @@ async function handleRouteGuard(
     NProgress.start()
   }
 
-  // 1. 检查登录状态
+  // 检查登录状态
   if (!handleLoginStatus(to, userStore, next)) {
     return
   }
 
-  // 2. 检查路由初始化是否已失败（防止死循环）
+  // 检查路由初始化是否已失败（防止死循环）
   if (routeInitFailed) {
     // 已经失败过，直接放行到错误页面，不再重试
     if (to.matched.length > 0) {
@@ -168,7 +169,7 @@ async function handleRouteGuard(
     return
   }
 
-  // 3. 处理动态路由注册
+  // 处理动态路由注册
   if (!routeRegistry?.isRegistered() && userStore.isLogin) {
     // 防止并发请求（快速连续导航场景）
     if (routeInitInProgress) {
@@ -180,12 +181,12 @@ async function handleRouteGuard(
     return
   }
 
-  // 4. 处理根路径重定向
+  // 处理根路径重定向
   if (handleRootPathRedirect(to, next)) {
     return
   }
 
-  // 5. 处理已匹配的路由
+  // 处理已匹配的路由
   if (to.matched.length > 0) {
     setWorktab(to)
     setPageTitle(to)
@@ -193,7 +194,7 @@ async function handleRouteGuard(
     return
   }
 
-  // 6. 未匹配到路由，跳转到 404
+  // 未匹配到路由，跳转到 404
   next({ name: 'Exception404' })
 }
 
@@ -260,32 +261,44 @@ async function handleDynamicRoutes(
   loadingService.showLoading()
 
   try {
-    // 1. 获取用户信息
+    // 获取用户信息
     await fetchUserInfo()
 
-    // 2. 获取菜单数据
-    const menuList = await menuProcessor.getMenuList()
+    // 获取菜单数据和系统应用配置（并行加载）
+    const settingStore = useSettingStore()
+    const [menuList] = await Promise.all([
+      menuProcessor.getMenuList(),
+      // 获取系统应用配置
+      fetchGetSystemAppConfig()
+        .then((configs) => {
+          settingStore.setSystemAppConfigs(configs)
+          settingStore.applySystemAppConfigConstraints()
+        })
+        .catch((error) => {
+          console.warn('[System] 获取系统应用配置失败，使用默认配置:', error)
+        })
+    ])
 
-    // 3. 验证菜单数据
+    // 验证菜单数据
     if (!menuProcessor.validateMenuList(menuList)) {
       throw new Error('获取菜单列表失败，请重新登录')
     }
 
-    // 4. 注册动态路由
+    //  注册动态路由
     routeRegistry?.register(menuList)
 
-    // 5. 保存菜单数据到 store
+    // 保存菜单数据到 store
     const menuStore = useMenuStore()
     menuStore.setMenuList(menuList)
     menuStore.addRemoveRouteFns(routeRegistry?.getRemoveRouteFns() || [])
 
-    // 6. 保存 iframe 路由
+    // 保存 iframe 路由
     IframeRouteManager.getInstance().save()
 
-    // 7. 验证工作标签页
+    //验证工作标签页
     useWorktabStore().validateWorktabs(router)
 
-    // 8. 验证目标路径权限
+    // 验证目标路径权限
     const { homePath } = useCommon()
     const { path: validatedPath, hasPermission } = RoutePermissionValidator.validatePath(
       to.path,
@@ -296,7 +309,7 @@ async function handleDynamicRoutes(
     // 初始化成功，重置进行中标记
     routeInitInProgress = false
 
-    // 9. 重新导航到目标路由
+    // 重新导航到目标路由
     if (!hasPermission) {
       // 无权限访问，跳转到首页
       closeLoading()

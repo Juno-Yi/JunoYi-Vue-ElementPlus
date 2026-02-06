@@ -1,12 +1,12 @@
 <!-- 水印组件 -->
 <template>
   <div
-    v-if="watermarkVisible"
+    v-if="finalWatermarkVisible"
     class="fixed left-0 top-0 h-screen w-screen pointer-events-none"
     :style="{ zIndex: zIndex }"
   >
     <ElWatermark
-      :content="content"
+      :content="finalContent"
       :font="{ fontSize: fontSize, color: fontColor }"
       :rotate="rotate"
       :gap="[gapX, gapY]"
@@ -20,10 +20,12 @@
 <script setup lang="ts">
   import AppConfig from '@/config'
   import { useSettingStore } from '@/store/modules/setting'
+  import { useUserStore } from '@/store/modules/user'
 
   defineOptions({ name: 'ArtWatermark' })
 
   const settingStore = useSettingStore()
+  const userStore = useUserStore()
   const { watermarkVisible, systemInfo } = storeToRefs(settingStore)
 
   // 优先使用接口返回的系统名称，如果没有则使用配置文件的
@@ -64,6 +66,38 @@
     zIndex: 3100
   })
 
-  // 使用计算属性来处理content的默认值
-  const content = computed(() => props.content || defaultContent.value)
+  /**
+   * 最终的水印可见性
+   * 直接由系统配置控制，不需要用户手动开关
+   */
+  const finalWatermarkVisible = computed(() => {
+    // 直接使用系统配置控制水印显示
+    return settingStore.isSystemAppConfigEnabled('sys.watermark.enabled')
+  })
+
+  /**
+   * 最终的水印内容
+   * 优先级：props.content > 系统配置 > 默认内容
+   * 支持变量替换：{username}, {date}, {time}
+   */
+  const finalContent = computed(() => {
+    let text = props.content || settingStore.getSystemAppConfig('sys.watermark.text') || defaultContent.value
+
+    // 变量替换
+    if (text.includes('{username}')) {
+      text = text.replace(/{username}/g, userStore.username || '用户')
+    }
+    if (text.includes('{date}')) {
+      const date = new Date()
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+      text = text.replace(/{date}/g, dateStr)
+    }
+    if (text.includes('{time}')) {
+      const date = new Date()
+      const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+      text = text.replace(/{time}/g, timeStr)
+    }
+
+    return text
+  })
 </script>

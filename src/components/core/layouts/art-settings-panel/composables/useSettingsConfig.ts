@@ -165,7 +165,14 @@ export function useSettingsConfig() {
         label: t('setting.basics.list.watermark'),
         type: 'switch' as const,
         handler: 'watermark',
-        headerBarKey: null // 不依赖headerBar配置
+        headerBarKey: null, // 不依赖headerBar配置
+        // 如果系统配置了水印，则禁用用户开关
+        disabled: settingStore.systemAppConfigLoaded && 
+                  settingStore.systemAppConfigs.some(c => c.configKey === 'sys.watermark.enabled'),
+        tip: settingStore.systemAppConfigLoaded && 
+             settingStore.systemAppConfigs.some(c => c.configKey === 'sys.watermark.enabled')
+             ? '水印由系统配置控制'
+             : undefined
       },
       {
         key: 'menuOpenWidth',

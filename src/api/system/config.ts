@@ -1,5 +1,6 @@
 import request from '@/utils/http'
 import type { PageResult } from '@/types/common/response'
+import ConfigVO = Api.System.ConfigVO;
 
 /**
  * 获取系统参数列表（分页）
@@ -77,3 +78,13 @@ export function fetchRefreshConfigCache() {
   })
 }
 
+/**
+ * 获取系统应用配置
+ * 用于获取系统级别的应用配置（需要登录后调用）
+ * 包括：水印配置、主题配置、功能开关等
+ */
+export function fetchGetSystemAppConfig() {
+  return request.get<Api.System.ConfigVO[]>({
+    url: '/system/config/app'
+  })
+}

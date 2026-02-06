@@ -13,6 +13,7 @@
  * - 样式配置（边框、圆角、容器宽度、页面过渡）
  * - 节日功能配置
  * - Element Plus 主题色动态设置
+ * - 系统应用配置管理（从后端获取的系统级配置）
  *
  * ## 使用场景
  *
@@ -20,6 +21,7 @@
  * - 主题切换和样式定制
  * - 界面功能开关控制
  * - 用户偏好设置持久化
+ * - 系统级配置应用（如强制水印、功能开关等）
  *
  * ## 持久化
  *
@@ -42,6 +44,19 @@ import { SETTING_DEFAULT_CONFIG } from '@/config/setting'
 import type { SystemInfo } from '@/api/system/info'
 
 /**
+ * 系统应用配置类型
+ * 用于存储从后端获取的系统级配置
+ */
+export interface SystemAppConfig {
+  /** 配置键名 */
+  configKey: string
+  /** 配置键值 */
+  configValue: string
+  /** 配置类型 */
+  configType: string
+}
+
+/**
  * 系统设置状态管理
  * 管理应用的菜单、主题、界面显示等各项设置
  */
@@ -51,6 +66,12 @@ export const useSettingStore = defineStore(
     // 系统信息
     /** 系统信息（从接口获取） */
     const systemInfo = ref<SystemInfo | null>(null)
+
+    // 系统应用配置
+    /** 系统应用配置列表（从后端获取的系统级配置） */
+    const systemAppConfigs = ref<Api.System.ConfigVO[]>([])
+    /** 系统应用配置是否已加载 */
+    const systemAppConfigLoaded = ref(false)
 
     // 菜单相关设置
     /** 菜单类型 */
@@ -391,8 +412,65 @@ export const useSettingStore = defineStore(
       systemInfo.value = info
     }
 
+    /**
+     * 设置系统应用配置
+     * @param configs 系统应用配置列表
+     */
+    const setSystemAppConfigs = (configs: Api.System.ConfigVO[]) => {
+      systemAppConfigs.value = configs
+      systemAppConfigLoaded.value = true
+    }
+
+    /**
+     * 获取系统应用配置值
+     * @param key 配置键名
+     * @param defaultValue 默认值
+     * @returns 配置值
+     */
+    const getSystemAppConfig = (key: string, defaultValue?: string): string | undefined => {
+      const config = systemAppConfigs.value.find(c => c.configKey === key)
+      return config?.configValue ?? defaultValue
+    }
+
+    /**
+     * 检查系统应用配置是否启用
+     * @param key 配置键名
+     * @returns 是否启用（Y/true/1 为启用）
+     */
+    const isSystemAppConfigEnabled = (key: string): boolean => {
+      const value = getSystemAppConfig(key)
+      if (!value) return false
+      
+      // 支持多种格式：'Y', 'true', '1', 'yes', 'on'
+      const enabledValues = ['Y', 'y', 'true', 'TRUE', '1', 'yes', 'YES', 'on', 'ON']
+      return enabledValues.includes(value)
+    }
+
+    /**
+     * 应用系统级配置约束
+     * 根据后端返回的系统配置，应用强制性的配置
+     */
+    const applySystemAppConfigConstraints = () => {
+      // 系统水印配置直接控制显示，不需要额外处理
+      // 未来可以在这里添加更多系统级配置的应用逻辑
+      // 例如：
+      // - 强制主题模式
+      // - 禁用某些功能
+      // - 设置默认值等
+    }
+
+    /**
+     * 重置系统应用配置
+     */
+    const resetSystemAppConfigs = () => {
+      systemAppConfigs.value = []
+      systemAppConfigLoaded.value = false
+    }
+
     return {
       systemInfo,
+      systemAppConfigs,
+      systemAppConfigLoaded,
       menuType,
       menuOpenWidth,
       systemThemeType,
@@ -456,7 +534,12 @@ export const useSettingStore = defineStore(
       setFestivalDate,
       setDualMenuShowText,
       setAuthLayout,
-      setSystemInfo
+      setSystemInfo,
+      setSystemAppConfigs,
+      getSystemAppConfig,
+      isSystemAppConfigEnabled,
+      applySystemAppConfigConstraints,
+      resetSystemAppConfigs
     }
   },
   {
