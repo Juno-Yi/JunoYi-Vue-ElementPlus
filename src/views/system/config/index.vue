@@ -125,18 +125,21 @@
         {
           prop: 'configName',
           label: '参数名称',
+          align: 'center',
           headerAlign: 'center',
           minWidth: 150
         },
         {
           prop: 'configKey',
           label: '参数键名',
+          align: 'center',
           headerAlign: 'center',
           minWidth: 180
         },
         {
           prop: 'configValue',
           label: '参数键值',
+          align: 'center',
           headerAlign: 'center',
           minWidth: 150,
           showOverflowTooltip: true
