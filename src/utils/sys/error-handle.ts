@@ -99,4 +99,29 @@ export function setupErrorHandle(app: App) {
   window.onerror = scriptErrorHandler
   registerPromiseErrorHandler()
   registerResourceErrorHandler()
+  
+  // 修复 ResizeObserver loop 错误
+  // 通过捕获并在下一帧重新触发来避免循环
+  const debounce = (callback: Function, delay: number) => {
+    let timeoutId: number
+    return (...args: any[]) => {
+      clearTimeout(timeoutId)
+      timeoutId = window.setTimeout(() => callback(...args), delay)
+    }
+  }
+
+  // 重写 ResizeObserver 以避免循环错误
+  if (typeof ResizeObserver !== 'undefined') {
+    const OriginalResizeObserver = window.ResizeObserver
+    window.ResizeObserver = class extends OriginalResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        const wrappedCallback = debounce((entries: ResizeObserverEntry[], observer: ResizeObserver) => {
+          window.requestAnimationFrame(() => {
+            callback(entries, observer)
+          })
+        }, 0)
+        super(wrappedCallback)
+      }
+    }
+  }
 }
