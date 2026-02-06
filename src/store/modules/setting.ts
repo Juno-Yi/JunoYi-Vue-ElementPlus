@@ -451,12 +451,40 @@ export const useSettingStore = defineStore(
      * 根据后端返回的系统配置，应用强制性的配置
      */
     const applySystemAppConfigConstraints = () => {
+      // 应用菜单布局配置
+      applyMenuLayoutConfig()
+      
       // 系统水印配置直接控制显示，不需要额外处理
       // 未来可以在这里添加更多系统级配置的应用逻辑
       // 例如：
       // - 强制主题模式
       // - 禁用某些功能
       // - 设置默认值等
+    }
+
+    /**
+     * 应用菜单布局配置
+     * 根据后端返回的 sys.menu.layout.default 配置设置菜单布局
+     */
+    const applyMenuLayoutConfig = () => {
+      const layoutValue = getSystemAppConfig('sys.menu.layout.default')
+      if (!layoutValue) {
+        return
+      }
+
+      // 后端值到前端枚举的映射
+      const layoutMap: Record<string, MenuTypeEnum> = {
+        'left': MenuTypeEnum.LEFT,        // 垂直（左侧）
+        'top': MenuTypeEnum.TOP,          // 水平（顶部）
+        'mix': MenuTypeEnum.TOP_LEFT,     // 混合（顶部+左侧）
+        'double': MenuTypeEnum.DUAL_MENU  // 双列
+      }
+
+      const targetLayout = layoutMap[layoutValue.toLowerCase()]
+      if (targetLayout && targetLayout !== menuType.value) {
+        console.log(`[System] 应用系统菜单布局配置: ${layoutValue} -> ${targetLayout}`)
+        switchMenuLayouts(targetLayout)
+      }
     }
 
     /**
@@ -539,6 +567,7 @@ export const useSettingStore = defineStore(
       getSystemAppConfig,
       isSystemAppConfigEnabled,
       applySystemAppConfigConstraints,
+      applyMenuLayoutConfig,
       resetSystemAppConfigs
     }
   },
