@@ -7,16 +7,6 @@
     align-center
     @close="handleClose"
   >
-    <!-- 系统内置参数提示 -->
-    <ElAlert
-      v-if="isSystemBuiltIn"
-      title="系统内置参数不允许修改参数键名"
-      type="warning"
-      :closable="false"
-      show-icon
-      class="mb-4"
-    />
-
     <ElForm
       ref="formRef"
       :model="form"
@@ -89,8 +79,8 @@
       <!-- 系统内置选项仅在编辑模式下显示 -->
       <ElFormItem v-if="dialogType === 'edit'" label="系统内置" prop="isSystem">
         <ElRadioGroup v-model="form.isSystem" disabled>
-          <ElRadio :value="1">是</ElRadio>
-          <ElRadio :value="0">否</ElRadio>
+          <ElRadio label="Y">是</ElRadio>
+          <ElRadio label="N">否</ElRadio>
         </ElRadioGroup>
       </ElFormItem>
 
@@ -153,7 +143,8 @@
 
   // 是否为系统内置参数
   const isSystemBuiltIn = computed(() => {
-    return props.dialogType === 'edit' && form.value.isSystem === 1
+    if (props.dialogType !== 'edit') return false
+    return form.value.isSystem === 'Y'
   })
 
   const formRef = ref<FormInstance>()
@@ -168,7 +159,7 @@
     configType: 'text',
     configGroup: 'default',
     sort: 0,
-    isSystem: 0,
+    isSystem: 'N',
     status: 0,
     remark: ''
   })
@@ -200,7 +191,7 @@
         nextTick(() => {
           if (props.dialogType === 'edit' && props.configData) {
             // 编辑模式：填充数据
-            form.value = { ...props.configData }
+            form.value = { ...props.configData } as ConfigDTO
           } else {
             // 添加模式：重置表单
             resetForm()
@@ -222,7 +213,7 @@
       configType: 'text',
       configGroup: 'default',
       sort: 0,
-      isSystem: 0, // 默认为非系统内置
+      isSystem: 'N', // 默认为非系统内置
       status: 0, // 默认为正常状态
       remark: ''
     }

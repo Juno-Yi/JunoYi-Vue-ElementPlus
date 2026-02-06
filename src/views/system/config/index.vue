@@ -157,7 +157,11 @@
               boolean: '布尔',
               json: 'JSON'
             }
-            return typeMap[row.configType] || row.configType
+            // 调试：打印实际的 configType 值
+            if (import.meta.env.DEV) {
+              console.log('ConfigType value:', row.configType, 'Full row:', row)
+            }
+            return typeMap[row.configType] || row.configType || '-'
           }
         },
         {
@@ -181,7 +185,7 @@
           headerAlign: 'center',
           width: 100,
           formatter: (row: ConfigVO) => {
-            const isBuiltIn = row.isSystem === 1
+            const isBuiltIn = row.isSystem === 'Y'
             return h(
               ElTag,
               { type: isBuiltIn ? 'danger' : 'success', size: 'small' },
@@ -229,28 +233,28 @@
           formatter: (row: ConfigVO) => {
             const buttons = []
 
+            // 编辑按钮
             if (hasPermission('system.ui.config.button.edit')) {
-              buttons.push({
-                text: '编辑',
-                type: 'primary',
-                link: true,
-                onClick: () => showDialog('edit', row)
-              })
+              buttons.push(
+                h(ArtButtonTable, {
+                  type: 'edit',
+                  onClick: () => showDialog('edit', row)
+                })
+              )
             }
 
-            // 系统内置参数不允许删除
-            if (hasPermission('system.ui.config.button.delete') && row.isSystem !== 1) {
-              buttons.push({
-                text: '删除',
-                type: 'danger',
-                link: true,
-                onClick: () => handleDeleteConfig(row)
-              })
+            // 删除按钮（系统内置参数不允许删除）
+            const isBuiltIn = row.isSystem === 'Y'
+            if (hasPermission('system.ui.config.button.delete') && !isBuiltIn) {
+              buttons.push(
+                h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => handleDeleteConfig(row)
+                })
+              )
             }
 
-            if (buttons.length === 0) return '-'
-
-            return h(ArtButtonTable, { buttons })
+            return h('div', { class: 'flex items-center justify-center' }, buttons)
           }
         }
       ]
@@ -302,7 +306,7 @@
    */
   const handleDeleteConfig = async (row: ConfigVO) => {
     // 系统内置参数不允许删除
-    if (row.isSystem === 1) {
+    if (row.isSystem === 'Y') {
       ElMessage.warning('系统内置参数不允许删除')
       return
     }
@@ -336,7 +340,7 @@
 
     // 检查是否包含系统内置参数
     const selectedRows = data.value.filter(item => selectedIds.value.includes(item.id))
-    const hasSystemBuiltIn = selectedRows.some(item => item.isSystem === 1)
+    const hasSystemBuiltIn = selectedRows.some(item => item.isSystem === 'Y')
     
     if (hasSystemBuiltIn) {
       ElMessage.warning('选中的参数中包含系统内置参数，不允许删除')

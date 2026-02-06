@@ -14,8 +14,8 @@ declare namespace Api.System {
     configType?: string
     /** 参数分组 */
     configGroup?: string
-    /** 系统内置（1是 0否） */
-    isSystem?: number
+    /** 系统内置（Y是 N否） */
+    isSystem?: string
     /** 当前页 */
     current?: number
     /** 每页条数 */
@@ -40,8 +40,8 @@ declare namespace Api.System {
     configGroup: string
     /** 排序 */
     sort?: number
-    /** 系统内置（1是 0否） */
-    isSystem: number
+    /** 系统内置（Y是 N否） */
+    isSystem: string
     /** 状态（0正常 1停用） */
     status?: number
     /** 备注 */
@@ -70,8 +70,8 @@ declare namespace Api.System {
     configGroup: string
     /** 排序 */
     sort?: number
-    /** 系统内置（1是 0否） */
-    isSystem?: number
+    /** 系统内置（Y是 N否） */
+    isSystem?: string
     /** 状态（0正常 1停用） */
     status?: number
     /** 备注 */
