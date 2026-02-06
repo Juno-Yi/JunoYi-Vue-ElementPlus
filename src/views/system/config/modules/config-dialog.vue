@@ -1,11 +1,211 @@
-<script setup lang="ts">
-
-</script>
-
+<!-- 系统参数编辑/添加弹窗 -->
 <template>
+  <ElDialog
+    v-model="visible"
+    :title="title"
+    width="600px"
+    align-center
+    @close="handleClose"
+  >
+    <ElForm
+      ref="formRef"
+      :model="form"
+      :rules="formRules"
+      label-width="100px"
+    >
+      <ElFormItem label="参数名称" prop="configName">
+        <ElInput
+          v-model="form.configName"
+          placeholder="请输入参数名称"
+          clearable
+        />
+      </ElFormItem>
 
+      <ElFormItem label="参数键名" prop="configKey">
+        <ElInput
+          v-model="form.configKey"
+          placeholder="请输入参数键名"
+          clearable
+        />
+      </ElFormItem>
+
+      <ElFormItem label="参数键值" prop="configValue">
+        <ElInput
+          v-model="form.configValue"
+          type="textarea"
+          :rows="3"
+          placeholder="请输入参数键值"
+        />
+      </ElFormItem>
+
+      <ElFormItem label="系统内置" prop="configType">
+        <ElRadioGroup v-model="form.configType">
+          <ElRadio label="Y">是</ElRadio>
+          <ElRadio label="N">否</ElRadio>
+        </ElRadioGroup>
+      </ElFormItem>
+
+      <ElFormItem label="备注" prop="remark">
+        <ElInput
+          v-model="form.remark"
+          type="textarea"
+          :rows="3"
+          placeholder="请输入备注"
+        />
+      </ElFormItem>
+    </ElForm>
+
+    <template #footer>
+      <ElButton @click="handleClose">取消</ElButton>
+      <ElButton type="primary" :loading="submitting" @click="handleSubmit">
+        确定
+      </ElButton>
+    </template>
+  </ElDialog>
 </template>
 
-<style scoped>
+<script setup lang="ts">
+  import type { FormInstance, FormRules } from 'element-plus'
+  // import { fetchAddConfig, fetchUpdateConfig } from '@/api/system/config'
 
-</style>
+  defineOptions({ name: 'ConfigDialog' })
+
+  // 临时类型定义，等待后端 API
+  type ConfigVO = {
+    id?: number
+    configName: string
+    configKey: string
+    configValue: string
+    configType: string
+    remark?: string
+    createTime?: string
+    updateTime?: string
+  }
+
+  interface Props {
+    modelValue: boolean
+    dialogType: 'add' | 'edit'
+    configData?: ConfigVO
+  }
+
+  interface Emits {
+    (e: 'update:modelValue', value: boolean): void
+    (e: 'success'): void
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    modelValue: false,
+    dialogType: 'add',
+    configData: undefined
+  })
+
+  const emit = defineEmits<Emits>()
+
+  const visible = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
+  })
+
+  // 弹窗标题
+  const title = computed(() => {
+    return props.dialogType === 'add' ? '新增参数' : '编辑参数'
+  })
+
+  const formRef = ref<FormInstance>()
+  const submitting = ref(false)
+
+  // 表单数据
+  const form = ref<ConfigVO>({
+    id: undefined,
+    configName: '',
+    configKey: '',
+    configValue: '',
+    configType: 'N',
+    remark: ''
+  })
+
+  // 表单验证规则
+  const formRules: FormRules = {
+    configName: [
+      { required: true, message: '请输入参数名称', trigger: 'blur' }
+    ],
+    configKey: [
+      { required: true, message: '请输入参数键名', trigger: 'blur' }
+    ],
+    configValue: [
+      { required: true, message: '请输入参数键值', trigger: 'blur' }
+    ],
+    configType: [
+      { required: true, message: '请选择是否系统内置', trigger: 'change' }
+    ]
+  }
+
+  // 监听弹窗打开，初始化表单数据
+  watch(
+    () => props.modelValue,
+    (val) => {
+      if (val) {
+        nextTick(() => {
+          if (props.dialogType === 'edit' && props.configData) {
+            // 编辑模式：填充数据
+            form.value = { ...props.configData }
+          } else {
+            // 添加模式：重置表单
+            resetForm()
+          }
+        })
+      }
+    }
+  )
+
+  /**
+   * 重置表单
+   */
+  const resetForm = () => {
+    form.value = {
+      id: undefined,
+      configName: '',
+      configKey: '',
+      configValue: '',
+      configType: 'N',
+      remark: ''
+    }
+    formRef.value?.clearValidate()
+  }
+
+  /**
+   * 关闭弹窗
+   */
+  const handleClose = () => {
+    visible.value = false
+    resetForm()
+  }
+
+  /**
+   * 提交表单
+   */
+  const handleSubmit = async () => {
+    if (!formRef.value) return
+
+    try {
+      await formRef.value.validate()
+      submitting.value = true
+
+      // 根据类型调用不同的 API
+      if (props.dialogType === 'add') {
+        // await fetchAddConfig(form.value)
+        ElMessage.success('新增成功')
+      } else {
+        // await fetchUpdateConfig(form.value)
+        ElMessage.success('编辑成功')
+      }
+
+      emit('success')
+      handleClose()
+    } catch (error) {
+      console.error('表单验证失败:', error)
+    } finally {
+      submitting.value = false
+    }
+  }
+</script>
