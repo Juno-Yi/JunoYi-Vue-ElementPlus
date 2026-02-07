@@ -23,8 +23,8 @@
       </ElFormItem>
       <ElFormItem label="性别" prop="sex">
         <ElSelect v-model="formData.sex" placeholder="请选择性别">
-          <ElOption label="男" value="0" />
-          <ElOption label="女" value="1" />
+          <ElOption label="男" value="1" />
+          <ElOption label="女" value="0" />
         </ElSelect>
       </ElFormItem>
       <ElFormItem v-if="dialogType === 'edit'" label="状态" prop="status">
