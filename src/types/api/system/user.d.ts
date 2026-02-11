@@ -34,20 +34,30 @@ declare namespace Api.System {
     userId: number
     /** 部门ID */
     deptId?: number
+    /** 部门名称 */
+    deptName?: string
     /** 用户名 */
     userName: string
     /** 昵称 */
     nickName?: string
-    /** 邮箱 */
+    /** 头像 */
+    avatar?: string
+    /** 邮箱（可能脱敏） */
     email?: string
-    /** 手机号 */
+    /** 手机号（可能脱敏） */
     phonenumber?: string
     /** 性别 */
     sex?: string
-    /** 头像 */
-    avatar?: string
+    /** 性别标签（字典翻译） */
+    sexLabel?: string
+    /** 性别标签类型（用于前端标签颜色） */
+    sexType?: string
     /** 状态 1-启用 0-禁用 */
     status: number
+    /** 状态标签（字典翻译） */
+    statusLabel?: string
+    /** 状态标签类型（用于前端标签颜色） */
+    statusType?: string
     /** 创建时间 */
     createTime?: string
     /** 更新时间 */

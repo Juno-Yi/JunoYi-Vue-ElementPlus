@@ -197,24 +197,6 @@
     status: undefined
   })
 
-  // 用户状态配置
-  const USER_STATUS_CONFIG = {
-    1: { type: 'success' as const, text: '启用' },
-    0: { type: 'danger' as const, text: '禁用' }
-  } as const
-
-  /**
-   * 获取用户状态配置
-   */
-  const getUserStatusConfig = (status: number) => {
-    return (
-      USER_STATUS_CONFIG[status as keyof typeof USER_STATUS_CONFIG] || {
-        type: 'info' as const,
-        text: '未知'
-      }
-    )
-  }
-
   const {
     columns,
     columnChecks,
@@ -259,16 +241,16 @@
           headerAlign: 'center'
         },
         {
-          prop: 'sex',
+          prop: 'sexLabel',
           label: '性别',
           width: 80,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SysUserVO) => {
-            if (row.sex === '0') return '未知'
-            if (row.sex === '1') return '男'
-            if (row.sex === '2') return '女'
-            return '未知'
+            return h(ElTag, { 
+              type: (row.sexType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+              size: 'small' 
+            }, () => row.sexLabel || '-')
           }
         },
         {
@@ -286,14 +268,16 @@
           headerAlign: 'center'
         },
         {
-          prop: 'status',
+          prop: 'statusLabel',
           label: '状态',
           width: 80,
           align: 'center',
           headerAlign: 'center',
           formatter: (row: SysUserVO) => {
-            const statusConfig = getUserStatusConfig(row.status)
-            return h(ElTag, { type: statusConfig.type }, () => statusConfig.text)
+            return h(ElTag, { 
+              type: (row.statusType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+              size: 'small' 
+            }, () => row.statusLabel || '-')
           }
         },
         {
