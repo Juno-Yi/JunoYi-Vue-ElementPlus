@@ -240,7 +240,8 @@
     "monitor": {
       "title": "系统监控",
       "session": "会话监控",
-      "cache": "缓存监控"
+      "cache": "缓存监控",
+      "info": "系统信息"
     },
     "operation": {
       "title": "系统功能",

@@ -240,7 +240,8 @@
     "monitor": {
       "title": "System Monitor",
       "session": "Session Monitor",
-      "cache": "Cache Monitor"
+      "cache": "Cache Monitor",
+      "info": "System Info"
     },
     "operation": {
       "title": "System Function",
