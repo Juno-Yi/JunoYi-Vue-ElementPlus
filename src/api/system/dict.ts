@@ -35,7 +35,6 @@ export function fetchAddDictType(data: Api.System.DictTypeDTO) {
     return request.post<void>({
         url: '/system/dict/type',
         data,
-        showSuccessMessage: true
     })
 }
 
@@ -46,7 +45,6 @@ export function fetchUpdateDictType(data: Api.System.DictTypeDTO) {
     return request.put<void>({
         url: '/system/dict/type',
         data,
-        showSuccessMessage: true
     })
 }
 
@@ -56,7 +54,6 @@ export function fetchUpdateDictType(data: Api.System.DictTypeDTO) {
 export function fetchDeleteDictType(dictId: number | string) {
     return request.del<void>({
         url: `/system/dict/type/${dictId}`,
-        showSuccessMessage: true
     })
 }
 
@@ -67,7 +64,6 @@ export function fetchDeleteDictTypes(dictIds: number[]) {
     return request.del<void>({
         url: '/system/dict/type/batch',
         data: dictIds,
-        showSuccessMessage: true
     })
 }
 
@@ -106,7 +102,6 @@ export function fetchAddDictData(data: Api.System.DictDataDTO) {
     return request.post<void>({
         url: '/system/dict/data',
         data,
-        showSuccessMessage: true
     })
 }
 
@@ -117,7 +112,6 @@ export function fetchUpdateDictData(data: Api.System.DictDataDTO) {
     return request.put<void>({
         url: '/system/dict/data',
         data,
-        showSuccessMessage: true
     })
 }
 
@@ -127,7 +121,6 @@ export function fetchUpdateDictData(data: Api.System.DictDataDTO) {
 export function fetchDeleteDictData(dictCode: number | string) {
     return request.del<void>({
         url: `/system/dict/data/${dictCode}`,
-        showSuccessMessage: true
     })
 }
 
@@ -138,6 +131,5 @@ export function fetchDeleteDictDataList(dictCodes: number[]) {
     return request.del<void>({
         url: '/system/dict/data/batch',
         data: dictCodes,
-        showSuccessMessage: true
     })
 }
