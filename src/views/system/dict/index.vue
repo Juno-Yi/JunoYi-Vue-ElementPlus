@@ -114,8 +114,9 @@
           </template>
 
           <div v-if="!currentDictType" class="empty-tip">
-            <ArtSvgIcon icon="ri:inbox-line" :size="48" />
-            <p>请先选择字典类型</p>
+            <ArtSvgIcon icon="ri:folder-open-line" :size="64" class="empty-icon" />
+            <p class="empty-title">请选择字典类型</p>
+            <p class="empty-desc">从左侧列表中选择一个字典类型以查看和管理字典数据</p>
           </div>
 
           <div v-else class="dict-data-container">
@@ -384,8 +385,9 @@ const getDictDataList = async () => {
       pageNum: dataPagination.current,
       pageSize: dataPagination.size
     })
-    // API封装已经提取了data字段，res就是分页对象 { records, total, size, current, pages }
-    dictDataList.value = res?.records || []
+    // API封装已经提取了data字段，res就是分页对象
+    // 后端返回的是 { list, total, size, current, pages }
+    dictDataList.value = res?.list || res?.records || []
     dataPagination.total = res?.total || 0
   } catch (error) {
     console.error('获取字典数据列表失败:', error)
@@ -630,12 +632,26 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 400px;
+  height: calc(100vh - 240px);
   color: var(--el-text-color-secondary);
 
-  p {
-    margin-top: 16px;
+  .empty-icon {
+    color: var(--el-text-color-placeholder);
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  .empty-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--el-text-color-regular);
+  }
+
+  .empty-desc {
+    margin: 0;
     font-size: 14px;
+    color: var(--el-text-color-secondary);
   }
 }
 </style>
