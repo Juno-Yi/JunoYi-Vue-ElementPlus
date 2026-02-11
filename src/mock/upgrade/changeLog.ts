@@ -16,6 +16,23 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.5.1-beta',
+        title: '优化字典管理',
+        date: '2026-2-11',
+        detail: {
+            added: [
+
+            ],
+            changed: [
+
+            ],
+            fixed: [
+
+            ],
+
+        }
+    },
+    {
         version: 'v0.5.0-beta',
         title: '字典管理',
         date: '2026-2-11',
