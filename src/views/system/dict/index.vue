@@ -192,6 +192,7 @@ import { h } from 'vue'
 import { ElMessageBox, ElMessage, ElTag, ElButton } from 'element-plus'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
 import ArtTable from '@/components/core/tables/art-table/index.vue'
+import ArtButtonMore, { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
 import DictTypeDialog from './modules/dict-type-dialog.vue'
 import DictDataDialog from './modules/dict-data-dialog.vue'
 import { usePermission } from '@/hooks/core/usePermission'
@@ -256,34 +257,53 @@ const dataColumns: any[] = [
   {
     prop: 'action',
     label: '操作',
-    width: 150,
+    width: 80,
+    align: 'center',
+    headerAlign: 'center',
     fixed: 'right' as const,
     formatter: (row: DictDataVO) => {
-      return h('div', { class: 'table-actions' }, [
-        h(
-            ElButton,
-            {
-              type: 'primary',
-              link: true,
-              size: 'small',
-              onClick: () => handleEditDictData(row)
-            },
-            () => '编辑'
-        ),
-        h(
-            ElButton,
-            {
-              type: 'danger',
-              link: true,
-              size: 'small',
-              onClick: () => handleDeleteDictData(row.dictCode)
-            },
-            () => '删除'
-        )
-      ])
+      const list: ButtonMoreItem[] = []
+
+      if (hasPermission('system.ui.dict.button.edit')) {
+        list.push({
+          key: 'edit',
+          label: '编辑',
+          icon: 'ri:edit-2-line'
+        })
+      }
+
+      if (hasPermission('system.ui.dict.button.delete')) {
+        list.push({
+          key: 'delete',
+          label: '删除',
+          icon: 'ri:delete-bin-4-line',
+          color: '#f56c6c'
+        })
+      }
+
+      if (list.length === 0) return '-'
+
+      return h(ArtButtonMore, {
+        list,
+        onClick: (item: ButtonMoreItem) => handleDictDataAction(item, row)
+      })
     }
   }
 ]
+
+/**
+ * 处理字典数据操作按钮点击
+ */
+const handleDictDataAction = (item: ButtonMoreItem, row: DictDataVO) => {
+  switch (item.key) {
+    case 'edit':
+      handleEditDictData(row)
+      break
+    case 'delete':
+      handleDeleteDictData(row.dictCode)
+      break
+  }
+}
 
 // 获取字典类型列表
 const getDictTypeList = async () => {
