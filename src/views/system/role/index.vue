@@ -157,20 +157,16 @@
           width: 80,
         },
         {
-          prop: 'status',
+          prop: 'statusLabel',
           label: '状态',
           align: 'center',
           headerAlign: 'center',
           width: 100,
           formatter: (row: RoleVO) => {
-            const statusConfig = row.status === 1
-              ? { type: 'success', text: '启用' }
-              : { type: 'danger', text: '禁用' }
-            return h(
-              ElTag,
-              { type: statusConfig.type as 'success' | 'danger', size: 'small' },
-              () => statusConfig.text
-            )
+            return h(ElTag, { 
+              type: (row.statusType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+              size: 'small' 
+            }, () => row.statusLabel || '-')
           }
         },
         {

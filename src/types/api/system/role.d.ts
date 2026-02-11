@@ -32,8 +32,16 @@ declare namespace Api.System {
     sort: number
     /** 数据范围 */
     dataScope: string
+    /** 数据范围标签（字典翻译） */
+    dataScopeLabel?: string
+    /** 数据范围标签类型（用于前端标签颜色） */
+    dataScopeType?: string
     /** 状态（0禁用 1启用） */
     status: number
+    /** 状态标签（字典翻译） */
+    statusLabel?: string
+    /** 状态标签类型（用于前端标签颜色） */
+    statusType?: string
     /** 创建时间 */
     createTime: string
     /** 更新时间 */
