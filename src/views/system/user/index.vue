@@ -264,7 +264,12 @@
           width: 80,
           align: 'center',
           headerAlign: 'center',
-          formatter: (row: SysUserVO) => (row.sex === '1' ? '男' : row.sex === '0' ? '女' : '未知')
+          formatter: (row: SysUserVO) => {
+            if (row.sex === '0') return '未知'
+            if (row.sex === '1') return '男'
+            if (row.sex === '2') return '女'
+            return '未知'
+          }
         },
         {
           prop: 'phonenumber',
