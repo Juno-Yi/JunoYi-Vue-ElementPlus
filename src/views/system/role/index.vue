@@ -164,7 +164,7 @@
           width: 100,
           formatter: (row: RoleVO) => {
             return h(ElTag, { 
-              type: (row.statusType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+              type: (row.statusType || 'info') as 'success' | 'info' | 'warning' | 'danger', 
               size: 'small' 
             }, () => row.statusLabel || '-')
           }

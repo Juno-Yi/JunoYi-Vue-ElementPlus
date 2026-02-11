@@ -248,7 +248,7 @@
           headerAlign: 'center',
           formatter: (row: SysUserVO) => {
             return h(ElTag, { 
-              type: (row.sexType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+              type: (row.sexType || 'info') as 'success' | 'info' | 'warning' | 'danger', 
               size: 'small' 
             }, () => row.sexLabel || '-')
           }
@@ -275,7 +275,7 @@
           headerAlign: 'center',
           formatter: (row: SysUserVO) => {
             return h(ElTag, { 
-              type: (row.statusType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+              type: (row.statusType || 'info') as 'success' | 'info' | 'warning' | 'danger', 
               size: 'small' 
             }, () => row.statusLabel || '-')
           }

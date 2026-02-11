@@ -407,7 +407,7 @@ const getDictDataList = async () => {
     })
     // API封装已经提取了data字段，res就是分页对象
     // 后端返回的是 { list, total, size, current, pages }
-    dictDataList.value = res?.list || res?.records || []
+    dictDataList.value = (res as any)?.list || res?.records || []
     dataPagination.total = res?.total || 0
   } catch (error) {
     console.error('获取字典数据列表失败:', error)

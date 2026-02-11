@@ -328,8 +328,8 @@
     }
 
     // 检查是否包含系统内置参数
-    const selectedRows = data.value.filter(item => selectedIds.value.includes(item.id))
-    const hasSystemBuiltIn = selectedRows.some(item => item.isSystem === 'Y')
+    const selectedRows = data.value.filter((item: Api.System.ConfigVO) => selectedIds.value.includes(item.id))
+    const hasSystemBuiltIn = selectedRows.some((item: Api.System.ConfigVO) => item.isSystem === 'Y')
     
     if (hasSystemBuiltIn) {
       ElMessage.warning('选中的参数中包含系统内置参数，不允许删除')
