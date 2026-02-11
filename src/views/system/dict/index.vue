@@ -459,54 +459,151 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.dict-page {
+  padding: 16px;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 500;
+  }
 }
 
+// 左侧字典类型卡片
+.dict-type-card {
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 56px);
+  }
+}
+
+// 搜索框
+.search-wrapper {
+  margin-bottom: 16px;
+}
+
+// 字典类型列表
 .dict-type-list {
-  max-height: calc(100vh - 280px);
+  flex: 1;
   overflow-y: auto;
+  padding-right: 4px;
+
+  // 滚动条样式
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--el-border-color);
+    border-radius: 3px;
+
+    &:hover {
+      background-color: var(--el-border-color-dark);
+    }
+  }
 }
 
+// 字典类型项
 .dict-type-item {
   padding: 12px;
   margin-bottom: 8px;
   border: 1px solid var(--el-border-color);
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     border-color: var(--el-color-primary);
     background-color: var(--el-color-primary-light-9);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   }
 
   &.active {
     border-color: var(--el-color-primary);
     background-color: var(--el-color-primary-light-9);
+
+    .type-icon {
+      color: var(--el-color-primary);
+    }
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.dict-type-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.dict-type-header {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.type-icon {
+  font-size: 20px;
+  color: var(--el-text-color-secondary);
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+
+  &.active {
+    color: var(--el-color-primary);
   }
 }
 
 .dict-type-info {
   flex: 1;
+  min-width: 0;
 }
 
 .dict-type-name {
   font-size: 14px;
   font-weight: 500;
-  margin-bottom: 4px;
+  color: var(--el-text-color-primary);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dict-type-code {
+  display: flex;
+  align-items: center;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+  font-family: 'Courier New', monospace;
 }
 
+.dict-type-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  .dict-type-item:hover & {
+    opacity: 1;
+  }
+}
+
+// 右侧字典数据区域
 .dict-data-container {
   display: flex;
   flex-direction: column;
@@ -517,7 +614,7 @@ onMounted(() => {
   margin-bottom: 16px;
   padding: 16px;
   background-color: var(--el-fill-color-light);
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .search-form {
