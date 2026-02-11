@@ -208,6 +208,7 @@ const pwdForm = reactive({
 
 // 性别选项
 const sexOptions = [
+  { value: '0', label: '未知' },
   { value: '1', label: '男' },
   { value: '2', label: '女' }
 ]
@@ -253,6 +254,7 @@ const pwdRules = reactive<FormRules>({
  * 获取性别文本
  */
 const getSexText = (sex?: string) => {
+  if (sex === '0') return '未知'
   if (sex === '1') return '男'
   if (sex === '2') return '女'
   return '未设置'
