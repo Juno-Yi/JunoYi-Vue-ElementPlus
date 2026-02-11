@@ -34,7 +34,7 @@ declare namespace Api.System {
     title: string
     /** 菜单图标 */
     icon: string
-    /** 菜单类型（0目录 1菜单 2按钮） */
+    /** 菜单类型（0目录 1菜单） */
     menuType: number
     /** 排序号 */
     sort: number
