@@ -21,9 +21,14 @@ export const upgradeLogList = ref<UpgradeLog[]>([
         date: '2026-2-11',
         detail: {
             added: [
-
+                '系统信息页面增加详细监控信息',
+                '实现系统基本信息、服务器信息、Java信息、内存信息和磁盘信息的监控功能',
+                '添加系统监控类型定义和API接口',
+                '初始化系统信息权限数据'
             ],
             changed: [
+                '更新系统信息页面',
+                '实现动态监控数据显示',
 
             ],
             fixed: [
