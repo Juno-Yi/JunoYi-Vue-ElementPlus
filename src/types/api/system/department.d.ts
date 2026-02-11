@@ -38,12 +38,16 @@ declare namespace Api.System {
     email: string
     /** 状态（0禁用 1启用） */
     status: number
-    /** 备注 */
-    remark: string
+    /** 状态标签（字典翻译） */
+    statusLabel?: string
+    /** 状态标签类型（用于前端标签颜色） */
+    statusType?: string
     /** 创建时间 */
     createTime: string
     /** 更新时间 */
     updateTime: string
+    /** 备注 */
+    remark: string
     /** 子部门列表 */
     children?: DeptVO[]
   }

@@ -278,14 +278,16 @@
       formatter: (row: DeptVO) => row.sort ?? 0
     },
     {
-      prop: 'status',
+      prop: 'statusLabel',
       label: '状态',
       width: 100,
       align: 'center',
       headerAlign: 'center',
       formatter: (row: DeptVO) => {
-        const status = row.status ?? 1
-        return h(ElTag, { type: status === 1 ? 'success' : 'danger', size: 'small' }, () => status === 1 ? '启用' : '禁用')
+        return h(ElTag, { 
+          type: (row.statusType || '') as 'success' | 'info' | 'warning' | 'danger' | '', 
+          size: 'small' 
+        }, () => row.statusLabel || '-')
       }
     },
     {
