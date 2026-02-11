@@ -1,5 +1,5 @@
 <template>
-  <div class="system-info-page">
+  <div class="system-info-page" v-loading="loading">
     <ElRow :gutter="16">
       <!-- 系统信息 -->
       <ElCol :span="12">
@@ -12,22 +12,22 @@
           </template>
           <ElDescriptions :column="1" border>
             <ElDescriptionsItem label="系统名称">
-              <ElTag type="primary">{{ systemInfo.name }}</ElTag>
+              <ElTag type="primary">{{ monitorData?.systemInfo?.name || '-' }}</ElTag>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="系统版本">
-              <ElTag type="success">{{ systemInfo.version }}</ElTag>
+              <ElTag type="success">{{ monitorData?.systemInfo?.version || '-' }}</ElTag>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="框架版本">
-              {{ systemInfo.frameworkVersion }}
+              {{ monitorData?.systemInfo?.frameworkVersion || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="运行环境">
-              {{ systemInfo.environment }}
+              {{ monitorData?.systemInfo?.environment || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="启动时间">
-              {{ systemInfo.startTime }}
+              {{ monitorData?.systemInfo?.startTime || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="运行时长">
-              <ElTag type="info">{{ systemInfo.uptime }}</ElTag>
+              <ElTag type="info">{{ monitorData?.systemInfo?.uptime || '-' }}</ElTag>
             </ElDescriptionsItem>
           </ElDescriptions>
         </ElCard>
@@ -44,22 +44,22 @@
           </template>
           <ElDescriptions :column="1" border>
             <ElDescriptionsItem label="服务器名称">
-              {{ serverInfo.name }}
+              {{ monitorData?.serverInfo?.name || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="操作系统">
-              {{ serverInfo.os }}
+              {{ monitorData?.serverInfo?.os || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="系统架构">
-              {{ serverInfo.arch }}
+              {{ monitorData?.serverInfo?.arch || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="CPU 核心数">
-              {{ serverInfo.cpuCores }}
+              {{ monitorData?.serverInfo?.cpuCores || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="服务器IP">
-              {{ serverInfo.ip }}
+              {{ monitorData?.serverInfo?.ip || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="服务器时间">
-              {{ serverInfo.time }}
+              {{ currentTime }}
             </ElDescriptionsItem>
           </ElDescriptions>
         </ElCard>
@@ -78,22 +78,26 @@
           </template>
           <ElDescriptions :column="1" border>
             <ElDescriptionsItem label="Java 版本">
-              {{ javaInfo.version }}
+              {{ monitorData?.javaInfo?.version || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="Java 供应商">
-              {{ javaInfo.vendor }}
+              {{ monitorData?.javaInfo?.vendor || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="Java Home">
-              <div class="text-ellipsis">{{ javaInfo.home }}</div>
+              <div class="text-ellipsis" :title="monitorData?.javaInfo?.home">
+                {{ monitorData?.javaInfo?.home || '-' }}
+              </div>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="JVM 名称">
-              {{ javaInfo.jvmName }}
+              {{ monitorData?.javaInfo?.jvmName || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="JVM 版本">
-              {{ javaInfo.jvmVersion }}
+              {{ monitorData?.javaInfo?.jvmVersion || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="运行参数">
-              <div class="text-ellipsis">{{ javaInfo.args }}</div>
+              <div class="text-ellipsis" :title="monitorData?.javaInfo?.args">
+                {{ monitorData?.javaInfo?.args || '-' }}
+              </div>
             </ElDescriptionsItem>
           </ElDescriptions>
         </ElCard>
@@ -110,26 +114,26 @@
           </template>
           <ElDescriptions :column="1" border>
             <ElDescriptionsItem label="总内存">
-              {{ memoryInfo.total }}
+              {{ monitorData?.memoryInfo?.total || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="已用内存">
-              <ElTag :type="getMemoryType(memoryInfo.usedPercent)">
-                {{ memoryInfo.used }} ({{ memoryInfo.usedPercent }}%)
+              <ElTag :type="getMemoryType(monitorData?.memoryInfo?.usedPercent || 0)">
+                {{ monitorData?.memoryInfo?.used || '-' }} ({{ monitorData?.memoryInfo?.usedPercent || 0 }}%)
               </ElTag>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="空闲内存">
-              {{ memoryInfo.free }}
+              {{ monitorData?.memoryInfo?.free || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="JVM 总内存">
-              {{ memoryInfo.jvmTotal }}
+              {{ monitorData?.memoryInfo?.jvmTotal || '-' }}
             </ElDescriptionsItem>
             <ElDescriptionsItem label="JVM 已用">
-              <ElTag :type="getMemoryType(memoryInfo.jvmUsedPercent)">
-                {{ memoryInfo.jvmUsed }} ({{ memoryInfo.jvmUsedPercent }}%)
+              <ElTag :type="getMemoryType(monitorData?.memoryInfo?.jvmUsedPercent || 0)">
+                {{ monitorData?.memoryInfo?.jvmUsed || '-' }} ({{ monitorData?.memoryInfo?.jvmUsedPercent || 0 }}%)
               </ElTag>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="JVM 空闲">
-              {{ memoryInfo.jvmFree }}
+              {{ monitorData?.memoryInfo?.jvmFree || '-' }}
             </ElDescriptionsItem>
           </ElDescriptions>
         </ElCard>
@@ -144,9 +148,19 @@
             <div class="card-header">
               <ArtSvgIcon icon="ri:hard-drive-2-line" class="mr-2" />
               <span>磁盘信息</span>
+              <ElButton 
+                type="primary" 
+                size="small" 
+                :icon="Refresh" 
+                @click="loadMonitorData"
+                :loading="loading"
+                class="ml-auto"
+              >
+                刷新
+              </ElButton>
             </div>
           </template>
-          <ElTable :data="diskInfo" border>
+          <ElTable :data="monitorData?.diskInfo || []" border>
             <ElTableColumn prop="path" label="挂载点" width="150" />
             <ElTableColumn prop="type" label="文件系统" width="120" />
             <ElTableColumn prop="total" label="总容量" width="120" />
@@ -169,77 +183,41 @@
 </template>
 
 <script setup lang="ts">
-import { ElCard, ElRow, ElCol, ElDescriptions, ElDescriptionsItem, ElTag, ElTable, ElTableColumn, ElProgress } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
+import { ElCard, ElRow, ElCol, ElDescriptions, ElDescriptionsItem, ElTag, ElTable, ElTableColumn, ElProgress, ElButton, ElMessage } from 'element-plus'
 import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
+import { fetchGetSystemMonitor } from '@/api/system/monitor'
 
 defineOptions({ name: 'SystemInfo' })
 
-// 系统信息
-const systemInfo = ref({
-  name: 'JunoYi 企业级开发框架',
-  version: '1.0.0',
-  frameworkVersion: 'Spring Boot 3.2.0',
-  environment: 'Production',
-  startTime: '2024-01-01 10:00:00',
-  uptime: '15天 6小时 30分钟'
-})
+const loading = ref(false)
+const monitorData = ref<Api.System.SystemMonitorVO | null>(null)
+const currentTime = ref('')
 
-// 服务器信息
-const serverInfo = ref({
-  name: 'junoyi-server-01',
-  os: 'Linux 5.15.0-91-generic',
-  arch: 'x86_64',
-  cpuCores: 8,
-  ip: '192.168.1.100',
-  time: new Date().toLocaleString()
-})
-
-// Java 信息
-const javaInfo = ref({
-  version: '17.0.9',
-  vendor: 'Oracle Corporation',
-  home: '/usr/lib/jvm/java-17-openjdk-amd64',
-  jvmName: 'OpenJDK 64-Bit Server VM',
-  jvmVersion: '17.0.9+9-Ubuntu-122.04',
-  args: '-Xms512m -Xmx2048m -XX:+UseG1GC'
-})
-
-// 内存信息
-const memoryInfo = ref({
-  total: '16.0 GB',
-  used: '8.5 GB',
-  free: '7.5 GB',
-  usedPercent: 53,
-  jvmTotal: '2.0 GB',
-  jvmUsed: '1.2 GB',
-  jvmFree: '0.8 GB',
-  jvmUsedPercent: 60
-})
-
-// 磁盘信息
-const diskInfo = ref([
-  {
-    path: '/',
-    type: 'ext4',
-    total: '100 GB',
-    used: '45 GB',
-    free: '55 GB',
-    usedPercent: 45
-  },
-  {
-    path: '/data',
-    type: 'ext4',
-    total: '500 GB',
-    used: '320 GB',
-    free: '180 GB',
-    usedPercent: 64
+/**
+ * 加载系统监控数据
+ */
+const loadMonitorData = async () => {
+  loading.value = true
+  try {
+    const data = await fetchGetSystemMonitor()
+    monitorData.value = data
+    // 初始化当前时间
+    if (data.serverInfo?.time) {
+      currentTime.value = data.serverInfo.time
+    }
+  } catch (error) {
+    console.error('获取系统监控信息失败:', error)
+    ElMessage.error('获取系统监控信息失败')
+  } finally {
+    loading.value = false
   }
-])
+}
 
 /**
  * 获取内存使用率标签类型
  */
-const getMemoryType = (percent: number) => {
+const getMemoryType = (percent: number): 'success' | 'warning' | 'danger' => {
   if (percent < 60) return 'success'
   if (percent < 80) return 'warning'
   return 'danger'
@@ -248,21 +226,42 @@ const getMemoryType = (percent: number) => {
 /**
  * 获取进度条颜色
  */
-const getProgressColor = (percent: number) => {
+const getProgressColor = (percent: number): string => {
   if (percent < 60) return '#67c23a'
   if (percent < 80) return '#e6a23c'
   return '#f56c6c'
 }
 
-// 定时更新服务器时间
-onMounted(() => {
-  const timer = setInterval(() => {
-    serverInfo.value.time = new Date().toLocaleString()
-  }, 1000)
+// 定时更新当前时间
+let timeTimer: NodeJS.Timeout | null = null
 
-  onUnmounted(() => {
-    clearInterval(timer)
-  })
+onMounted(() => {
+  // 加载数据
+  loadMonitorData()
+  
+  // 每秒更新当前时间
+  timeTimer = setInterval(() => {
+    if (currentTime.value) {
+      const date = new Date(currentTime.value)
+      date.setSeconds(date.getSeconds() + 1)
+      currentTime.value = date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      })
+    }
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (timeTimer) {
+    clearInterval(timeTimer)
+    timeTimer = null
+  }
 })
 </script>
 
@@ -292,6 +291,7 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 300px;
+  cursor: help;
 }
 
 :deep(.el-descriptions__label) {
