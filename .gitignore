@@ -33,7 +33,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-temp/
 
 /.idea/
 
