@@ -1,9 +1,9 @@
 <!-- 布局内容 -->
 <template>
-  <div class="layout-content" :class="{ 'overflow-auto': isFullPage }" :style="containerStyle">
+  <div class="layout-content" :style="containerStyle">
     <div id="app-content-header">
       <!-- 节日滚动 -->
-      <ArtFestivalTextScroll v-if="!isFullPage" />
+      <ArtFestivalTextScroll />
 
       <!-- 路由信息调试 -->
       <div
@@ -50,6 +50,7 @@
 <script setup lang="ts">
   import type { CSSProperties } from 'vue'
   import { useRoute } from 'vue-router'
+  import { useFullscreen } from '@vueuse/core'
   import { useAutoLayoutHeight } from '@/hooks/core/useLayoutHeight'
   import { useSettingStore } from '@/store/modules/setting'
   import { useWorktabStore } from '@/store/modules/worktab'
@@ -68,25 +69,43 @@
   // 标记是否是首次加载（浏览器刷新）
   const isFirstLoad = ref(true)
 
-  // 检查当前路由是否需要使用无基础布局模式
+  // 浏览器全屏 API
+  const { isFullscreen, enter: enterFullscreen, exit: exitFullscreen } = useFullscreen()
+
+  // 检查当前路由是否需要全屏显示
   const isFullPage = computed(() => route.matched.some((r) => r.meta?.isFullPage))
   const prevIsFullPage = ref(isFullPage.value)
 
-  // 切换动画名称：首次加载、从全屏返回时不使用动画
+  // 切换动画名称：首次加载时不使用动画
   const actualTransition = computed(() => {
     if (isFirstLoad.value) return ''
-    if (prevIsFullPage.value && !isFullPage.value) return ''
     return pageTransition.value
   })
 
-  // 监听全屏状态变化，显示过渡遮罩
-  watch(isFullPage, (val, oldVal) => {
+  // 监听路由的 isFullPage 变化，自动进入/退出浏览器全屏
+  watch(isFullPage, async (val, oldVal) => {
     if (val !== oldVal) {
       showTransitionMask.value = true
-      // 延迟隐藏遮罩，给足时间让页面完成切换
       setTimeout(() => {
         showTransitionMask.value = false
       }, 50)
+
+      // 进入全屏页面时，自动触发浏览器全屏
+      if (val && !isFullscreen.value) {
+        try {
+          await enterFullscreen()
+        } catch (error) {
+          console.warn('进入全屏失败:', error)
+        }
+      }
+      // 离开全屏页面时，如果还在浏览器全屏状态，则退出
+      else if (!val && isFullscreen.value) {
+        try {
+          await exitFullscreen()
+        } catch (error) {
+          console.warn('退出全屏失败:', error)
+        }
+      }
     }
 
     nextTick(() => {
@@ -95,20 +114,9 @@
   })
 
   const containerStyle = computed(
-    (): CSSProperties =>
-      isFullPage.value
-        ? {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100vh',
-            zIndex: 2500,
-            background: 'var(--default-bg-color)'
-          }
-        : {
-            maxWidth: containerWidth.value
-          }
+    (): CSSProperties => ({
+      maxWidth: containerWidth.value
+    })
   )
 
   const contentStyle = computed(
