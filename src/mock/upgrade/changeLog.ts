@@ -16,6 +16,21 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.5.3',
+        title: '修复与优化',
+        date: '2026-3-1',
+        detail: {
+            changed: [
+                '优化菜单全屏模式展现效果'
+            ],
+            fixed: [
+                '修复权限机制 RefreshToken 未更新bug',
+                '修复会话的并发问题',
+                '修复异步权限更新事件处理没有异常捕获'
+            ]
+        }
+    },
+    {
         version: 'v0.5.2',
         title: '系统信息',
         date: '2026-2-11',
