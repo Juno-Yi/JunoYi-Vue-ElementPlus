@@ -9,7 +9,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6.0-purple.svg)](https://vitejs.dev/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.9-409eff.svg)](https://element-plus.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.5.2-green.svg)](https://github.com/Juno-Yi/JunoYi-Vue-ElementPlus)
+[![Version](https://img.shields.io/badge/Version-0.5.3-green.svg)](https://github.com/Juno-Yi/JunoYi-Vue-ElementPlus)
 
 ## JunoYi 企业级开发框架 前端
 
@@ -25,7 +25,7 @@
 
 > **🎉 正式版本发布**
 >
-> 当前版本为 **0.5.2**，已完成全面测试并正式发布，可用于生产环境。
+> 当前版本为 **0.5.3**，已完成全面测试并正式发布，可用于生产环境。
 >
 > ✅ **版本特性**
 > - 核心功能完整稳定
