@@ -35,6 +35,16 @@ export function fetchRefreshToken(refreshToken: string) {
 }
 
 /**
+ * 获取验证码配置
+ * @returns 验证码配置响应
+ */
+export function fetchGetCaptchaConfig() {
+  return request.get<Api.Auth.CaptchaConfigResponse>({
+    url: '/captcha/config'
+  })
+}
+
+/**
  * 获取验证码
  * @returns 验证码响应
  */

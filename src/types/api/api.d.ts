@@ -111,6 +111,12 @@ declare namespace Api {
       refreshToken: string
     }
 
+    /** 验证码配置响应 */
+    interface CaptchaConfigResponse {
+      /** 是否启用验证码 */
+      enabled: boolean
+    }
+
     /** 验证码响应 */
     interface CaptchaResponse {
       captchaId: string

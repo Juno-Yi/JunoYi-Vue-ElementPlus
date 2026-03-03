@@ -39,8 +39,8 @@
               />
             </ElFormItem>
 
-            <!-- 验证码 -->
-            <ElFormItem prop="code">
+            <!-- 验证码 - 仅在启用时显示 -->
+            <ElFormItem v-if="captchaEnabled" prop="code">
               <div class="flex w-full gap-3">
                 <ElInput
                   class="custom-height flex-1"
@@ -147,8 +147,8 @@
               />
             </ElFormItem>
 
-            <!-- 验证码 -->
-            <ElFormItem prop="code">
+            <!-- 验证码 - 仅在启用时显示 -->
+            <ElFormItem v-if="captchaEnabled" prop="code">
               <div class="flex w-full gap-3">
                 <ElInput
                   class="custom-height flex-1"
@@ -227,7 +227,7 @@
   import { useSettingStore } from '@/store/modules/setting'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
-  import { fetchLogin, fetchGetCaptcha, fetchGetUserInfo } from '@/api/auth'
+  import { fetchLogin, fetchGetCaptcha, fetchGetUserInfo, fetchGetCaptchaConfig } from '@/api/auth'
   import { fetchGetSystemInfo, type SystemInfo } from '@/api/system/info'
   import { ElNotification, type FormInstance, type FormRules } from 'element-plus'
 
@@ -252,6 +252,7 @@
   const route = useRoute()
 
   // 验证码相关
+  const captchaEnabled = ref(false) // 验证码是否启用
   const captchaImage = ref('')
   const captchaLoading = ref(false)
 
@@ -272,15 +273,37 @@
   const rules = computed<FormRules>(() => ({
     username: [{ required: true, message: t('login.placeholder.username'), trigger: 'blur' }],
     password: [{ required: true, message: t('login.placeholder.password'), trigger: 'blur' }],
-    code: [{ required: true, message: t('login.placeholder.captcha'), trigger: 'blur' }]
+    code: captchaEnabled.value
+      ? [{ required: true, message: t('login.placeholder.captcha'), trigger: 'blur' }]
+      : []
   }))
 
   const loading = ref(false)
 
   onMounted(() => {
-    getCaptchaImage()
+    getCaptchaConfig()
     getSystemInfo()
   })
+
+  // 获取验证码配置
+  const getCaptchaConfig = async () => {
+    try {
+      const config = await fetchGetCaptchaConfig()
+      console.log('[Login] 验证码配置:', config)
+      captchaEnabled.value = config.enabled
+      console.log('[Login] 验证码是否启用:', captchaEnabled.value)
+
+      // 如果启用验证码，则获取验证码图片
+      if (captchaEnabled.value) {
+        await getCaptchaImage()
+      }
+    } catch (error) {
+      console.error('获取验证码配置失败:', error)
+      // 默认启用验证码（安全起见）
+      captchaEnabled.value = true
+      await getCaptchaImage()
+    }
+  }
 
   // 获取系统信息
   const getSystemInfo = async () => {
@@ -319,12 +342,18 @@
       // 登录请求
       const { username, password, code, captchaId } = formData
 
-      const { accessToken, refreshToken } = await fetchLogin({
-        captchaId,
+      // 构建登录参数，仅在验证码启用时传递验证码相关参数
+      const loginParams: any = {
         username,
-        password,
-        code
-      })
+        password
+      }
+
+      if (captchaEnabled.value) {
+        loginParams.captchaId = captchaId
+        loginParams.code = code
+      }
+
+      const { accessToken, refreshToken } = await fetchLogin(loginParams)
 
       // 验证token
       if (!accessToken) {
@@ -349,9 +378,11 @@
       const redirect = route.query.redirect as string
       router.push(redirect || '/')
     } catch (error) {
-      // 刷新验证码
-      getCaptchaImage()
-      formData.code = ''
+      // 仅在验证码启用时刷新验证码
+      if (captchaEnabled.value) {
+        getCaptchaImage()
+        formData.code = ''
+      }
 
       if (error instanceof HttpError) {
         console.log(error.code)
