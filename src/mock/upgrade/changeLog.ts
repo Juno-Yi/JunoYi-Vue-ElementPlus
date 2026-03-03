@@ -16,6 +16,24 @@ interface UpgradeLog {
 
 export const upgradeLogList = ref<UpgradeLog[]>([
     {
+        version: 'v0.5.4',
+        title: '修复无法关闭验证码bug',
+        date: '2026-3-3',
+        detail: {
+            added: [
+                '添加SysCaptchaController获取验证码配置信息的接口  ',
+                '新增NoCaptchaConfiguration提供验证码禁用时的空实现配置',
+                '添加NoCaptchaHelper作为验证码禁用时的默认实现类  ',
+                '添加验证码功能已关闭异常处理',
+            ],
+            changed: [
+                '在AutoConfiguration中注册NoCaptchaConfiguration配置类',
+                '修改SysAuthController实现验证码功能可选注入和条件验证',
+                '实现验证码功能动态开关，支持运行时启用或禁用验证码验证'
+            ]
+        }
+    },
+    {
         version: 'v0.5.3',
         title: '修复与优化',
         date: '2026-3-1',
