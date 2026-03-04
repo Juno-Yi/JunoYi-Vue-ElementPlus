@@ -34,8 +34,9 @@
 > - 可直接用于生产环境
 >
 > 📌 **相关链接**
-> - 📖 文档站：https://doc.framework.junoyi.com 
+> - 📖 文档站：https://doc.framework.junoyi.com
 > - 🎮 演示站：https://demo.junoyi.com
+> - 🎮 演示站2： http://demo2.junoyi.com
 >
 > 演示站账号：
 >
