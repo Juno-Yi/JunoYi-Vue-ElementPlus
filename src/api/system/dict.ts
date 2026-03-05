@@ -2,16 +2,6 @@ import request from '@/utils/http'
 import { PageResult } from '@/types'
 
 /**
- * 分页查询字典类型列表
- */
-export function fetchGetDictTypeList(params?: Api.System.DictTypeQueryDTO) {
-    return request.get<Api.Common.PaginatedResponse<Api.System.DictTypeVO>>({
-        url: '/system/dict/type/list',
-        params
-    })
-}
-
-/**
  * 查询所有字典类型
  */
 export function fetchGetAllDictTypes() {
