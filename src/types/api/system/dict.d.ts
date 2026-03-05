@@ -64,10 +64,10 @@ declare namespace Api.System {
         dictLabel?: string
         /** 状态（0正常 1停用） */
         status?: string
-        /** 页码 */
-        pageNum?: number
+        /** 当前页码 */
+        current?: number
         /** 每页数量 */
-        pageSize?: number
+        size?: number
     }
 
     /**
