@@ -404,8 +404,8 @@ const getDictDataList = async () => {
       dictType: currentDictType.value.dictType,
       dictLabel: dataSearchForm.dictLabel || undefined,
       status: dataSearchForm.status || undefined,
-      pageNum: dataPagination.current,
-      pageSize: dataPagination.size
+      current: dataPagination.current,
+      size: dataPagination.size
     })
     dictDataList.value = res?.list || []
     dataPagination.total = res?.total || 0
