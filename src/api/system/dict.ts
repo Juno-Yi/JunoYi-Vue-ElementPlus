@@ -1,4 +1,5 @@
 import request from '@/utils/http'
+import { PageResult } from '@/types'
 
 /**
  * 分页查询字典类型列表
@@ -71,7 +72,7 @@ export function fetchDeleteDictTypes(dictIds: number[]) {
  * 分页查询字典数据列表
  */
 export function fetchGetDictDataList(params?: Api.System.DictDataQueryDTO) {
-    return request.get<Api.Common.PaginatedResponse<Api.System.DictDataVO>>({
+    return request.get<PageResult<Api.System.DictDataVO>>({
         url: '/system/dict/data/list',
         params
     })

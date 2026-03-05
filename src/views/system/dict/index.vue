@@ -51,8 +51,8 @@
             >
               <div class="dict-type-content">
                 <div class="dict-type-header">
-                  <ArtSvgIcon 
-                      icon="ri:folder-3-line" 
+                  <ArtSvgIcon
+                      icon="ri:folder-3-line"
                       :class="['type-icon', { active: currentDictType?.dictId === item.dictId }]"
                   />
                   <div class="dict-type-info">
@@ -163,7 +163,9 @@
                 :columns="dataColumns"
                 :data="dictDataList"
                 :pagination="dataPagination"
-                @page-change="handleDataPageChange"
+                :paginationOptions="{ hideOnSinglePage: false }"
+                @pagination:size-change="handleDataSizeChange"
+                @pagination:current-change="handleDataCurrentChange"
             />
           </div>
         </ElCard>
@@ -405,10 +407,11 @@ const getDictDataList = async () => {
       pageNum: dataPagination.current,
       pageSize: dataPagination.size
     })
-    // API封装已经提取了data字段，res就是分页对象
-    // 后端返回的是 { list, total, size, current, pages }
-    dictDataList.value = (res as any)?.list || res?.records || []
+    dictDataList.value = res?.list || []
     dataPagination.total = res?.total || 0
+    dataPagination.current = res?.current || dataPagination.current
+    dataPagination.size = res?.size || dataPagination.size
+
   } catch (error) {
     console.error('获取字典数据列表失败:', error)
   } finally {
@@ -467,10 +470,16 @@ const handleDeleteDictData = async (dictCode: number) => {
   }
 }
 
-// 分页变化
-const handleDataPageChange = (page: number, size: number) => {
-  dataPagination.current = page
+// 分页大小变化
+const handleDataSizeChange = (size: number) => {
   dataPagination.size = size
+  dataPagination.current = 1
+  getDictDataList()
+}
+
+// 分页页码变化
+const handleDataCurrentChange = (page: number) => {
+  dataPagination.current = page
   getDictDataList()
 }
 
@@ -629,10 +638,33 @@ onMounted(() => {
 .dict-data-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px);
+  height: 100%;
+  min-height: 0;
+
+  .art-table {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// 右侧卡片样式调整
+:deep(.h-full > .el-card) {
+  display: flex;
+  flex-direction: column;
+
+  .el-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: auto;
+  }
 }
 
 .search-bar {
+  flex-shrink: 0;
   margin-bottom: 16px;
   padding: 16px;
   background-color: var(--el-fill-color-light);
