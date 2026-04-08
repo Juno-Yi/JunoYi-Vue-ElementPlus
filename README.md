@@ -9,9 +9,9 @@
 [![Vite](https://img.shields.io/badge/Vite-6.0-purple.svg)](https://vitejs.dev/)
 [![Element Plus](https://img.shields.io/badge/Element%20Plus-2.9-409eff.svg)](https://element-plus.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.5.4-green.svg)](https://github.com/Juno-Yi/JunoYi-Vue-ElementPlus)
+[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](https://github.com/Juno-Yi/JunoYi-Vue-ElementPlus)
 
-## JunoYi 企业级开发框架 前端
+## JunoYi 企业级开发框架配套前端
 
 **基于 Vue3 + TypeScript + Element Plus 的现代化企业级后台管理前端**
 
@@ -25,8 +25,10 @@
 
 > **🎉 正式版本发布**
 >
-> 当前版本为 **0.5.4**，已完成全面测试并正式发布，可用于生产环境。
+> 当前版本为 **1.0.0**，已完成全面测试并正式发布，可用于生产环境。
 >
+> 前端部分单独作为一个工程，不再跟 JunoYi 后端同步更新版本，单独作为一个独立的版本去更新
+> 
 > ✅ **版本特性**
 > - 核心功能完整稳定
 > - 通过全面测试验证
