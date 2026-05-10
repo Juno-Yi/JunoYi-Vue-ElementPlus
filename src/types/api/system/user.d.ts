@@ -27,6 +27,14 @@ declare namespace Api.System {
   }
 
   /**
+   * 用户下拉选项查询参数
+   */
+  interface UserOptionQueryDTO {
+    /** 昵称（模糊搜索） */
+    nickName?: string
+  }
+
+  /**
    * 用户视图对象
    */
   interface SysUserVO {
